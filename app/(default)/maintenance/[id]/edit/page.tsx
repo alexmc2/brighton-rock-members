@@ -1,11 +1,15 @@
+// app/(default)/maintenance/[id]/edit/page.tsx
+
 'use client'
 
+import * as React from 'react'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 import { MaintenanceRequestWithDetails, MaintenancePriority, MaintenanceStatus } from '@/types/maintenance'
 import Link from 'next/link'
 import { format } from 'date-fns'
+import { Button } from '@/components/ui/button'
 
 export default function EditMaintenanceRequest({ params }: { params: { id: string } }) {
   const router = useRouter()
@@ -161,13 +165,13 @@ export default function EditMaintenanceRequest({ params }: { params: { id: strin
           </Link>
           <h1 className="text-2xl font-bold mt-2">Edit Property Visit</h1>
         </div>
-        <button
+        <Button
           onClick={handleDelete}
           disabled={isDeleting}
-          className="rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="destructive"
         >
           {isDeleting ? 'Deleting...' : 'Delete Request'}
-        </button>
+        </Button>
       </div>
 
       <div className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700 p-6">
@@ -290,19 +294,20 @@ export default function EditMaintenanceRequest({ params }: { params: { id: strin
           )}
 
           <div className="flex justify-end space-x-3">
-            <Link
-              href={`/maintenance/${params.id}`}
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+            <Button
+              variant="ghost"
+              asChild
             >
-              Cancel
-            </Link>
-            <button
+              <Link href={`/maintenance/${params.id}`}>
+                Cancel
+              </Link>
+            </Button>
+            <Button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-md bg-coop-600 px-3 py-2 text-sm font-semibold text-white hover:bg-coop-700 focus:outline-none focus:ring-2 focus:ring-coop-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Saving...' : 'Save Changes'}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

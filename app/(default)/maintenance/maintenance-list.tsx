@@ -1,9 +1,13 @@
+// app/(default)/maintenance/maintenance-list.tsx
+
 'use client'
 
+import * as React from 'react'
 import { useState } from 'react'
 import { MaintenanceRequestWithDetails, MaintenanceStatus } from '@/types/maintenance'
 import { format } from 'date-fns'
 import Link from 'next/link'
+import { Button } from '@/components/ui/button'
 
 interface MaintenanceListProps {
   requests: MaintenanceRequestWithDetails[]
@@ -31,28 +35,22 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
     <div>
       {/* Filters */}
       <div className="mb-4 flex flex-wrap gap-2">
-        <button
+        <Button
           onClick={() => setStatusFilter('all')}
-          className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-            statusFilter === 'all'
-              ? 'bg-coop-600 dark:bg-coop-500 text-white'
-              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-          }`}
+          variant={statusFilter === 'all' ? 'default' : 'outline'}
+          size="sm"
         >
           All
-        </button>
+        </Button>
         {['pending', 'scheduled', 'in_progress', 'completed', 'cancelled'].map((status) => (
-          <button
+          <Button
             key={status}
             onClick={() => setStatusFilter(status as MaintenanceStatus)}
-            className={`px-3 py-1 rounded-full text-sm font-medium transition-colors ${
-              statusFilter === status
-                ? 'bg-coop-600 dark:bg-coop-500 text-white'
-                : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
-            }`}
+            variant={statusFilter === status ? 'default' : 'outline'}
+            size="sm"
           >
             {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
-          </button>
+          </Button>
         ))}
       </div>
 

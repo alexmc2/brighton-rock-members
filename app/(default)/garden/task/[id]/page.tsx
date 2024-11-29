@@ -1,0 +1,84 @@
+// app/(default)/garden/task/[id]/page.tsx
+
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import supabaseAdmin from '@/lib/supabaseAdmin';
+import { GardenTaskWithDetails } from '@/types/garden';
+import TaskHeader from './task-header';
+import TaskDetails from './task-details';
+import CommentSection from './comment-section';
+
+export const metadata: Metadata = {
+  title: 'Garden Task - Co-op Management',
+  description: 'View and manage garden task details',
+};
+
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getGardenTask(id: string) {
+  try {
+    const { data: task, error } = await supabaseAdmin
+      .from('garden_tasks')
+      .select(
+        `
+    *,
+    area:garden_areas!garden_tasks_area_id_fkey(
+      id,
+      name,
+      description
+    ),
+    comments:garden_comments(
+      *,
+      user:profiles!garden_comments_user_id_fkey(
+        email
+      )
+    )
+  `
+      )
+      .eq('id', id)
+      .order('created_at', { foreignTable: 'garden_comments', ascending: true })
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
+
+    return task as GardenTaskWithDetails;
+  } catch (err) {
+    console.error('Error fetching garden task:', err);
+    return null;
+  }
+}
+
+interface GardenTaskPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function GardenTaskPage({ params }: GardenTaskPageProps) {
+  const task = await getGardenTask(params.id);
+
+  if (!task) {
+    notFound();
+  }
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      <TaskHeader task={task} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+        {/* Left column - Task details and comments */}
+        <div className="xl:col-span-2 space-y-6">
+          <TaskDetails task={task} />
+          <CommentSection task={task} />
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -1,57 +1,29 @@
+// app/(default)/maintenance/new-request-modal.tsx
+
 'use client';
 
-import { Fragment, useState, useEffect } from 'react';
+import { Fragment, useState } from 'react';
 import { Dialog, Transition } from '@headlessui/react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { MaintenancePriority } from '@/types/maintenance';
+import { House } from '@/types/house';
+import { Button } from '@/components/ui/button';
 
-export default function NewRequestModal() {
+interface NewRequestModalProps {
+  houses: House[];
+}
+
+export default function NewRequestModal({ houses }: NewRequestModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [houses, setHouses] = useState<{ id: string; name: string }[]>([]);
-  const [selectedHouses, setSelectedHouses] = useState<string[]>([]);
+  const [selectedHouse, setSelectedHouse] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [priority, setPriority] = useState<MaintenancePriority>('medium');
   const supabase = createClientComponentClient();
-
-  useEffect(() => {
-    async function fetchHouses() {
-      const { data, error } = await supabase
-        .from('houses')
-        .select('id, name')
-        .order('name');
-
-      if (error) {
-        console.error('Error fetching houses:', error);
-        return;
-      }
-
-      setHouses(data || []);
-    }
-
-    if (isOpen) {
-      fetchHouses();
-      setSelectedHouses([]);
-      setTitle('');
-      setDescription('');
-      setPriority('medium');
-    }
-  }, [isOpen, supabase]);
-
-  const handleHouseChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const value = e.target.value;
-    if (value === 'all') {
-      setSelectedHouses(houses.map((house) => house.id));
-    } else if (value === '') {
-      setSelectedHouses([]);
-    } else {
-      setSelectedHouses([value]);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,44 +33,25 @@ export default function NewRequestModal() {
     try {
       const {
         data: { user },
+        error: authError,
       } = await supabase.auth.getUser();
+      if (authError) throw authError;
       if (!user) throw new Error('User not found');
 
-      // First, ensure user profile exists
-      const { data: existingProfile } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-
-      if (!existingProfile) {
-        // Create profile if it doesn't exist
-        const { error: profileError } = await supabase.from('profiles').insert({
-          id: user.id,
-          email: user.email,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        });
-
-        if (profileError) throw profileError;
-      }
-
-      if (selectedHouses.length === 0) {
+      if (!selectedHouse) {
         throw new Error('Please select a house');
       }
 
-      const requests = selectedHouses.map((house_id) => ({
-        title,
-        description,
-        house_id,
-        priority,
-        reported_by: user.id,
-        status: 'pending',
-      }));
-
       const { error: insertError } = await supabase
         .from('maintenance_requests')
-        .insert(requests);
+        .insert({
+          title,
+          description,
+          house_id: selectedHouse,
+          priority,
+          reported_by: user.id,
+          status: 'pending',
+        });
 
       if (insertError) throw insertError;
 
@@ -129,6 +82,7 @@ export default function NewRequestModal() {
 
       <Transition show={isOpen} as={Fragment}>
         <Dialog onClose={() => setIsOpen(false)} className="relative z-50">
+          {/* Background overlay */}
           <Transition.Child
             as={Fragment}
             enter="ease-out duration-300"
@@ -141,16 +95,17 @@ export default function NewRequestModal() {
             <div className="fixed inset-0 bg-black/30" />
           </Transition.Child>
 
+          {/* Dialog content */}
           <div className="fixed inset-0 overflow-y-auto">
             <div className="flex min-h-full items-center justify-center p-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
                 leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
                 <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
                   <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
@@ -164,6 +119,7 @@ export default function NewRequestModal() {
                       </div>
                     )}
 
+                    {/* Title */}
                     <div>
                       <label
                         htmlFor="title"
@@ -181,6 +137,7 @@ export default function NewRequestModal() {
                       />
                     </div>
 
+                    {/* Description */}
                     <div>
                       <label
                         htmlFor="description"
@@ -198,6 +155,7 @@ export default function NewRequestModal() {
                       />
                     </div>
 
+                    {/* House */}
                     <div>
                       <label
                         htmlFor="house_id"
@@ -208,16 +166,11 @@ export default function NewRequestModal() {
                       <select
                         id="house_id"
                         required
-                        onChange={handleHouseChange}
-                        value={
-                          selectedHouses.length === houses.length
-                            ? 'all'
-                            : selectedHouses[0] || ''
-                        }
+                        onChange={(e) => setSelectedHouse(e.target.value)}
+                        value={selectedHouse}
                         className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
                       >
                         <option value="">Select a house</option>
-                        <option value="all">All Houses</option>
                         {houses.map((house) => (
                           <option key={house.id} value={house.id}>
                             {house.name}
@@ -226,6 +179,7 @@ export default function NewRequestModal() {
                       </select>
                     </div>
 
+                    {/* Priority */}
                     <div>
                       <label
                         htmlFor="priority"
@@ -249,21 +203,21 @@ export default function NewRequestModal() {
                       </select>
                     </div>
 
+                    {/* Submit Button */}
                     <div className="flex justify-end space-x-3">
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
                         onClick={() => setIsOpen(false)}
-                        className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
                       >
                         Cancel
-                      </button>
-                      <button
+                      </Button>
+                      <Button
                         type="submit"
                         disabled={isSubmitting}
-                        className="rounded-md bg-coop-600 px-3 py-2 text-sm font-semibold text-white hover:bg-coop-700 focus:outline-none focus:ring-2 focus:ring-coop-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isSubmitting ? 'Creating...' : 'Create Request'}
-                      </button>
+                      </Button>
                     </div>
                   </form>
                 </Dialog.Panel>

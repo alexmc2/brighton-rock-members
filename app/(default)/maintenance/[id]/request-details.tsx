@@ -1,3 +1,5 @@
+// app/(default)/maintenance/[id]/request-details.tsx
+
 'use client'
 
 import { useState } from 'react'

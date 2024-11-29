@@ -1,19 +1,18 @@
-// app/(default)/maintenance/[id]/comment-section.tsx
+// app/(default)/garden/task/[id]/comment-section.tsx
 
 'use client';
 
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { MaintenanceRequestWithDetails } from '@/types/maintenance';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Button } from '@/components/ui/button';
+import { GardenTaskWithDetails } from '@/types/garden';
 
 interface CommentSectionProps {
-  request: MaintenanceRequestWithDetails;
+  task: GardenTaskWithDetails;
 }
 
-export default function CommentSection({ request }: CommentSectionProps) {
+export default function CommentSection({ task }: CommentSectionProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingComment, setEditingComment] = useState<string | null>(null);
@@ -57,9 +56,9 @@ export default function CommentSection({ request }: CommentSectionProps) {
 
       // Add the comment
       const { error: insertError } = await supabase
-        .from('maintenance_comments')
+        .from('garden_comments')
         .insert({
-          request_id: request.id,
+          task_id: task.id,
           user_id: user.id,
           comment: commentText,
         });
@@ -96,7 +95,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
     try {
       // Update the comment
       const { error: updateError } = await supabase
-        .from('maintenance_comments')
+        .from('garden_comments')
         .update({ comment: commentText })
         .eq('id', commentId)
         .eq('user_id', currentUserId);
@@ -125,7 +124,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
     setError(null);
     try {
       const { error: deleteError } = await supabase
-        .from('maintenance_comments')
+        .from('garden_comments')
         .delete()
         .eq('id', commentId)
         .eq('user_id', currentUserId);
@@ -143,9 +142,9 @@ export default function CommentSection({ request }: CommentSectionProps) {
     }
   };
 
-  const sortedComments = [...request.comments].sort(
+  const sortedComments = [...task.comments].sort(
     (a, b) =>
-      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
 
   return (
@@ -171,7 +170,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-coop-600 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {comment.user.email.charAt(0).toUpperCase()}
+                    {comment.user?.email?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
               </div>
@@ -189,27 +188,27 @@ export default function CommentSection({ request }: CommentSectionProps) {
                       className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
                     />
                     <div className="flex justify-end space-x-2">
-                      <Button
+                      <button
                         type="button"
-                        variant="ghost"
                         onClick={() => setEditingComment(null)}
+                        className="text-sm font-medium text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
                       >
                         Cancel
-                      </Button>
-                      <Button
+                      </button>
+                      <button
                         type="submit"
                         disabled={isSubmitting}
-                        variant="default"
+                        className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
                       >
                         Save
-                      </Button>
+                      </button>
                     </div>
                   </form>
                 ) : (
                   <>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
                       <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                        {comment.user.email}
+                        {comment.user?.email || 'Unknown User'}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         {format(
@@ -242,7 +241,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
               </div>
             </div>
           ))}
-          {request.comments.length === 0 && (
+          {task.comments.length === 0 && (
             <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
               No comments yet
             </div>

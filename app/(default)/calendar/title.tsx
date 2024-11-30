@@ -1,18 +1,29 @@
-'use client'
+// app/(default)/calendar/calendar-title.tsx
 
-import { CalendarProperties } from './calendar-properties'
+'use client';
+
+import { useCalendarContext } from './calendar-context';
 
 export default function CalendarTitle() {
-
-  const {
-    monthNames,
-    currentMonth,
-    currentYear,
-  } = CalendarProperties()  
+  const { currentMonth, currentYear } = useCalendarContext();
+  const monthNames = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 
   return (
-    <div className="mb-4 sm:mb-0">
-      <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"><span>{`${monthNames[currentMonth]} ${currentYear}`}</span></h1>
-    </div>
-  )
+    <h2 className="text-xl font-bold">
+      {`${monthNames[currentMonth]} ${currentYear}`}
+    </h2>
+  );
 }

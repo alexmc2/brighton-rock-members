@@ -34,7 +34,7 @@ export async function getGardenTask(id: string) {
       .single()
 
     if (error) {
-      console.error('Error fetching garden task:', error)
+      console.error('Error fetching Garden Task:', error)
       return null
     }
 
@@ -64,7 +64,7 @@ export async function getGardenTask(id: string) {
 
     return task as GardenTaskWithDetails
   } catch (err) {
-    console.error('Error fetching garden task:', err)
+    console.error('Error fetching Garden Task:', err)
     return null
   }
 } 

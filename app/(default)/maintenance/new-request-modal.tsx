@@ -109,7 +109,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
               >
                 <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
                   <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
-                    New Maintenance Request
+                    New Maintenance Job
                   </Dialog.Title>
 
                   <form onSubmit={handleSubmit} className="space-y-4">
@@ -212,10 +212,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                       >
                         Cancel
                       </Button>
-                      <Button
-                        type="submit"
-                        disabled={isSubmitting}
-                      >
+                      <Button type="submit" disabled={isSubmitting}>
                         {isSubmitting ? 'Creating...' : 'Create Request'}
                       </Button>
                     </div>

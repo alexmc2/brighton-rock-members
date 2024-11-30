@@ -13,9 +13,11 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
       <div className="px-5 py-4">
-        <h2 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">
-          Task Details
-        </h2>
+        <div className="mb-4">
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">
+            Task Details
+          </h2>
+        </div>
 
         <div className="space-y-4">
           {/* Description */}
@@ -46,6 +48,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               </h3>
               <div className="text-sm text-slate-500 dark:text-slate-400">
                 {format(new Date(task.due_date), 'MMM d, yyyy')}
+                {task.scheduled_time && ` at ${task.scheduled_time}`}
               </div>
             </div>
           )}

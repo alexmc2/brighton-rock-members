@@ -26,16 +26,20 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
     const formData = new FormData(form);
 
     try {
+      const scheduledDate = `${formData.get('scheduled_date')}T${formData.get(
+        'scheduled_time'
+      )}:00`;
+      const estimatedDuration = formData.get('estimated_duration') as string;
+      const notes = formData.get('notes') || null;
+
       // Insert the visit
       const { error: insertError } = await supabase
         .from('maintenance_visits')
         .insert({
           request_id: request.id,
-          scheduled_date: `${formData.get('scheduled_date')}T${formData.get(
-            'scheduled_time'
-          )}:00`,
-          estimated_duration: `${formData.get('estimated_duration')} hours`,
-          notes: formData.get('notes') || null,
+          scheduled_date: scheduledDate,
+          estimated_duration: `${estimatedDuration} hours`,
+          notes,
         });
 
       if (insertError) throw insertError;
@@ -49,6 +53,25 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
 
         if (updateError) throw updateError;
       }
+
+      // Insert an event into the calendar_events table
+      const scheduledTime = new Date(scheduledDate);
+      let endTime = new Date(
+        scheduledTime.getTime() + parseInt(estimatedDuration) * 60 * 60 * 1000
+      );
+
+      const { error: calendarError } = await supabase
+        .from('calendar_events')
+        .insert({
+          title: 'P4P Visit',
+          description: `Maintenance visit for: ${request.title}`,
+          start_time: scheduledTime.toISOString(),
+          end_time: endTime.toISOString(),
+          event_type: 'maintenance',
+          category: 'P4P Visit', // Ensure this matches your legend and color mapping
+        });
+
+      if (calendarError) throw calendarError;
 
       form.reset();
       router.refresh();
@@ -67,7 +90,6 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Form fields */}
           {/* Date */}
           <div>
             <label
@@ -145,10 +167,7 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
 
           {/* Submit Button */}
           <div className="flex justify-end">
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-            >
+            <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Scheduling...' : 'Schedule Visit'}
             </Button>
           </div>

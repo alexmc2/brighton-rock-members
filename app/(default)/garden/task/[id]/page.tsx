@@ -10,7 +10,7 @@ import CommentSection from './comment-section';
 
 export const metadata: Metadata = {
   title: 'Garden Task - Co-op Management',
-  description: 'View and manage garden task details',
+  description: 'View and manage Garden Task details',
 };
 
 // Force dynamic rendering to ensure fresh data
@@ -32,7 +32,8 @@ async function getGardenTask(id: string) {
     comments:garden_comments(
       *,
       user:profiles!garden_comments_user_id_fkey(
-        email
+        email,
+        full_name
       )
     )
   `
@@ -50,7 +51,7 @@ async function getGardenTask(id: string) {
 
     return task as GardenTaskWithDetails;
   } catch (err) {
-    console.error('Error fetching garden task:', err);
+    console.error('Error fetching Garden Task:', err);
     return null;
   }
 }

@@ -147,6 +147,26 @@ const roles = [
       </svg>
     ),
   },
+  {
+    name: 'Allocations',
+    href: '/allocations',
+    description: 'Manage room and space allocations',
+    icon: (
+      <svg
+        className="w-6 h-6"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+      >
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth="2"
+          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+        />
+      </svg>
+    ),
+  },
 ];
 
 const houses = [
@@ -272,10 +292,10 @@ export default function Dashboard() {
             <Link
               key={role.name}
               href={role.href}
-              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-sm rounded-sm border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500 transition-colors duration-150"
+              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-[0_2px_8px_-1px_rgba(0,0,0,0.05)] rounded-xl border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500 transition-all duration-150 hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
             >
               <div className="flex items-center space-x-3 mb-3">
-                <div className="flex items-center justify-center w-10 h-10 rounded-full bg-violet-500/10 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400">
+                <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-500/10 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 group-hover:bg-violet-500 group-hover:text-white transition-colors duration-150">
                   {role.icon}
                 </div>
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">
@@ -300,7 +320,7 @@ export default function Dashboard() {
             <Link
               key={house.name}
               href={house.href}
-              className="group p-6 bg-white dark:bg-gray-800 shadow-sm rounded-sm border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500 transition-colors duration-150"
+              className="group p-6 bg-white dark:bg-gray-800 shadow-[0_2px_8px_-1px_rgba(0,0,0,0.05)] rounded-xl border border-gray-200 dark:border-gray-700 hover:border-violet-300 dark:hover:border-violet-500 transition-all duration-150 hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100">

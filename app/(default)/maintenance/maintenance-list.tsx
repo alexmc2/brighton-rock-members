@@ -110,7 +110,7 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
                     </td>
                     <td className="px-4 py-3">
                       <div className="text-slate-800 dark:text-slate-100">
-                        {request.reported_by_user.email}
+                        {request.reported_by_user.full_name || request.reported_by_user.email}
                       </div>
                     </td>
                     <td className="px-4 py-3">

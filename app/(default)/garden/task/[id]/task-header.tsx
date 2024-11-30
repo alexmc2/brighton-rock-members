@@ -43,7 +43,7 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-start">
+      <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
         {/* Left: Title and Area */}
         <div>
           <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
@@ -53,14 +53,6 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
             <div className="text-slate-500 dark:text-slate-400">
               Area: {task.area.name}
             </div>
-            <div className="text-slate-500 dark:text-slate-400">
-              Assigned to: {task.assigned_to || 'Everyone'}
-            </div>
-            {task.due_date && (
-              <div className="text-slate-500 dark:text-slate-400">
-                Due: {new Date(task.due_date).toLocaleDateString()}
-              </div>
-            )}
           </div>
         </div>
 
@@ -83,16 +75,10 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
               {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
             </div>
           </div>
+          {/* Task Actions */}
           <TaskActions task={task} />
         </div>
       </div>
-
-      {/* Description */}
-      {task.description && (
-        <div className="mt-4 text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
-          {task.description}
-        </div>
-      )}
     </div>
   );
 }

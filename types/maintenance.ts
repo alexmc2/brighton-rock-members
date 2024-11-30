@@ -33,6 +33,7 @@ export interface MaintenanceComment {
   created_at: string
   user: {
     email: string
+    full_name?: string | null
   }
 }
 
@@ -42,6 +43,7 @@ export interface MaintenanceRequestWithDetails extends MaintenanceRequest {
   }
   reported_by_user: {
     email: string
+    full_name?: string | null
   }
   visits: MaintenanceVisit[]
   comments: MaintenanceComment[]

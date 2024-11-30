@@ -9,6 +9,20 @@ import { MaintenanceRequestWithDetails } from '@/types/maintenance';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 
+interface CommentUser {
+  email: string;
+  full_name: string | null;
+}
+
+interface Comment {
+  id: string;
+  user_id: string;
+  request_id: string;
+  comment: string;
+  created_at: string;
+  user: CommentUser;
+}
+
 interface CommentSectionProps {
   request: MaintenanceRequestWithDetails;
 }
@@ -171,7 +185,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-coop-600 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {comment.user.email.charAt(0).toUpperCase()}
+                    {comment.user.full_name?.charAt(0).toUpperCase() || comment.user.email.charAt(0).toUpperCase()}
                   </span>
                 </div>
               </div>
@@ -209,7 +223,7 @@ export default function CommentSection({ request }: CommentSectionProps) {
                   <>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
                       <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                        {comment.user.email}
+                        {comment.user.full_name || comment.user.email}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
                         {format(

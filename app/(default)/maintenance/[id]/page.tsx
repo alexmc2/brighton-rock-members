@@ -26,7 +26,7 @@ async function getMaintenanceRequest(id: string) {
         `
         *,
         house:houses!maintenance_requests_house_id_fkey(name),
-        reported_by_user:profiles!maintenance_requests_reported_by_fkey(email),
+        reported_by_user:profiles!maintenance_requests_reported_by_fkey(email, full_name),
         visits:maintenance_visits(
           id,
           scheduled_date,
@@ -41,14 +41,21 @@ async function getMaintenanceRequest(id: string) {
           created_at,
           user_id,
           user:profiles!maintenance_comments_user_id_fkey(
-            email
+            email,
+            full_name
           )
         )
       `
       )
       .eq('id', id)
-      .order('created_at', { foreignTable: 'maintenance_visits', ascending: true })
-      .order('created_at', { foreignTable: 'maintenance_comments', ascending: true })
+      .order('created_at', {
+        foreignTable: 'maintenance_visits',
+        ascending: true,
+      })
+      .order('created_at', {
+        foreignTable: 'maintenance_comments',
+        ascending: true,
+      })
       .single();
 
     if (error) {

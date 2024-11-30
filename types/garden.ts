@@ -21,6 +21,8 @@ export interface GardenTask {
   area_id: string
   assigned_to: string | null
   due_date: string | null
+  scheduled_time: string | null
+  duration: string | null
   created_at: string
   updated_at: string
 }
@@ -33,6 +35,7 @@ export interface GardenComment {
   created_at: string
   user: {
     email: string
+    full_name?: string | null
   }
 }
 

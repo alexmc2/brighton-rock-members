@@ -94,7 +94,9 @@ export default function RequestDetails({ request }: RequestDetailsProps) {
 
           <div>
             <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">Reported By</h3>
-            <p className="text-sm text-slate-600 dark:text-slate-400">{request.reported_by_user.email}</p>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {request.reported_by_user.full_name || request.reported_by_user.email}
+            </p>
           </div>
 
           <div>

@@ -170,7 +170,7 @@ export default function CommentSection({ task }: CommentSectionProps) {
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 rounded-full bg-coop-600 flex items-center justify-center">
                   <span className="text-sm font-medium text-white">
-                    {comment.user?.email?.charAt(0).toUpperCase() || '?'}
+                    {comment.user?.full_name?.charAt(0).toUpperCase() || comment.user?.email?.charAt(0).toUpperCase() || '?'}
                   </span>
                 </div>
               </div>
@@ -208,13 +208,10 @@ export default function CommentSection({ task }: CommentSectionProps) {
                   <>
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
                       <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
-                        {comment.user?.email || 'Unknown User'}
+                        {comment.user?.full_name || comment.user?.email || 'Unknown User'}
                       </div>
                       <div className="text-xs text-slate-500 dark:text-slate-400">
-                        {format(
-                          new Date(comment.created_at),
-                          'MMM d, yyyy h:mm a'
-                        )}
+                        {format(new Date(comment.created_at), 'MMM d, yyyy h:mm a')}
                       </div>
                     </div>
                     <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">

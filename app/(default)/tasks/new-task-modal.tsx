@@ -1,5 +1,3 @@
-// File: app/(default)/tasks/new-task-modal.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -34,7 +32,7 @@ export default function NewTaskModal() {
   // **State Variables for Controlled Inputs**
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('general');
+  const [taskType, setTaskType] = useState('general'); // Renamed
   const [priority, setPriority] = useState('medium');
   const [assignedTo, setAssignedTo] = useState<string | null>(null);
 
@@ -45,6 +43,7 @@ export default function NewTaskModal() {
   // **Function to Fetch Profiles**
   const fetchProfiles = async () => {
     setIsFetchingProfiles(true);
+    setError(null);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -85,11 +84,11 @@ export default function NewTaskModal() {
         .insert({
           title: title.trim(),
           description: description.trim(),
-          category: category,
+          task_type: taskType, // Updated
           status: 'pending',
           priority: priority,
           created_by: user.id,
-          assigned_to: assignedTo, // Should be UUID or null
+          assigned_to: assignedTo, // UUID or null
         })
         .select()
         .single();
@@ -99,7 +98,7 @@ export default function NewTaskModal() {
       // **Reset Form Fields**
       setTitle('');
       setDescription('');
-      setCategory('general');
+      setTaskType('general'); // Updated
       setPriority('medium');
       setAssignedTo(null);
 
@@ -173,15 +172,15 @@ export default function NewTaskModal() {
               />
             </div>
 
-            {/* **Category Field** */}
+            {/* **Task Type Field** */}
             <div>
-              <Label htmlFor="category">Task Type</Label>
+              <Label htmlFor="task_type">Task Type</Label>
               <select
-                id="category"
-                name="category"
+                id="task_type" // Updated
+                name="task_type" // Updated
                 required
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={taskType} // Updated
+                onChange={(e) => setTaskType(e.target.value)}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
               >
                 <option value="general">General Task</option>

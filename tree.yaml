@@ -1,0 +1,2093 @@
+Please can you help me fix this error in my code where I try to create a new task and I get this error:
+
+```
+ ✓ Compiled /tasks in 2.9s (1569 modules)
+Error fetching tasks: {
+  code: 'PGRST200',
+  details: "Searched for a foreign key relationship between 'task_comments' and 'profiles' using the hint 'task_comments_user_id_fkey' in the schema 'public', but no matches were found.",
+  hint: null,
+  message: "Could not find a relationship between 'task_comments' and 'profiles' in the schema cache"
+}
+ ✓ Compiled in 409ms (740 modules)
+ GET /tasks 200 in 3359ms
+Error fetching tasks: {
+  code: 'PGRST200',
+  details: "Searched for a foreign key relationship between 'task_comments' and 'profiles' using the hint 'task_comments_user_id_fkey' in the schema 'public', but no matches were found.",
+  hint: null,
+  message: "Could not find a relationship between 'task_comments' and 'profiles' in the schema cache"
+}
+
+Failed to construct 'FormData': parameter 1 is not of type 'HTMLFormElement'.
+```
+
+
+I will give you all of the relevant code:
+
+
+
+// Code files extracted from brighton-rock-members/app/(default)/tasks
+// Generated on 2024-11-30 16:52:00
+// Included extensions: .tsx, .ts, .js, .jsx, .json, .sql
+// Excluded files: package-lock.json, yarn.lock, pnpm-lock.yaml, .DS_Store
+
+================================================================================
+// File: tasks.ts
+================================================================================
+export interface Task {
+  id: string
+  title: string
+  description: string | null
+  status: 'todo' | 'in-progress' | 'done'
+  task_type: 'general' | 'minuted'
+  created_at: string
+  updated_at: string
+  created_by: string | null
+  assigned_to: string | null
+  created_by_profile?: {
+    full_name: string | null
+    email: string
+  } | null
+  assigned_to_profile?: {
+    full_name: string | null
+    email: string
+  } | null
+  comments?: TaskComment[]
+}
+
+export interface TaskComment {
+  id: string
+  task_id: string
+  content: string
+  created_at: string
+  created_by: string | null
+  user?: {
+    full_name: string | null
+    email: string
+  }
+} 
+
+================================================================================
+// File: new-task-modal.tsx
+================================================================================
+
+// app/(default)/tasks/new-task-modal.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Plus } from 'lucide-react';
+
+export default function NewTaskModal() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      const formData = new FormData(e.currentTarget);
+
+      // Insert task
+      const { data: newTask, error: insertError } = await supabase
+        .from('tasks')
+        .insert({
+          title: formData.get('title') as string,
+          description: formData.get('description') as string,
+          category: formData.get('category') as string,
+          status: 'pending',
+          priority: formData.get('priority') as string,
+          created_by: user.id,
+          assigned_to: formData.get('assigned_to') || null,
+        })
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      router.refresh();
+      setIsOpen(false);
+    } catch (error) {
+      console.error('Error creating task:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to create task'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)} variant="default">
+        <Plus className="h-4 w-4 mr-2" />
+        Add Task
+      </Button>
+
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>New Task</DialogTitle>
+          </DialogHeader>
+
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                name="title"
+                required
+                placeholder="Enter task title"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                required
+                placeholder="Enter task description"
+                className="min-h-[100px]"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Task Type</Label>
+              <select
+                id="category"
+                name="category"
+                required
+                defaultValue="general"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="general">General Task</option>
+                <option value="minuted">Minuted Action</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <select
+                id="priority"
+                name="priority"
+                required
+                defaultValue="medium"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="assigned_to">Assign To</Label>
+              <Input
+                id="assigned_to"
+                name="assigned_to"
+                placeholder="Enter user ID (optional)"
+              />
+            </div>
+
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Task'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+
+
+================================================================================
+// File: page.tsx
+================================================================================
+
+// app/(default)/tasks/page.tsx
+
+import { Metadata } from 'next';
+import TaskList from './task-list';
+import TaskHeader from './task-header';
+import { TaskWithDetails } from '@/types/tasks';
+import supabaseAdmin from '@/lib/supabaseAdmin';
+
+export const metadata: Metadata = {
+  title: 'Tasks - Co-op Management',
+  description: 'View and manage co-op tasks',
+};
+
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getTasks() {
+  try {
+    const { data: tasks, error } = await supabaseAdmin
+      .from('tasks')
+      .select(
+        `
+        *,
+        comments:task_comments(
+          id,
+          content,
+          created_at,
+          user_id,
+          user:profiles!task_comments_user_id_fkey(
+            email,
+            full_name
+          )
+        )
+      `
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching tasks:', error);
+      return [];
+    }
+
+    return tasks;
+  } catch (err) {
+    console.error('Error fetching tasks:', err);
+    return [];
+  }
+}
+
+export default async function TasksPage() {
+  const tasks = await getTasks();
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      <TaskHeader />
+      <TaskList tasks={tasks} />
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: task-header.tsx
+================================================================================
+
+// app/(default)/tasks/task-header.tsx
+
+'use client';
+
+import NewTaskModal from './new-task-modal';
+
+export default function TaskHeader() {
+  return (
+    <div className="sm:flex sm:justify-between sm:items-center mb-8">
+      {/* Left: Title */}
+      <div className="mb-4 sm:mb-0">
+        <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">
+          Tasks 📋
+        </h1>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+        <NewTaskModal />
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: task-list.tsx
+================================================================================
+
+// app/(default)/tasks/task-list.tsx
+
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import {
+  TaskWithDetails,
+  TaskPriority,
+  TaskStatus,
+  TaskCategory,
+} from '@/types/tasks';
+import { Button } from '@/components/ui/button';
+
+interface TaskListProps {
+  tasks: TaskWithDetails[];
+}
+
+export default function TaskList({ tasks }: TaskListProps) {
+  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
+  const [taskTypeFilter, setTaskTypeFilter] = useState<'all' | TaskCategory>(
+    'all'
+  );
+  const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>(
+    'all'
+  );
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      pending:
+        'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
+      in_progress:
+        'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
+      completed:
+        'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200',
+      cancelled:
+        'bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200',
+    };
+    return colors[status as keyof typeof colors] || colors.pending;
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors = {
+      low: 'bg-slate-100 dark:bg-slate-900/50 text-slate-800 dark:text-slate-200',
+      medium:
+        'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
+      high: 'bg-orange-100 dark:bg-orange-900/50 text-orange-800 dark:text-orange-200',
+      urgent: 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-200',
+    };
+    return colors[priority as keyof typeof colors] || colors.medium;
+  };
+
+  const filteredTasks = tasks.filter((task) => {
+    if (statusFilter !== 'all' && task.status !== statusFilter) return false;
+    if (taskTypeFilter !== 'all' && task.category !== taskTypeFilter)
+      return false;
+    if (priorityFilter !== 'all' && task.priority !== priorityFilter)
+      return false;
+    return true;
+  });
+
+  return (
+    <div>
+      {/* Filters */}
+      <div className="mb-6 space-y-4">
+        {/* Status Filters */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => setStatusFilter('all')}
+            variant={statusFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+          >
+            All Status
+          </Button>
+          {['pending', 'in_progress', 'completed', 'cancelled'].map(
+            (status) => (
+              <Button
+                key={status}
+                onClick={() => setStatusFilter(status as TaskStatus)}
+                variant={statusFilter === status ? 'default' : 'outline'}
+                size="sm"
+              >
+                {status.charAt(0).toUpperCase() +
+                  status.slice(1).replace('_', ' ')}
+              </Button>
+            )
+          )}
+        </div>
+
+        {/* Type Filters */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => setTaskTypeFilter('all')}
+            variant={taskTypeFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+          >
+            All Types
+          </Button>
+          <Button
+            onClick={() => setTaskTypeFilter('general')}
+            variant={taskTypeFilter === 'general' ? 'default' : 'outline'}
+            size="sm"
+          >
+            General Tasks
+          </Button>
+          <Button
+            onClick={() => setTaskTypeFilter('minuted')}
+            variant={taskTypeFilter === 'minuted' ? 'default' : 'outline'}
+            size="sm"
+          >
+            Minuted Actions
+          </Button>
+        </div>
+
+        {/* Priority Filters */}
+        <div className="flex flex-wrap gap-2">
+          <Button
+            onClick={() => setPriorityFilter('all')}
+            variant={priorityFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+          >
+            All Priorities
+          </Button>
+          {['low', 'medium', 'high', 'urgent'].map((priority) => (
+            <Button
+              key={priority}
+              onClick={() => setPriorityFilter(priority as TaskPriority)}
+              variant={priorityFilter === priority ? 'default' : 'outline'}
+              size="sm"
+            >
+              {priority.charAt(0).toUpperCase() + priority.slice(1)}
+            </Button>
+          ))}
+        </div>
+      </div>
+
+      {/* Tasks Table */}
+      <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+        <div className="overflow-x-auto">
+          <table className="table-auto w-full">
+            <thead className="text-xs uppercase text-slate-500 dark:text-slate-400 bg-slate-50 dark:bg-slate-900/20">
+              <tr>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Title</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Type</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Status</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Priority</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Assigned To</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-left">Created</div>
+                </th>
+                <th className="px-4 py-3">
+                  <div className="font-semibold text-center">Comments</div>
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
+              {filteredTasks.map((task) => (
+                <tr key={task.id}>
+                  <td className="px-4 py-3">
+                    <Link
+                      href={`/tasks/${task.id}`}
+                      className="text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300 font-medium"
+                    >
+                      {task.title}
+                    </Link>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-slate-800 dark:text-slate-100">
+                      {task.category === 'minuted'
+                        ? 'Minuted Action'
+                        : 'General Task'}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
+                        task.status
+                      )}`}
+                    >
+                      {task.status.charAt(0).toUpperCase() +
+                        task.status.slice(1)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div
+                      className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
+                        task.priority
+                      )}`}
+                    >
+                      {task.priority.charAt(0).toUpperCase() +
+                        task.priority.slice(1)}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-slate-800 dark:text-slate-100">
+                      {task.assigned_to_user?.full_name ||
+                        task.assigned_to_user?.email ||
+                        '-'}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-slate-800 dark:text-slate-100">
+                      {format(new Date(task.created_at), 'MMM d, yyyy')}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="text-slate-800 dark:text-slate-100 text-center">
+                      {task.comments?.length || 0}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {filteredTasks.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={7}
+                    className="px-4 py-8 text-center text-slate-500 dark:text-slate-400"
+                  >
+                    No tasks found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/comment-section.tsx
+================================================================================
+
+// app/(default)/tasks/[id]/comment-section.tsx
+
+'use client';
+
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { TaskWithDetails } from '@/types/tasks';
+import { Button } from '@/components/ui/button';
+
+interface CommentSectionProps {
+  task: TaskWithDetails;
+}
+
+export default function CommentSection({ task }: CommentSectionProps) {
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingComment, setEditingComment] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  useEffect(() => {
+    async function getCurrentUser() {
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
+      if (authError) {
+        console.error('Error fetching user:', authError);
+        return;
+      }
+      setCurrentUserId(user?.id || null);
+    }
+    getCurrentUser();
+  }, [supabase]);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const commentText = formData.get('content') as string;
+
+    try {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) {
+        setError('You must be logged in to comment');
+        return;
+      }
+
+      // Add the comment
+      const { error: insertError } = await supabase
+        .from('task_comments')
+        .insert({
+          task_id: task.id,
+          user_id: user.id,
+          content: commentText,
+        });
+
+      if (insertError) {
+        console.error('Error adding comment:', insertError);
+        setError('Failed to add comment. Please try again.');
+        return;
+      }
+
+      form.reset();
+      router.refresh();
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      setError('Failed to add comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCommentUpdate = async (
+    commentId: string,
+    e: React.FormEvent<HTMLFormElement>
+  ) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const commentText = formData.get('content') as string;
+
+    try {
+      // Update the comment
+      const { error: updateError } = await supabase
+        .from('task_comments')
+        .update({ content: commentText })
+        .eq('id', commentId)
+        .eq('user_id', currentUserId);
+
+      if (updateError) {
+        console.error('Error updating comment:', updateError);
+        setError('Failed to update comment. Please try again.');
+        return;
+      }
+
+      setEditingComment(null);
+      router.refresh();
+    } catch (err) {
+      console.error('Error updating comment:', err);
+      setError('Failed to update comment. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCommentDelete = async (commentId: string) => {
+    if (!window.confirm('Are you sure you want to delete this comment?')) {
+      return;
+    }
+
+    setError(null);
+    try {
+      const { error: deleteError } = await supabase
+        .from('task_comments')
+        .delete()
+        .eq('id', commentId)
+        .eq('user_id', currentUserId);
+
+      if (deleteError) {
+        console.error('Error deleting comment:', deleteError);
+        setError('Failed to delete comment. Please try again.');
+        return;
+      }
+
+      router.refresh();
+    } catch (err) {
+      console.error('Error deleting comment:', err);
+      setError('Failed to delete comment. Please try again.');
+    }
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg">
+      <div className="px-5 py-4">
+        <h2 className="font-semibold text-slate-800 dark:text-slate-100 mb-4">
+          Comments
+        </h2>
+
+        {/* Comment List */}
+        <div className="space-y-4 mb-6">
+          {error && (
+            <div className="rounded-lg bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          {task.comments.map((comment) => (
+            <div
+              key={comment.id}
+              className="flex space-x-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"
+            >
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-coop-600 flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {comment.user?.full_name?.charAt(0).toUpperCase() ||
+                      comment.user?.email?.charAt(0).toUpperCase() ||
+                      '?'}
+                  </span>
+                </div>
+              </div>
+              <div className="flex-grow">
+                {editingComment === comment.id ? (
+                  <form
+                    onSubmit={(e) => handleCommentUpdate(comment.id, e)}
+                    className="space-y-2"
+                  >
+                    <textarea
+                      name="content"
+                      defaultValue={comment.content}
+                      required
+                      rows={2}
+                      className="block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100"
+                    />
+                    <div className="flex justify-end space-x-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setEditingComment(null)}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        Save
+                      </Button>
+                    </div>
+                  </form>
+                ) : (
+                  <>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-1">
+                      <div className="text-sm font-medium text-slate-800 dark:text-slate-100">
+                        {comment.user?.full_name ||
+                          comment.user?.email ||
+                          'Unknown User'}
+                      </div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">
+                        {format(
+                          new Date(comment.created_at),
+                          'MMM d, yyyy h:mm a'
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+                      {comment.content}
+                    </div>
+                    {currentUserId === comment.user_id && (
+                      <div className="mt-2 flex space-x-2">
+                        <button
+                          onClick={() => setEditingComment(comment.id)}
+                          className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleCommentDelete(comment.id)}
+                          className="text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
+          ))}
+          {task.comments.length === 0 && (
+            <div className="text-sm text-slate-500 dark:text-slate-400 text-center py-4">
+              No comments yet
+            </div>
+          )}
+        </div>
+
+        {/* Comment Form */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="content" className="sr-only">
+              Add a comment
+            </label>
+            <textarea
+              name="content"
+              id="content"
+              rows={3}
+              required
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              placeholder="Add a comment..."
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? 'Adding...' : 'Add Comment'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/page.tsx
+================================================================================
+
+// app/(default)/tasks/[id]/page.tsx
+
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import supabaseAdmin from '@/lib/supabaseAdmin';
+import { TaskWithDetails } from '@/types/tasks';
+import TaskHeader from './task-header';
+import TaskDetails from './task-details';
+import CommentSection from './comment-section';
+
+export const metadata: Metadata = {
+  title: 'Task Details - Co-op Management',
+  description: 'View and manage task details',
+};
+
+// Force dynamic rendering to ensure fresh data
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getTask(id: string) {
+  try {
+    const { data: task, error } = await supabaseAdmin
+      .from('tasks')
+      .select(
+        `
+        *,
+        created_by_user:profiles!tasks_created_by_fkey(email, full_name),
+        assigned_to_user:profiles!tasks_assigned_to_fkey(email, full_name),
+        comments:task_comments(
+          *,
+          user:profiles!task_comments_created_by_fkey(
+            email,
+            full_name
+          )
+        )
+      `
+      )
+      .eq('id', id)
+      .order('created_at', { foreignTable: 'task_comments', ascending: true })
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
+
+    return task as TaskWithDetails;
+  } catch (err) {
+    console.error('Error fetching task:', err);
+    return null;
+  }
+}
+
+interface TaskDetailPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function TaskDetailPage({ params }: TaskDetailPageProps) {
+  const task = await getTask(params.id);
+
+  if (!task) {
+    notFound();
+  }
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      <TaskHeader task={task} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+        {/* Left column - Task details and comments */}
+        <div className="xl:col-span-2 space-y-6">
+          <TaskDetails task={task} />
+          <CommentSection task={task} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/task-actions.tsx
+================================================================================
+
+// app/(default)/tasks/[id]/task-actions.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { TaskWithDetails } from '@/types/tasks';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Edit, Trash2 } from 'lucide-react';
+
+interface TaskActionsProps {
+  task: TaskWithDetails;
+}
+
+export default function TaskActions({ task }: TaskActionsProps) {
+  const router = useRouter();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const formData = new FormData(e.currentTarget);
+
+      // Update task
+      const { error: updateError } = await supabase
+        .from('tasks')
+        .update({
+          title: formData.get('title'),
+          description: formData.get('description'),
+          category: formData.get('category'),
+          status: formData.get('status'),
+          priority: formData.get('priority'),
+          assigned_to: formData.get('assigned_to') || null,
+        })
+        .eq('id', task.id);
+
+      if (updateError) throw updateError;
+
+      setIsEditDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error updating task:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to update task'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this task? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      // Delete task (comments will be cascade deleted)
+      const { error: deleteError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', task.id);
+
+      if (deleteError) throw deleteError;
+
+      router.push('/tasks');
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      {/* Edit Button */}
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => setIsEditDialogOpen(true)}
+        disabled={isSubmitting || isDeleting}
+      >
+        <Edit className="h-4 w-4 mr-1" />
+        Edit Task
+      </Button>
+
+      {/* Delete Button */}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete Task
+      </Button>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Task</DialogTitle>
+          </DialogHeader>
+
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          <form onSubmit={handleEdit} className="space-y-4">
+            <div>
+              <Label htmlFor="title">Title</Label>
+              <Input
+                id="title"
+                name="title"
+                required
+                defaultValue={task.title}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                required
+                defaultValue={task.description}
+                className="min-h-[100px]"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="category">Task Type</Label>
+              <select
+                id="category"
+                name="category"
+                required
+                defaultValue={task.category}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="general">General Task</option>
+                <option value="minuted">Minuted Action</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <select
+                id="priority"
+                name="priority"
+                required
+                defaultValue={task.priority}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                name="status"
+                required
+                defaultValue={task.status}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+              </select>
+            </div>
+
+            <div>
+              <Label htmlFor="assigned_to">Assign To</Label>
+              <Input
+                id="assigned_to"
+                name="assigned_to"
+                placeholder="Enter user ID (optional)"
+                defaultValue={task.assigned_to || ''}
+              />
+            </div>
+
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/task-details.tsx
+================================================================================
+
+// app/(default)/tasks/[id]/task-details.tsx
+
+'use client';
+
+import { format } from 'date-fns';
+import { TaskWithDetails } from '@/types/tasks';
+
+interface TaskDetailsProps {
+  task: TaskWithDetails;
+}
+
+export default function TaskDetails({ task }: TaskDetailsProps) {
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+      <div className="px-5 py-4">
+        <div className="mb-4">
+          <h2 className="font-semibold text-slate-800 dark:text-slate-100">
+            Task Details
+          </h2>
+        </div>
+
+        <div className="space-y-4">
+          {/* Description */}
+          <div>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+              Description
+            </h3>
+            <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap">
+              {task.description}
+            </div>
+          </div>
+
+          {/* Assigned To */}
+          <div>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+              Assigned To
+            </h3>
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              {task.assigned_to_user?.full_name ||
+                task.assigned_to_user?.email ||
+                '-'}
+            </div>
+          </div>
+
+          {/* Priority */}
+          <div>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+              Priority
+            </h3>
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+            </div>
+          </div>
+
+          {/* Due Date */}
+          {task.due_date && (
+            <div>
+              <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+                Due Date
+              </h3>
+              <div className="text-sm text-slate-500 dark:text-slate-400">
+                {format(new Date(task.due_date), 'MMM d, yyyy')}
+              </div>
+            </div>
+          )}
+
+          {/* Created At */}
+          <div>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+              Created
+            </h3>
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              {format(new Date(task.created_at), 'MMM d, yyyy h:mm a')}
+            </div>
+          </div>
+
+          {/* Last Updated */}
+          <div>
+            <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
+              Last Updated
+            </h3>
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              {format(new Date(task.updated_at), 'MMM d, yyyy h:mm a')}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/task-header.tsx
+================================================================================
+
+// app/(default)/tasks/[id]/task-header.tsx
+
+'use client';
+
+import Link from 'next/link';
+import { TaskWithDetails } from '@/types/tasks';
+import TaskActions from './task-actions';
+
+interface TaskHeaderProps {
+  task: TaskWithDetails;
+}
+
+export default function TaskHeader({ task }: TaskHeaderProps) {
+  const getStatusColor = (status: string) => {
+    const colors = {
+      pending: 'text-yellow-600 dark:text-yellow-400',
+      in_progress: 'text-blue-600 dark:text-blue-400',
+      completed: 'text-green-600 dark:text-green-400',
+      cancelled: 'text-slate-600 dark:text-slate-400',
+    };
+    return colors[status as keyof typeof colors] || colors.pending;
+  };
+
+  const getPriorityColor = (priority: string) => {
+    const colors = {
+      low: 'text-slate-600 dark:text-slate-400',
+      medium: 'text-blue-600 dark:text-blue-400',
+      high: 'text-orange-600 dark:text-orange-400',
+      urgent: 'text-red-600 dark:text-red-400',
+    };
+    return colors[priority as keyof typeof colors] || colors.medium;
+  };
+
+  return (
+    <div className="mb-8">
+      {/* Back button */}
+      <div className="mb-4">
+        <Link
+          href="/tasks"
+          className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
+        >
+          ← Back to Tasks
+        </Link>
+      </div>
+
+      <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
+        {/* Left: Title */}
+        <div>
+          <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
+            {task.title}
+          </h1>
+          <div className="text-sm">
+            <span className="text-slate-500 dark:text-slate-400">
+              Type:{' '}
+              {task.category === 'minuted' ? 'Minuted Action' : 'General Task'}
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Status, Priority and Actions */}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-4">
+            <div
+              className={`inline-flex font-medium ${getStatusColor(
+                task.status
+              )}`}
+            >
+              {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+            </div>
+            <div
+              className={`inline-flex font-medium ${getPriorityColor(
+                task.priority
+              )}`}
+            >
+              {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+            </div>
+          </div>
+          <TaskActions task={task} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+| table_schema | table_name           | column_name        | data_type                | is_nullable | column_default               |
+| ------------ | -------------------- | ------------------ | ------------------------ | ----------- | ---------------------------- |
+| public       | calendar_events      | id                 | uuid                     | NO          | uuid_generate_v4()           |
+| public       | calendar_events      | title              | text                     | NO          |                              |
+| public       | calendar_events      | description        | text                     | YES         |                              |
+| public       | calendar_events      | start_time         | timestamp with time zone | NO          |                              |
+| public       | calendar_events      | end_time           | timestamp with time zone | NO          |                              |
+| public       | calendar_events      | event_type         | text                     | NO          |                              |
+| public       | calendar_events      | reference_id       | uuid                     | YES         |                              |
+| public       | calendar_events      | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | calendar_events      | updated_at         | timestamp with time zone | YES         | now()                        |
+| public       | calendar_events      | created_by         | uuid                     | YES         |                              |
+| public       | calendar_events      | last_modified_by   | uuid                     | YES         |                              |
+| public       | calendar_events      | category           | character varying        | YES         |                              |
+| public       | calendar_events      | full_name          | text                     | YES         |                              |
+| public       | garden_areas         | id                 | uuid                     | NO          | uuid_generate_v4()           |
+| public       | garden_areas         | name               | text                     | NO          |                              |
+| public       | garden_areas         | description        | text                     | YES         |                              |
+| public       | garden_areas         | status             | text                     | NO          | 'active'::text               |
+| public       | garden_areas         | created_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_areas         | updated_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_areas         | display_order      | integer                  | YES         |                              |
+| public       | garden_comments      | id                 | uuid                     | NO          | uuid_generate_v4()           |
+| public       | garden_comments      | task_id            | uuid                     | YES         |                              |
+| public       | garden_comments      | user_id            | uuid                     | YES         |                              |
+| public       | garden_comments      | comment            | text                     | NO          |                              |
+| public       | garden_comments      | created_at         | timestamp with time zone | NO          | now()                        |
+| public       | garden_plants        | id                 | uuid                     | NO          | uuid_generate_v4()           |
+| public       | garden_plants        | name               | text                     | NO          |                              |
+| public       | garden_plants        | type               | text                     | NO          |                              |
+| public       | garden_plants        | area_id            | uuid                     | YES         |                              |
+| public       | garden_plants        | planting_date      | timestamp with time zone | YES         |                              |
+| public       | garden_plants        | notes              | text                     | YES         |                              |
+| public       | garden_plants        | status             | text                     | NO          | 'alive'::text                |
+| public       | garden_plants        | created_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_plants        | updated_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_tasks         | id                 | uuid                     | NO          | uuid_generate_v4()           |
+| public       | garden_tasks         | title              | text                     | NO          |                              |
+| public       | garden_tasks         | description        | text                     | NO          |                              |
+| public       | garden_tasks         | status             | text                     | NO          | 'pending'::text              |
+| public       | garden_tasks         | priority           | text                     | NO          | 'medium'::text               |
+| public       | garden_tasks         | area_id            | uuid                     | YES         |                              |
+| public       | garden_tasks         | assigned_to        | text                     | YES         | 'Everyone '::text            |
+| public       | garden_tasks         | due_date           | timestamp with time zone | YES         |                              |
+| public       | garden_tasks         | created_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_tasks         | updated_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | garden_tasks         | scheduled_time     | time without time zone   | YES         |                              |
+| public       | garden_tasks         | duration           | interval                 | YES         |                              |
+| public       | houses               | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | houses               | name               | text                     | NO          |                              |
+| public       | houses               | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | houses               | updated_at         | timestamp with time zone | YES         | now()                        |
+| public       | maintenance_comments | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | maintenance_comments | request_id         | uuid                     | YES         |                              |
+| public       | maintenance_comments | user_id            | uuid                     | YES         |                              |
+| public       | maintenance_comments | comment            | text                     | NO          |                              |
+| public       | maintenance_comments | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | maintenance_requests | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | maintenance_requests | title              | text                     | NO          |                              |
+| public       | maintenance_requests | description        | text                     | NO          |                              |
+| public       | maintenance_requests | status             | text                     | NO          | 'pending'::text              |
+| public       | maintenance_requests | priority           | text                     | NO          | 'medium'::text               |
+| public       | maintenance_requests | house_id           | uuid                     | YES         |                              |
+| public       | maintenance_requests | reported_by        | uuid                     | YES         |                              |
+| public       | maintenance_requests | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | maintenance_requests | updated_at         | timestamp with time zone | YES         | now()                        |
+| public       | maintenance_visits   | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | maintenance_visits   | request_id         | uuid                     | YES         |                              |
+| public       | maintenance_visits   | scheduled_date     | timestamp with time zone | NO          |                              |
+| public       | maintenance_visits   | estimated_duration | text                     | YES         |                              |
+| public       | maintenance_visits   | access_person_id   | uuid                     | YES         |                              |
+| public       | maintenance_visits   | notes              | text                     | YES         |                              |
+| public       | maintenance_visits   | completed_at       | timestamp with time zone | YES         |                              |
+| public       | maintenance_visits   | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | maintenance_visits   | updated_at         | timestamp with time zone | YES         | now()                        |
+| public       | profiles             | id                 | uuid                     | NO          |                              |
+| public       | profiles             | email              | text                     | NO          |                              |
+| public       | profiles             | full_name          | text                     | YES         |                              |
+| public       | profiles             | house_number       | text                     | YES         |                              |
+| public       | profiles             | created_at         | timestamp with time zone | YES         | now()                        |
+| public       | profiles             | updated_at         | timestamp with time zone | YES         | now()                        |
+| public       | task_comments        | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | task_comments        | task_id            | uuid                     | YES         |                              |
+| public       | task_comments        | content            | text                     | NO          |                              |
+| public       | task_comments        | created_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | task_comments        | updated_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | task_comments        | created_by         | uuid                     | YES         |                              |
+| public       | tasks                | id                 | uuid                     | NO          | gen_random_uuid()            |
+| public       | tasks                | title              | text                     | NO          |                              |
+| public       | tasks                | description        | text                     | YES         |                              |
+| public       | tasks                | status             | text                     | NO          | 'todo'::text                 |
+| public       | tasks                | task_type          | text                     | NO          | 'general'::text              |
+| public       | tasks                | created_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | tasks                | updated_at         | timestamp with time zone | NO          | timezone('utc'::text, now()) |
+| public       | tasks                | created_by         | uuid                     | YES         |                              |
+| public       | tasks                | assigned_to        | uuid                     | YES         |                              |
+
+
+
+| constraint_name                          | source_table         | source_column    | target_table         | target_column |
+| ---------------------------------------- | -------------------- | ---------------- | -------------------- | ------------- |
+| calendar_events_created_by_fkey          | calendar_events      | created_by       | profiles             | id            |
+| calendar_events_last_modified_by_fkey    | calendar_events      | last_modified_by | profiles             | id            |
+| garden_comments_task_id_fkey             | garden_comments      | task_id          | garden_tasks         | id            |
+| garden_comments_user_id_fkey             | garden_comments      | user_id          | profiles             | id            |
+| garden_plants_area_id_fkey               | garden_plants        | area_id          | garden_areas         | id            |
+| garden_tasks_area_id_fkey                | garden_tasks         | area_id          | garden_areas         | id            |
+| maintenance_comments_request_id_fkey     | maintenance_comments | request_id       | maintenance_requests | id            |
+| maintenance_comments_user_id_fkey        | maintenance_comments | user_id          | profiles             | id            |
+| maintenance_requests_house_id_fkey       | maintenance_requests | house_id         | houses               | id            |
+| maintenance_requests_reported_by_fkey    | maintenance_requests | reported_by      | profiles             | id            |
+| maintenance_visits_access_person_id_fkey | maintenance_visits   | access_person_id | profiles             | id            |
+| maintenance_visits_request_id_fkey       | maintenance_visits   | request_id       | maintenance_requests | id            |
+| task_comments_created_by_fkey            | task_comments        | created_by       | profiles             | id            |
+| task_comments_task_id_fkey               | task_comments        | task_id          | tasks                | id            |
+| tasks_assigned_to_fkey                   | tasks                | assigned_to      | profiles             | id            |
+| tasks_created_by_fkey                    | tasks                | created_by       | profiles             | id            |
+
+
+
+here's my tree, for context:
+
+.
+├── app
+│   ├── (alternative)
+│   │   ├── components-library
+│   │   │   ├── accordion
+│   │   │   │   └── page.tsx
+│   │   │   ├── alert
+│   │   │   │   ├── banners-01.tsx
+│   │   │   │   ├── banners-02.tsx
+│   │   │   │   ├── notifications.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── toasts-01.tsx
+│   │   │   │   ├── toasts-02.tsx
+│   │   │   │   └── toasts-03.tsx
+│   │   │   ├── avatar
+│   │   │   │   └── page.tsx
+│   │   │   ├── badge
+│   │   │   │   └── page.tsx
+│   │   │   ├── breadcrumb
+│   │   │   │   └── page.tsx
+│   │   │   ├── button
+│   │   │   │   └── page.tsx
+│   │   │   ├── dropdown
+│   │   │   │   └── page.tsx
+│   │   │   ├── form
+│   │   │   │   ├── form-switches.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── icons
+│   │   │   │   └── page.tsx
+│   │   │   ├── modal
+│   │   │   │   ├── basic-examples.tsx
+│   │   │   │   ├── feedback-examples.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── product-examples.tsx
+│   │   │   ├── pagination
+│   │   │   │   └── page.tsx
+│   │   │   ├── tabs
+│   │   │   │   └── page.tsx
+│   │   │   └── tooltip
+│   │   │       └── page.tsx
+│   │   ├── finance
+│   │   │   ├── cards
+│   │   │   │   └── page.tsx
+│   │   │   └── transactions
+│   │   │       ├── page.tsx
+│   │   │       ├── transaction-context.tsx
+│   │   │       ├── transaction-dropdown.tsx
+│   │   │       ├── transaction-panel.tsx
+│   │   │       ├── transactions-properties.tsx
+│   │   │       ├── transactions-table-item.tsx
+│   │   │       └── transactions-table.tsx
+│   │   ├── layout.tsx
+│   │   └── utility
+│   │       ├── 404
+│   │       │   └── page.tsx
+│   │       ├── changelog
+│   │       │   └── page.tsx
+│   │       ├── empty-state
+│   │       │   └── page.tsx
+│   │       ├── faqs
+│   │       │   └── page.tsx
+│   │       └── roadmap
+│   │           └── page.tsx
+│   ├── api
+│   │   └── hello
+│   │       └── route.ts
+│   ├── app-provider.tsx
+│   ├── (auth)
+│   │   ├── auth-header.tsx
+│   │   ├── auth-image.tsx
+│   │   ├── login
+│   │   │   ├── login-form.tsx
+│   │   │   └── page.tsx
+│   │   ├── reset-password
+│   │   │   └── page.tsx
+│   │   ├── signin
+│   │   │   └── page.tsx
+│   │   └── signup
+│   │       └── page.tsx
+│   ├── css
+│   │   ├── additional-styles
+│   │   │   ├── flatpickr.css
+│   │   │   └── utility-patterns.css
+│   │   └── style.css
+│   ├── (default)
+│   │   ├── calendar
+│   │   │   ├── calendar-context.tsx
+│   │   │   ├── calendar-legend.tsx
+│   │   │   ├── calendar-navigation.tsx
+│   │   │   ├── calendar-properties.tsx
+│   │   │   ├── calendar-table.tsx
+│   │   │   ├── calendar.tsx
+│   │   │   ├── event-modal.tsx
+│   │   │   ├── new-event-modal.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── title.tsx
+│   │   ├── campaigns
+│   │   │   ├── campaign-card.tsx
+│   │   │   ├── campaigns-properties.tsx
+│   │   │   └── page.tsx
+│   │   ├── community
+│   │   │   ├── feed
+│   │   │   │   ├── feed-left-content.tsx
+│   │   │   │   ├── feed-posts.tsx
+│   │   │   │   ├── feed-right-content.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── forum
+│   │   │   │   ├── forum-entries.tsx
+│   │   │   │   ├── forum-left-content.tsx
+│   │   │   │   ├── forum-right-content.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── post
+│   │   │   ├── meetups
+│   │   │   │   ├── meetups-posts.tsx
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── post
+│   │   │   ├── tab-card.tsx
+│   │   │   ├── tile-card.tsx
+│   │   │   ├── users-tabs
+│   │   │   │   └── page.tsx
+│   │   │   └── users-tiles
+│   │   │       └── page.tsx
+│   │   ├── components
+│   │   │   └── dropdown-profile.tsx
+│   │   ├── dashboard
+│   │   │   ├── analytics
+│   │   │   │   ├── analytics-card-01.tsx
+│   │   │   │   ├── analytics-card-02.tsx
+│   │   │   │   ├── analytics-card-03.tsx
+│   │   │   │   ├── analytics-card-04.tsx
+│   │   │   │   ├── analytics-card-05.tsx
+│   │   │   │   ├── analytics-card-06.tsx
+│   │   │   │   ├── analytics-card-07.tsx
+│   │   │   │   ├── analytics-card-08.tsx
+│   │   │   │   ├── analytics-card-09.tsx
+│   │   │   │   ├── analytics-card-10.tsx
+│   │   │   │   ├── analytics-card-11.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── dashboard-card-01.tsx
+│   │   │   ├── dashboard-card-02.tsx
+│   │   │   ├── dashboard-card-03.tsx
+│   │   │   ├── dashboard-card-04.tsx
+│   │   │   ├── dashboard-card-05.tsx
+│   │   │   ├── dashboard-card-06.tsx
+│   │   │   ├── dashboard-card-07.tsx
+│   │   │   ├── dashboard-card-08.tsx
+│   │   │   ├── dashboard-card-09.tsx
+│   │   │   ├── dashboard-card-10.tsx
+│   │   │   ├── dashboard-card-11.tsx
+│   │   │   ├── fintech
+│   │   │   │   ├── fintech-card-01.tsx
+│   │   │   │   ├── fintech-card-02.tsx
+│   │   │   │   ├── fintech-card-03.tsx
+│   │   │   │   ├── fintech-card-04.tsx
+│   │   │   │   ├── fintech-card-05.tsx
+│   │   │   │   ├── fintech-card-06.tsx
+│   │   │   │   ├── fintech-card-07.tsx
+│   │   │   │   ├── fintech-card-08.tsx
+│   │   │   │   ├── fintech-card-09.tsx
+│   │   │   │   ├── fintech-card-10.tsx
+│   │   │   │   ├── fintech-card-11.tsx
+│   │   │   │   ├── fintech-card-12.tsx
+│   │   │   │   ├── fintech-card-13.tsx
+│   │   │   │   ├── fintech-card-14.tsx
+│   │   │   │   ├── fintech-intro.tsx
+│   │   │   │   └── page.tsx
+│   │   │   └── page.tsx
+│   │   ├── ecommerce
+│   │   │   ├── (cart)
+│   │   │   │   ├── cart
+│   │   │   │   ├── cart-2
+│   │   │   │   ├── cart-3
+│   │   │   │   └── cart-items.tsx
+│   │   │   ├── customers
+│   │   │   │   ├── customers-table-item.tsx
+│   │   │   │   ├── customers-table.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── invoices
+│   │   │   │   ├── invoices-properties.tsx
+│   │   │   │   ├── invoices-table-item.tsx
+│   │   │   │   ├── invoices-table.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── orders
+│   │   │   │   ├── orders-properties.tsx
+│   │   │   │   ├── orders-table-item.tsx
+│   │   │   │   ├── orders-table.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── product
+│   │   │   │   └── page.tsx
+│   │   │   └── (shop)
+│   │   │       ├── shop
+│   │   │       ├── shop-2
+│   │   │       ├── shop-cards-01.tsx
+│   │   │       ├── shop-cards-02.tsx
+│   │   │       ├── shop-cards-03.tsx
+│   │   │       ├── shop-cards-04.tsx
+│   │   │       ├── shop-cards-05.tsx
+│   │   │       ├── shop-cards-06.tsx
+│   │   │       ├── shop-cards-07.tsx
+│   │   │       └── shop-sidebar.tsx
+│   │   ├── garden
+│   │   │   ├── garden-area-list.tsx
+│   │   │   ├── garden-header.tsx
+│   │   │   ├── new-garden-task-modal.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── task
+│   │   │       └── [id]
+│   │   ├── jobs
+│   │   │   ├── company
+│   │   │   │   └── page.tsx
+│   │   │   ├── jobs-item.tsx
+│   │   │   ├── jobs-sidebar.tsx
+│   │   │   ├── page.tsx
+│   │   │   ├── post
+│   │   │   │   └── page.tsx
+│   │   │   └── sort-dropdown.tsx
+│   │   ├── layout.tsx
+│   │   ├── maintenance
+│   │   │   ├── [id]
+│   │   │   │   ├── comment-section.tsx
+│   │   │   │   ├── edit
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── request-details.tsx
+│   │   │   │   ├── request-header.tsx
+│   │   │   │   └── visit-scheduler.tsx
+│   │   │   ├── maintenance-header.tsx
+│   │   │   ├── maintenance-list.tsx
+│   │   │   ├── new-request-modal.tsx
+│   │   │   └── page.tsx
+│   │   ├── rents
+│   │   │   └── page.tsx
+│   │   ├── settings
+│   │   │   ├── account
+│   │   │   │   ├── account-panel.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── apps
+│   │   │   │   ├── apps-panel.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── billing
+│   │   │   │   ├── billing-panel.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── feedback
+│   │   │   │   ├── feedback-panel.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── notifications
+│   │   │   │   ├── notifications-panel.tsx
+│   │   │   │   └── page.tsx
+│   │   │   ├── plans
+│   │   │   │   ├── page.tsx
+│   │   │   │   └── plans-panel.tsx
+│   │   │   └── settings-sidebar.tsx
+│   │   └── tasks
+│   │       ├── [id]
+│   │       │   ├── comment-section.tsx
+│   │       │   ├── page.tsx
+│   │       │   ├── task-actions.tsx
+│   │       │   ├── task-details.tsx
+│   │       │   └── task-header.tsx
+│   │       ├── new-task-modal.tsx
+│   │       ├── page.tsx
+│   │       ├── task-header.tsx
+│   │       └── task-list.tsx
+│   ├── (double-sidebar)
+│   │   ├── community
+│   │   │   └── profile
+│   │   │       ├── page.tsx
+│   │   │       ├── profile-body.tsx
+│   │   │       └── profile-sidebar.tsx
+│   │   ├── inbox
+│   │   │   ├── inbox-body.tsx
+│   │   │   ├── inbox-sidebar.tsx
+│   │   │   ├── mail-item.tsx
+│   │   │   └── page.tsx
+│   │   ├── layout.tsx
+│   │   └── messages
+│   │       ├── channels.tsx
+│   │       ├── direct-messages.tsx
+│   │       ├── messages-body.tsx
+│   │       ├── messages-chat.tsx
+│   │       ├── messages-footer.tsx
+│   │       ├── messages-header.tsx
+│   │       ├── messages-sidebar.tsx
+│   │       └── page.tsx
+│   ├── flyout-context.tsx
+│   ├── layout.tsx
+│   ├── not-found.tsx
+│   ├── (onboarding)
+│   │   ├── onboarding-01
+│   │   │   └── page.tsx
+│   │   ├── onboarding-02
+│   │   │   └── page.tsx
+│   │   ├── onboarding-03
+│   │   │   └── page.tsx
+│   │   ├── onboarding-04
+│   │   │   └── page.tsx
+│   │   ├── onboarding-header.tsx
+│   │   ├── onboarding-image.tsx
+│   │   └── onboarding-progress.tsx
+│   ├── page.tsx
+│   ├── (pay)
+│   │   └── ecommerce
+│   │       └── pay
+│   │           ├── page.tsx
+│   │           └── pay-form.tsx
+│   ├── selected-items-context.tsx
+│   └── theme-provider.tsx
+├── CHANGELOG.md
+├── components
+│   ├── accordion-basic.tsx
+│   ├── accordion-table-item.tsx
+│   ├── accordion-table-rich-item.tsx
+│   ├── banner-02.tsx
+│   ├── banner.tsx
+│   ├── channel-menu.tsx
+│   ├── charts
+│   │   ├── bar-chart-01.tsx
+│   │   ├── bar-chart-02.tsx
+│   │   ├── bar-chart-03.tsx
+│   │   ├── bar-chart-04.tsx
+│   │   ├── bar-chart-05.tsx
+│   │   ├── bar-chart-06.tsx
+│   │   ├── chartjs-config.tsx
+│   │   ├── doughnut-chart.tsx
+│   │   ├── line-chart-01.tsx
+│   │   ├── line-chart-02.tsx
+│   │   ├── line-chart-03.tsx
+│   │   ├── line-chart-04.tsx
+│   │   ├── line-chart-05.tsx
+│   │   ├── line-chart-06.tsx
+│   │   ├── line-chart-07.tsx
+│   │   ├── line-chart-08.tsx
+│   │   ├── line-chart-09.tsx
+│   │   ├── pie-chart.tsx
+│   │   ├── polar-chart.tsx
+│   │   └── realtime-chart.tsx
+│   ├── datepicker.tsx
+│   ├── date-select.tsx
+│   ├── delete-button.tsx
+│   ├── dropdown-filter.tsx
+│   ├── dropdown-full.tsx
+│   ├── dropdown-help.tsx
+│   ├── dropdown-notifications.tsx
+│   ├── dropdown-profile.tsx
+│   ├── dropdown-switch.tsx
+│   ├── edit-menu-card.tsx
+│   ├── edit-menu.tsx
+│   ├── modal-action.tsx
+│   ├── modal-basic.tsx
+│   ├── modal-blank.tsx
+│   ├── modal-cookies.tsx
+│   ├── notification.tsx
+│   ├── pagination-classic.tsx
+│   ├── pagination-numeric-2.tsx
+│   ├── pagination-numeric.tsx
+│   ├── search-form.tsx
+│   ├── search-modal.tsx
+│   ├── theme-toggle.tsx
+│   ├── toast-02.tsx
+│   ├── toast-03.tsx
+│   ├── toast.tsx
+│   ├── tooltip.tsx
+│   ├── ui
+│   │   ├── avatar.tsx
+│   │   ├── badge.tsx
+│   │   ├── button.tsx
+│   │   ├── card.tsx
+│   │   ├── dialog.tsx
+│   │   ├── dropdown-menu.tsx
+│   │   ├── dropdown-profile.tsx
+│   │   ├── header.tsx
+│   │   ├── input.tsx
+│   │   ├── label.tsx
+│   │   ├── logo.tsx
+│   │   ├── logout-button.tsx
+│   │   ├── select.tsx
+│   │   ├── sidebar-link-group.tsx
+│   │   ├── sidebar-link.tsx
+│   │   ├── sidebar.tsx
+│   │   ├── table.tsx
+│   │   ├── tabs.tsx
+│   │   ├── textarea.tsx
+│   │   └── use-toast.ts
+│   └── utils
+│       ├── use-item-selection.tsx
+│       └── utils.ts
+├── contexts
+│   └── auth-context.tsx
+├── file.txt
+├── handbook.md
+├── lib
+│   ├── actions
+│   │   └── calendar.ts
+│   ├── actions.ts
+│   ├── stores
+│   │   └── calendar-store.ts
+│   ├── supabaseAdmin.ts
+│   ├── supabase.ts
+│   └── utils.ts
+├── middleware.ts
+├── next.config.js
+├── next-env.d.ts
+├── package.json
+├── package-lock.json
+├── postcss.config.js
+├── public
+│   ├── favicon.ico
+│   ├── fonts
+│   └── images
+│       ├── 404-illustration-dark.svg
+│       ├── 404-illustration.svg
+│       ├── announcement-icon.svg
+│       ├── applications-image-01.jpg
+│       ├── applications-image-02.jpg
+│       ├── applications-image-03.jpg
+│       ├── applications-image-04.jpg
+│       ├── applications-image-05.jpg
+│       ├── applications-image-06.jpg
+│       ├── applications-image-07.jpg
+│       ├── applications-image-08.jpg
+│       ├── applications-image-09.jpg
+│       ├── applications-image-10.jpg
+│       ├── applications-image-11.jpg
+│       ├── applications-image-12.jpg
+│       ├── applications-image-13.jpg
+│       ├── applications-image-14.jpg
+│       ├── applications-image-15.jpg
+│       ├── applications-image-16.jpg
+│       ├── applications-image-17.jpg
+│       ├── applications-image-18.jpg
+│       ├── applications-image-19.jpg
+│       ├── applications-image-20.jpg
+│       ├── applications-image-21.jpg
+│       ├── applications-image-22.jpg
+│       ├── applications-image-23.jpg
+│       ├── applications-image-24.jpg
+│       ├── applications-image-25.jpg
+│       ├── applications-image-26.jpg
+│       ├── applications-image-27.jpg
+│       ├── applications-image-28.jpg
+│       ├── applications-image-29.jpg
+│       ├── applications-image-30.jpg
+│       ├── applications-image-31.jpg
+│       ├── applications-image-32.jpg
+│       ├── auth-image.jpg
+│       ├── avatar-01.jpg
+│       ├── avatar-02.jpg
+│       ├── avatar-03.jpg
+│       ├── avatar-04.jpg
+│       ├── avatar-05.jpg
+│       ├── avatar-06.jpg
+│       ├── channel-01.png
+│       ├── channel-02.png
+│       ├── channel-03.png
+│       ├── chat-image.jpg
+│       ├── company-bg.jpg
+│       ├── company-icon-01.svg
+│       ├── company-icon-02.svg
+│       ├── company-icon-03.svg
+│       ├── company-icon-04.svg
+│       ├── company-icon-05.svg
+│       ├── company-icon-06.svg
+│       ├── company-icon-07.svg
+│       ├── company-icon-08.svg
+│       ├── favicon.png
+│       ├── feed-image-01.jpg
+│       ├── feed-image-02.jpg
+│       ├── group-avatar-01.png
+│       ├── group-avatar-02.png
+│       ├── group-avatar-03.png
+│       ├── group-avatar-04.png
+│       ├── icon-01.svg
+│       ├── icon-02.svg
+│       ├── icon-03.svg
+│       ├── inbox-image.jpg
+│       ├── meetup-image.jpg
+│       ├── meetup-photo-01.jpg
+│       ├── meetup-photo-02.jpg
+│       ├── meetup-photo-03.jpg
+│       ├── meetups-thumb-01.jpg
+│       ├── meetups-thumb-02.jpg
+│       ├── meetups-thumb-03.jpg
+│       ├── meetups-thumb-04.jpg
+│       ├── meetups-thumb-05.jpg
+│       ├── meetups-thumb-06.jpg
+│       ├── meetups-thumb-07.jpg
+│       ├── meetups-thumb-08.jpg
+│       ├── modal-image.jpg
+│       ├── onboarding-image.jpg
+│       ├── pay-bg.jpg
+│       ├── product-image.jpg
+│       ├── profile-bg.jpg
+│       ├── related-product-01.jpg
+│       ├── related-product-02.jpg
+│       ├── related-product-03.jpg
+│       ├── shop-category-01.png
+│       ├── shop-category-02.png
+│       ├── shop-category-03.png
+│       ├── shop-category-04.png
+│       ├── task-image-01.jpg
+│       ├── task-image-02.jpg
+│       ├── transactions-image-01.svg
+│       ├── transactions-image-02.svg
+│       ├── transactions-image-03.svg
+│       ├── transactions-image-04.svg
+│       ├── transactions-image-05.svg
+│       ├── transactions-image-06.svg
+│       ├── transactions-image-07.svg
+│       ├── transactions-image-08.svg
+│       ├── user-128-01.jpg
+│       ├── user-28-01.jpg
+│       ├── user-28-02.jpg
+│       ├── user-28-03.jpg
+│       ├── user-28-04.jpg
+│       ├── user-28-05.jpg
+│       ├── user-28-06.jpg
+│       ├── user-28-07.jpg
+│       ├── user-28-08.jpg
+│       ├── user-28-09.jpg
+│       ├── user-28-10.jpg
+│       ├── user-28-11.jpg
+│       ├── user-28-12.jpg
+│       ├── user-32-01.jpg
+│       ├── user-32-02.jpg
+│       ├── user-32-03.jpg
+│       ├── user-32-04.jpg
+│       ├── user-32-05.jpg
+│       ├── user-32-06.jpg
+│       ├── user-32-07.jpg
+│       ├── user-32-08.jpg
+│       ├── user-36-05.jpg
+│       ├── user-40-01.jpg
+│       ├── user-40-02.jpg
+│       ├── user-40-03.jpg
+│       ├── user-40-04.jpg
+│       ├── user-40-05.jpg
+│       ├── user-40-06.jpg
+│       ├── user-40-07.jpg
+│       ├── user-40-08.jpg
+│       ├── user-40-09.jpg
+│       ├── user-40-10.jpg
+│       ├── user-40-11.jpg
+│       ├── user-40-12.jpg
+│       ├── user-64-01.jpg
+│       ├── user-64-02.jpg
+│       ├── user-64-03.jpg
+│       ├── user-64-04.jpg
+│       ├── user-64-05.jpg
+│       ├── user-64-06.jpg
+│       ├── user-64-07.jpg
+│       ├── user-64-08.jpg
+│       ├── user-64-09.jpg
+│       ├── user-64-10.jpg
+│       ├── user-64-11.jpg
+│       ├── user-64-12.jpg
+│       ├── user-64-13.jpg
+│       ├── user-64-14.jpg
+│       ├── user-avatar-32.png
+│       └── user-avatar-80.png
+├── README.md
+├── services
+│   ├── garden.ts
+│   └── tasks.ts
+├── supabase
+│   ├── config.toml
+│   ├── migrations
+│   │   ├── 001_initial_schema.sql
+│   │   ├── 002_maintenance_schema.sql
+│   │   ├── 003_houses_schema.sql
+│   │   ├── 004_initial_houses.sql
+│   │   ├── 004_insert_houses.sql
+│   │   ├── 005_fix_comment_policies.sql
+│   │   ├── 006_garden_schema.sql
+│   │   ├── 20231129_cascade_delete_comments.sql
+│   │   ├── 20240229_add_duration_to_garden_tasks.sql
+│   │   ├── 20240229_add_garden_task_delete_policy.sql
+│   │   ├── 20240229_add_time_to_garden_tasks.sql
+│   │   ├── 20240229_update_calendar_events.sql
+│   │   └── 20240229_update_garden_areas.sql
+│   └── setup.sql
+├── tailwind.config.js
+├── tree.yaml
+├── tsconfig.json
+└── types
+    ├── calendar.ts
+    ├── database.ts
+    ├── garden.ts
+    ├── house.ts
+    ├── maintenance.ts
+    ├── tasks1.ts
+    └── tasks.ts
+
+109 directories, 481 files
+alex@alex-lenovo:~/projects/brighton-rock-members$ 

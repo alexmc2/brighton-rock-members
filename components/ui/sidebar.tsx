@@ -131,9 +131,8 @@ export default function Sidebar({
             <ul className="mt-3">
               {/* Dashboard */}
               <li
-                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
-                  segments.includes('dashboard') &&
-                  'from-violet-500/[0.12] dark:from-violet-500/[0.12] to-violet-500/[0.12]'
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('dashboard') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
                 <SidebarLink href="/dashboard">
@@ -549,81 +548,37 @@ export default function Sidebar({
                 }}
               </SidebarLinkGroup>
               {/* Tasks */}
-              <SidebarLinkGroup open={segments.includes('tasks')}>
-                {(handleClick, open) => {
-                  return (
-                    <>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition ${
-                          segments.includes('tasks')
-                            ? ''
-                            : 'hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          expandOnly ? setSidebarExpanded(true) : handleClick();
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className={`shrink-0 fill-current ${
-                                segments.includes('tasks')
-                                  ? 'text-violet-500'
-                                  : 'text-gray-400 dark:text-gray-500'
-                              }`}
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 16 16"
-                            >
-                              <path d="M7.586 9H1a1 1 0 1 1 0-2h6.586L6.293 5.707a1 1 0 0 1 1.414-1.414l3 3a1 1 0 0 1 0 1.414l-3 3a1 1 0 1 1-1.414-1.414L7.586 9ZM3.075 4.572a1 1 0 1 1-1.64-1.144 8 8 0 1 1 0 9.144 1 1 0 0 1 1.64-1.144 6 6 0 1 0 0-6.856Z" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Tasks
-                            </span>
-                          </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg
-                              className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${
-                                open && 'rotate-180'
-                              }`}
-                              viewBox="0 0 12 12"
-                            >
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && 'hidden'}`}>
-                          <li className="mb-1 last:mb-0">
-                            <SidebarLink href="/tasks/kanban">
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Kanban
-                              </span>
-                            </SidebarLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <SidebarLink href="/tasks/list">
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                List
-                              </span>
-                            </SidebarLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </>
-                  );
-                }}
-              </SidebarLinkGroup>
+              <li
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('tasks') ? 'bg-violet-500/[0.12]' : ''
+                }`}
+              >
+                <SidebarLink href="/tasks">
+                  <div className="flex items-center">
+                    <svg
+                      className={`shrink-0 fill-current ${
+                        segments.includes('tasks')
+                          ? 'text-violet-500'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M14.5 3a.5.5 0 0 1 .5.5v9a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h13zm-13-1A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13z" />
+                      <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
+                    </svg>
+                    <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      Tasks
+                    </span>
+                  </div>
+                </SidebarLink>
+              </li>
               {/* Messages */}
               <li
-                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
-                  segments.includes('messages') &&
-                  'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('messages') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
                 <SidebarLink href="/messages">
@@ -658,9 +613,8 @@ export default function Sidebar({
               </li>
               {/* Inbox */}
               <li
-                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
-                  segments.includes('inbox') &&
-                  'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('inbox') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
                 <SidebarLink href="/inbox">
@@ -686,9 +640,8 @@ export default function Sidebar({
               </li>
               {/* Calendar */}
               <li
-                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
-                  segments.includes('calendar') &&
-                  'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('calendar') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
                 <SidebarLink href="/calendar">
@@ -715,9 +668,8 @@ export default function Sidebar({
               </li>
               {/* Campaigns */}
               <li
-                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-[linear-gradient(135deg,var(--tw-gradient-stops))] ${
-                  segments.includes('campaigns') &&
-                  'from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]'
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('campaigns') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
                 <SidebarLink href="/campaigns">
@@ -978,7 +930,7 @@ export default function Sidebar({
                               height="16"
                               viewBox="0 0 16 16"
                             >
-                              <path d="M11.442 4.576a1 1 0 0 0-1.634-1.152L4.22 11.35 1.773 8.366A1 1 0 1 0 .227 9.634l1.5 1.5a1 1 0 0 0 1.46-.048l3.5-4ZM15.817 4.576a1 1 0 1 0-1.634-1.152l-5.609 7.957a1 1 0 0 0-1.347 1.453l.656.8a1 1 0 0 0 1.59-.058l6.344-9Z" />
+                              <path d="M11.442 4.576a1 1 0 0 0-1.506-1.317L2.451 4.537l-.744-.744A1 1 0 1 0 .293 5.207l1.5 1.5a1 1 0 0 0 1.46-.048l3.5-4ZM15.817 4.576a1 1 0 1 0-1.506-1.317l-5.609 7.957a1 1 0 0 0-1.347 1.453l.656.8a1 1 0 0 0 1.59-.058l6.344-9Z" />
                             </svg>
                             <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                               Authentication

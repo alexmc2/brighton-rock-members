@@ -1,10 +1,14 @@
-// File: app/(default)/tasks/new-task-modal.tsx
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  TaskWithDetails,
+  TaskStatus,
+  TaskPriority,
+  TaskCategory,
+} from '@/types/tasks';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 // Define the Profile type based on your profiles table
 interface Profile {
@@ -24,19 +28,25 @@ interface Profile {
   full_name: string | null;
 }
 
-export default function NewTaskModal() {
+interface TaskActionsProps {
+  task: TaskWithDetails;
+}
+
+export default function TaskActions({ task }: TaskActionsProps) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient();
 
   // **State Variables for Controlled Inputs**
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('general');
-  const [priority, setPriority] = useState('medium');
-  const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description || '');
+  const [taskType, setTaskType] = useState<TaskCategory>(task.task_type); // Renamed
+  const [priority, setPriority] = useState<TaskPriority>(task.priority);
+  const [status, setStatus] = useState<TaskStatus>(task.status);
+  const [assignedTo, setAssignedTo] = useState<string | null>(task.assigned_to);
 
   // **State for User Profiles**
   const [profiles, setProfiles] = useState<Profile[]>([]);
@@ -45,6 +55,7 @@ export default function NewTaskModal() {
   // **Function to Fetch Profiles**
   const fetchProfiles = async () => {
     setIsFetchingProfiles(true);
+    setError(null);
     try {
       const { data, error } = await supabase
         .from('profiles')
@@ -66,7 +77,8 @@ export default function NewTaskModal() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  // **Handle Edit Form Submission**
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -79,62 +91,98 @@ export default function NewTaskModal() {
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
-      // **Insert Task into Supabase**
-      const { data: newTask, error: insertError } = await supabase
+      // **Update Task in Supabase**
+      const { error: updateError } = await supabase
         .from('tasks')
-        .insert({
+        .update({
           title: title.trim(),
-          description: description.trim(),
-          category: category,
-          status: 'pending',
+          description: description.trim() || null,
+          task_type: taskType, // Updated
+          status: status,
           priority: priority,
-          created_by: user.id,
-          assigned_to: assignedTo, // Should be UUID or null
+          assigned_to: assignedTo, // UUID or null
         })
-        .select()
-        .single();
+        .eq('id', task.id);
 
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
 
-      // **Reset Form Fields**
-      setTitle('');
-      setDescription('');
-      setCategory('general');
-      setPriority('medium');
-      setAssignedTo(null);
-
-      // **Refresh Page and Close Modal**
+      // **Close Modal and Refresh**
+      setIsEditDialogOpen(false);
       router.refresh();
-      setIsOpen(false);
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error updating task:', error);
       setError(
-        error instanceof Error ? error.message : 'Failed to create task'
+        error instanceof Error ? error.message : 'Failed to update task'
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // **Handle Task Deletion**
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this task? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      // Delete task (comments will be cascade deleted)
+      const { error: deleteError } = await supabase
+        .from('tasks')
+        .delete()
+        .eq('id', task.id);
+
+      if (deleteError) throw deleteError;
+
+      router.push('/tasks');
+    } catch (error) {
+      console.error('Error deleting task:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to delete task'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <>
-      {/* **Trigger Button to Open Modal and Fetch Profiles** */}
+    <div className="flex items-center gap-2">
+      {/* Edit Button */}
       <Button
-        onClick={() => {
-          setIsOpen(true);
-          fetchProfiles(); // Fetch profiles when modal opens
-        }}
         variant="default"
+        size="sm"
+        onClick={() => {
+          setIsEditDialogOpen(true);
+          fetchProfiles(); // Fetch profiles when edit dialog opens
+        }}
+        disabled={isSubmitting || isDeleting}
       >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Task
+        <Edit className="h-4 w-4 mr-1" />
+        Edit Task
       </Button>
 
-      {/* **Modal Dialog** */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {/* Delete Button */}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete Task
+      </Button>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>Edit Task</DialogTitle>
           </DialogHeader>
 
           {/* **Error Message** */}
@@ -144,8 +192,8 @@ export default function NewTaskModal() {
             </div>
           )}
 
-          {/* **Task Creation Form** */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* **Edit Task Form** */}
+          <form onSubmit={handleEdit} className="space-y-4">
             {/* **Title Field** */}
             <div>
               <Label htmlFor="title">Title</Label>
@@ -173,15 +221,15 @@ export default function NewTaskModal() {
               />
             </div>
 
-            {/* **Category Field** */}
+            {/* **Task Type Field** */}
             <div>
-              <Label htmlFor="category">Task Type</Label>
+              <Label htmlFor="task_type">Task Type</Label>
               <select
-                id="category"
-                name="category"
+                id="task_type" // Updated
+                name="task_type" // Updated
                 required
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={taskType} // Updated
+                onChange={(e) => setTaskType(e.target.value as TaskCategory)}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
               >
                 <option value="general">General Task</option>
@@ -197,13 +245,31 @@ export default function NewTaskModal() {
                 name="priority"
                 required
                 value={priority}
-                onChange={(e) => setPriority(e.target.value)}
+                onChange={(e) => setPriority(e.target.value as TaskPriority)}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
                 <option value="high">High</option>
                 <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            {/* **Status Field** */}
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                name="status"
+                required
+                value={status}
+                onChange={(e) => setStatus(e.target.value as TaskStatus)}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
               </select>
             </div>
 
@@ -236,22 +302,22 @@ export default function NewTaskModal() {
             </div>
 
             {/* **Form Actions** */}
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsOpen(false)}
+                onClick={() => setIsEditDialogOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Task'}
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

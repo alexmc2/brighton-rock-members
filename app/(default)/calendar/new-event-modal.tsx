@@ -135,6 +135,7 @@ export default function NewEventModal() {
                         placeholder="Event title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
+                        className="mt-1 block w-full  rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md px-3 py-2"
                       />
                     </div>
 
@@ -163,6 +164,7 @@ export default function NewEventModal() {
                           min={new Date().toISOString().split('T')[0]}
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
+                          className="mt-1 block w-full  rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md px-3 py-2"
                         />
                       </div>
 
@@ -175,6 +177,7 @@ export default function NewEventModal() {
                           required
                           value={startTime}
                           onChange={(e) => setStartTime(e.target.value)}
+                          className="mt-1 block w-full  rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md px-3 py-2"
                         />
                       </div>
 
@@ -184,7 +187,7 @@ export default function NewEventModal() {
                           id="duration"
                           name="duration"
                           required
-                          className="mt-1 block w-full rounded-md border border-green-500 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+                          className="mt-1 block w-full  rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md px-3 py-2"
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
                         >
@@ -206,7 +209,8 @@ export default function NewEventModal() {
                         id="category"
                         name="category"
                         required
-                        className="mt-1 block w-full rounded-md border border-green-500 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-green-500"
+                        className="w-full h-10  rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md px-3 py-2"
+                        // className="mt-1 block w-full rounded-md border border-green-500 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-green-500"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >

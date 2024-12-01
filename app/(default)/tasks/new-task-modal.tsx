@@ -1,3 +1,5 @@
+// app/(default)/tasks/new-task-modal.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -65,44 +67,58 @@ export default function NewTaskModal() {
     }
   };
 
+  // In new-task-modal.tsx - update handleSubmit
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // **Get Current User**
+      // Get Current User
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
-      // **Insert Task into Supabase**
+      // Insert Task into Supabase
       const { data: newTask, error: insertError } = await supabase
         .from('tasks')
         .insert({
           title: title.trim(),
-          description: description.trim(),
-          task_type: taskType, // Updated
+          description: description.trim() || null,
+          task_type: taskType,
           status: 'pending',
-          priority: priority,
+          priority,
           created_by: user.id,
-          assigned_to: assignedTo, // UUID or null
+          assigned_to: assignedTo || null,
         })
-        .select()
+        .select(
+          `
+        *,
+        created_by_user:profiles!tasks_created_by_fkey(
+          email,
+          full_name
+        ),
+        assigned_to_user:profiles!tasks_assigned_to_fkey(
+          email,
+          full_name
+        )
+      `
+        )
         .single();
 
       if (insertError) throw insertError;
 
-      // **Reset Form Fields**
+      // Reset Form Fields
       setTitle('');
       setDescription('');
-      setTaskType('general'); // Updated
+      setTaskType('general');
       setPriority('medium');
       setAssignedTo(null);
 
-      // **Refresh Page and Close Modal**
+      // Refresh Page and Close Modal
       router.refresh();
       setIsOpen(false);
     } catch (error) {
@@ -144,7 +160,7 @@ export default function NewTaskModal() {
           )}
 
           {/* **Task Creation Form** */}
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4 ">
             {/* **Title Field** */}
             <div>
               <Label htmlFor="title">Title</Label>
@@ -154,6 +170,7 @@ export default function NewTaskModal() {
                 required
                 placeholder="Enter task title"
                 value={title}
+                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>

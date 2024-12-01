@@ -15,13 +15,22 @@ export const metadata: Metadata = {
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
+// In page.tsx - update getTasks()
+
 async function getTasks() {
   try {
     const { data: tasks, error } = await supabaseAdmin
       .from('tasks')
-      .select(
-        `
+      .select(`
         *,
+        created_by_user:profiles!tasks_created_by_fkey(
+          email,
+          full_name
+        ),
+        assigned_to_user:profiles!tasks_assigned_to_fkey(
+          email,
+          full_name
+        ),
         comments:task_comments(
           id,
           content,
@@ -32,8 +41,7 @@ async function getTasks() {
             full_name
           )
         )
-      `
-      )
+      `)
       .order('created_at', { ascending: false });
 
     if (error) {

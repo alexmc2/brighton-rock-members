@@ -48,11 +48,11 @@ export default function TaskActions({ task }: TaskActionsProps) {
   const [status, setStatus] = useState<TaskStatus>(task.status);
   const [assignedTo, setAssignedTo] = useState<string | null>(task.assigned_to);
 
-  // **State for User Profiles**
+  // State for User Profiles
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isFetchingProfiles, setIsFetchingProfiles] = useState(false);
 
-  // **Function to Fetch Profiles**
+  // Function to Fetch Profiles
   const fetchProfiles = async () => {
     setIsFetchingProfiles(true);
     setError(null);
@@ -77,36 +77,51 @@ export default function TaskActions({ task }: TaskActionsProps) {
     }
   };
 
-  // **Handle Edit Form Submission**
+  // In task-actions.tsx - update handleEdit
+
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
 
     try {
-      // **Get Current User**
+      // Get Current User
       const {
         data: { user },
         error: userError,
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
-      // **Update Task in Supabase**
-      const { error: updateError } = await supabase
+      // Update Task in Supabase
+      const { data: updatedTask, error: updateError } = await supabase
         .from('tasks')
         .update({
           title: title.trim(),
           description: description.trim() || null,
-          task_type: taskType, // Updated
-          status: status,
-          priority: priority,
-          assigned_to: assignedTo, // UUID or null
+          task_type: taskType,
+          status,
+          priority,
+          assigned_to: assignedTo || null,
         })
-        .eq('id', task.id);
+        .eq('id', task.id)
+        .select(
+          `
+        *,
+        created_by_user:profiles!tasks_created_by_fkey(
+          email,
+          full_name
+        ),
+        assigned_to_user:profiles!tasks_assigned_to_fkey(
+          email,
+          full_name
+        )
+      `
+        )
+        .single();
 
       if (updateError) throw updateError;
 
-      // **Close Modal and Refresh**
+      // Close Modal and Refresh
       setIsEditDialogOpen(false);
       router.refresh();
     } catch (error) {
@@ -119,7 +134,7 @@ export default function TaskActions({ task }: TaskActionsProps) {
     }
   };
 
-  // **Handle Task Deletion**
+  // Handle Task Deletion
   const handleDelete = async () => {
     if (
       !window.confirm(

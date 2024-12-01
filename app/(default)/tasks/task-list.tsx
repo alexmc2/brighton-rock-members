@@ -1,3 +1,5 @@
+// app/(default)/tasks/task-list.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -23,6 +25,8 @@ interface TaskListProps {
   tasks: TaskWithDetails[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export default function TaskList({ tasks }: TaskListProps) {
   const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
   const [taskTypeFilter, setTaskTypeFilter] = useState<'all' | TaskCategory>(
@@ -31,8 +35,57 @@ export default function TaskList({ tasks }: TaskListProps) {
   const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>(
     'all'
   );
+  const [currentPage, setCurrentPage] = useState(1);
 
-  // Aligning with MaintenanceList styling for status labels
+  // Filter tasks based on selected filters
+  const filteredTasks = tasks.filter((task) => {
+    if (statusFilter !== 'all' && task.status !== statusFilter) return false;
+    if (taskTypeFilter !== 'all' && task.task_type !== taskTypeFilter)
+      return false;
+    if (priorityFilter !== 'all' && task.priority !== priorityFilter)
+      return false;
+    return true;
+  });
+
+  // Calculate pagination
+  const totalItems = filteredTasks.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+  const paginatedTasks = filteredTasks.slice(startIndex, endIndex);
+
+  // Handle page changes
+  const goToNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  // Reset pagination when filters change
+  const handleFilterChange = (
+    filterType: 'status' | 'type' | 'priority',
+    value: string
+  ) => {
+    setCurrentPage(1); // Reset to first page
+    switch (filterType) {
+      case 'status':
+        setStatusFilter(value as 'all' | TaskStatus);
+        break;
+      case 'type':
+        setTaskTypeFilter(value as 'all' | TaskCategory);
+        break;
+      case 'priority':
+        setPriorityFilter(value as 'all' | TaskPriority);
+        break;
+    }
+  };
+
   const getStatusColor = (status: TaskStatus) => {
     const colors = {
       pending:
@@ -48,7 +101,6 @@ export default function TaskList({ tasks }: TaskListProps) {
     return colors[status] || colors.pending;
   };
 
-  // Reverting to original priority colors
   const getPriorityColor = (priority: TaskPriority) => {
     const colors = {
       low: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
@@ -60,15 +112,6 @@ export default function TaskList({ tasks }: TaskListProps) {
     return colors[priority] || colors.medium;
   };
 
-  const filteredTasks = tasks.filter((task) => {
-    if (statusFilter !== 'all' && task.status !== statusFilter) return false;
-    if (taskTypeFilter !== 'all' && task.task_type !== taskTypeFilter)
-      return false;
-    if (priorityFilter !== 'all' && task.priority !== priorityFilter)
-      return false;
-    return true;
-  });
-
   return (
     <div>
       {/* Filters */}
@@ -76,7 +119,7 @@ export default function TaskList({ tasks }: TaskListProps) {
         {/* Status Filters */}
         <div className="flex flex-wrap gap-2">
           <Button
-            onClick={() => setStatusFilter('all')}
+            onClick={() => handleFilterChange('status', 'all')}
             variant={statusFilter === 'all' ? 'default' : 'outline'}
             size="sm"
           >
@@ -86,7 +129,7 @@ export default function TaskList({ tasks }: TaskListProps) {
             (status) => (
               <Button
                 key={status}
-                onClick={() => setStatusFilter(status as TaskStatus)}
+                onClick={() => handleFilterChange('status', status)}
                 variant={statusFilter === status ? 'default' : 'outline'}
                 size="sm"
               >
@@ -100,21 +143,21 @@ export default function TaskList({ tasks }: TaskListProps) {
         {/* Type Filters */}
         <div className="flex flex-wrap gap-2">
           <Button
-            onClick={() => setTaskTypeFilter('all')}
+            onClick={() => handleFilterChange('type', 'all')}
             variant={taskTypeFilter === 'all' ? 'default' : 'outline'}
             size="sm"
           >
             All Types
           </Button>
           <Button
-            onClick={() => setTaskTypeFilter('general')}
+            onClick={() => handleFilterChange('type', 'general')}
             variant={taskTypeFilter === 'general' ? 'default' : 'outline'}
             size="sm"
           >
             General Tasks
           </Button>
           <Button
-            onClick={() => setTaskTypeFilter('minuted')}
+            onClick={() => handleFilterChange('type', 'minuted')}
             variant={taskTypeFilter === 'minuted' ? 'default' : 'outline'}
             size="sm"
           >
@@ -125,7 +168,7 @@ export default function TaskList({ tasks }: TaskListProps) {
         {/* Priority Filters */}
         <div className="flex flex-wrap gap-2">
           <Button
-            onClick={() => setPriorityFilter('all')}
+            onClick={() => handleFilterChange('priority', 'all')}
             variant={priorityFilter === 'all' ? 'default' : 'outline'}
             size="sm"
           >
@@ -134,7 +177,7 @@ export default function TaskList({ tasks }: TaskListProps) {
           {['low', 'medium', 'high', 'urgent'].map((priority) => (
             <Button
               key={priority}
-              onClick={() => setPriorityFilter(priority as TaskPriority)}
+              onClick={() => handleFilterChange('priority', priority)}
               variant={priorityFilter === priority ? 'default' : 'outline'}
               size="sm"
             >
@@ -157,11 +200,10 @@ export default function TaskList({ tasks }: TaskListProps) {
                 <TableHead className="w-1/6">Assigned To</TableHead>
                 <TableHead className="w-1/6">Created</TableHead>
                 <TableHead className="w-1/12">Comments</TableHead>
-                {/* Removed "Actions" Header */}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTasks.map((task) => (
+              {paginatedTasks.map((task) => (
                 <TableRow key={task.id}>
                   <TableCell className="w-1/4">
                     <Link
@@ -214,12 +256,10 @@ export default function TaskList({ tasks }: TaskListProps) {
                   <TableCell className="w-1/12">
                     {task.comments.length}
                   </TableCell>
-                  {/* Removed "Actions" Cell */}
                 </TableRow>
               ))}
-              {filteredTasks.length === 0 && (
+              {paginatedTasks.length === 0 && (
                 <TableRow>
-                  {/* Updated colSpan from 8 to 7 */}
                   <TableCell colSpan={7} className="text-center py-8">
                     <div className="text-slate-500 dark:text-slate-400">
                       No tasks found
@@ -229,6 +269,61 @@ export default function TaskList({ tasks }: TaskListProps) {
               )}
             </TableBody>
           </Table>
+        </div>
+
+        {/* Pagination */}
+        <div className="px-8 py-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+            <nav
+              className="mb-4 sm:mb-0 sm:order-1"
+              role="navigation"
+              aria-label="Navigation"
+            >
+              <ul className="flex justify-center">
+                <li className="ml-3 first:ml-0">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 1}
+                    className={`btn ${
+                      currentPage === 1
+                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 text-gray-300 dark:text-gray-600'
+                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300'
+                    }`}
+                  >
+                    &lt;- Previous
+                  </button>
+                </li>
+                <li className="ml-3 first:ml-0">
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage >= totalPages}
+                    className={`btn ${
+                      currentPage >= totalPages
+                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 text-gray-300 dark:text-gray-600'
+                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300'
+                    }`}
+                  >
+                    Next -&gt;
+                  </button>
+                </li>
+              </ul>
+            </nav>
+            <div className="text-sm text-gray-500 text-center sm:text-left">
+              Showing{' '}
+              <span className="font-medium text-gray-600 dark:text-gray-300">
+                {startIndex + 1}
+              </span>{' '}
+              to{' '}
+              <span className="font-medium text-gray-600 dark:text-gray-300">
+                {endIndex}
+              </span>{' '}
+              of{' '}
+              <span className="font-medium text-gray-600 dark:text-gray-300">
+                {totalItems}
+              </span>{' '}
+              results
+            </div>
+          </div>
         </div>
       </div>
     </div>

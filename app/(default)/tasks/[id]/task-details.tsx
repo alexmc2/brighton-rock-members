@@ -25,7 +25,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
             <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
               Description
             </h3>
-            <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap">
+            <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto">
               {task.description || '-'}
             </div>
           </div>

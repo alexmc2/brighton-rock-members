@@ -1,162 +1,216 @@
 // app/(default)/development/[id]/participant-list.tsx
+
 'use client';
 
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { useRouter } from 'next/navigation';
-import { Card, CardHeader, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import {
-  DevelopmentInitiativeWithDetails,
+  EventParticipant,
   ParticipationStatus,
+  DevelopmentInitiativeWithDetails,
 } from '@/types/development';
 import { Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ParticipantListProps {
-  initiative: DevelopmentInitiativeWithDetails;
-  maxParticipants: number | null;
+  initiativeId: string;
 }
 
 export default function ParticipantList({
-  initiative,
-  maxParticipants,
+  initiativeId,
 }: ParticipantListProps) {
-  const router = useRouter();
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
   const supabase = createClientComponentClient();
+  const [participants, setParticipants] = useState<EventParticipant[]>([]);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    full_name: string | null;
+  } | null>(null);
+  const [currentUserStatus, setCurrentUserStatus] =
+    useState<ParticipationStatus | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
 
+  // Fetch participants and current user
   useEffect(() => {
-    async function getCurrentUser() {
+    async function fetchParticipants() {
       const {
         data: { user },
-        error: authError,
       } = await supabase.auth.getUser();
-      if (!authError && user) {
-        setCurrentUserId(user.id);
+      if (user) {
+        setCurrentUser({
+          id: user.id,
+          email: user.email!,
+          full_name: user.user_metadata.full_name || null,
+        });
+      }
+
+      const { data, error } = await supabase
+        .from('event_participants')
+        .select(
+          `
+          *,
+          user:profiles (
+            email,
+            full_name
+          )
+        `
+        )
+        .eq('event_id', initiativeId);
+
+      if (error) {
+        console.error('Error fetching participants:', error);
+        return;
+      }
+
+      setParticipants(data as EventParticipant[]);
+
+      if (user) {
+        const currentUserParticipation = data.find(
+          (p) => p.user_id === user.id
+        );
+        if (currentUserParticipation) {
+          setCurrentUserStatus(currentUserParticipation.status);
+        }
       }
     }
-    getCurrentUser();
-  }, [supabase]);
 
-  const currentUserParticipation = initiative.participants?.find(
-    (p) => p.user_id === currentUserId
-  );
+    fetchParticipants();
+  }, [initiativeId, supabase]);
 
-  const handleParticipationUpdate = async (status: ParticipationStatus) => {
-    if (!currentUserId || isUpdating) return;
+  const handleParticipationUpdate = async (
+    newStatus: ParticipationStatus | null
+  ) => {
+    if (!currentUser || isUpdating) return;
+
     setIsUpdating(true);
 
     try {
-      if (currentUserParticipation) {
-        // Update existing participation
+      if (newStatus === null) {
+        // Remove participation
         const { error } = await supabase
           .from('event_participants')
-          .update({ status })
-          .eq('event_id', initiative.id)
-          .eq('user_id', currentUserId);
+          .delete()
+          .eq('event_id', initiativeId)
+          .eq('user_id', currentUser.id);
 
         if (error) throw error;
+
+        setParticipants((prev) =>
+          prev.filter((p) => p.user_id !== currentUser.id)
+        );
+        setCurrentUserStatus(null);
       } else {
-        // Create new participation
-        const { error } = await supabase.from('event_participants').insert({
-          event_id: initiative.id,
-          user_id: currentUserId,
-          status,
-        });
+        const participantData = {
+          event_id: initiativeId,
+          user_id: currentUser.id,
+          status: newStatus,
+        };
+
+        const { error } = await supabase
+          .from('event_participants')
+          .upsert(participantData);
 
         if (error) throw error;
-      }
 
-      router.refresh();
-    } catch (err) {
-      console.error('Error updating participation:', err);
+        setParticipants((prev) => [
+          ...prev.filter((p) => p.user_id !== currentUser.id),
+          {
+            ...participantData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user: {
+              email: currentUser.email,
+              full_name: currentUser.full_name,
+            },
+          },
+        ]);
+        setCurrentUserStatus(newStatus);
+      }
+    } catch (error) {
+      console.error('Error updating participation:', error);
     } finally {
       setIsUpdating(false);
     }
   };
 
-  const participantsByStatus = {
-    going: initiative.participants?.filter((p) => p.status === 'going') || [],
-    maybe: initiative.participants?.filter((p) => p.status === 'maybe') || [],
-    not_going:
-      initiative.participants?.filter((p) => p.status === 'not_going') || [],
-  };
+  // Group participants by status
+  const participantsByStatus = participants.reduce((acc, participant) => {
+    if (!acc[participant.status]) {
+      acc[participant.status] = [];
+    }
+    acc[participant.status].push(participant);
+    return acc;
+  }, {} as Record<ParticipationStatus, EventParticipant[]>);
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold">Participants</h3>
-          <div className="text-sm text-slate-500">
-            {participantsByStatus.going.length}
-            {maxParticipants && ` / ${maxParticipants}`} going
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* RSVP Buttons */}
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={() => handleParticipationUpdate('going')}
-              variant={
-                currentUserParticipation?.status === 'going'
-                  ? 'default'
-                  : 'outline'
-              }
-              disabled={isUpdating}
-            >
-              Going
-            </Button>
-            <Button
-              onClick={() => handleParticipationUpdate('maybe')}
-              variant={
-                currentUserParticipation?.status === 'maybe'
-                  ? 'default'
-                  : 'outline'
-              }
-              disabled={isUpdating}
-            >
-              Maybe
-            </Button>
-            <Button
-              onClick={() => handleParticipationUpdate('not_going')}
-              variant={
-                currentUserParticipation?.status === 'not_going'
-                  ? 'default'
-                  : 'outline'
-              }
-              disabled={isUpdating}
-            >
-              Not Going
-            </Button>
-          </div>
+    <div>
+      {/* Participation Buttons */}
+      <div className="flex items-center space-x-6 mb-6">
+        <Button
+          variant={currentUserStatus === 'going' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('going')}
+          disabled={isUpdating}
+        >
+          Going
+        </Button>
+        <Button
+          variant={currentUserStatus === 'maybe' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('maybe')}
+          disabled={isUpdating}
+        >
+          Maybe
+        </Button>
+        <Button
+          variant={currentUserStatus === 'not_going' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('not_going')}
+          disabled={isUpdating}
+        >
+          Not Going
+        </Button>
+        {currentUserStatus && (
+          <Button
+            variant="ghost"
+            onClick={() => handleParticipationUpdate(null)}
+            disabled={isUpdating}
+          >
+            Clear
+          </Button>
+        )}
+      </div>
 
-          {/* Participant Lists */}
-          {['going', 'maybe', 'not_going'].map((status) => (
+      {/* Attendance Lists */}
+      <div className="space-y-6">
+        {['going', 'maybe', 'not_going'].map((status) => {
+          const participantsInStatus =
+            participantsByStatus[status as ParticipationStatus];
+          if (!participantsInStatus || participantsInStatus.length === 0) {
+            return null;
+          }
+          return (
             <div key={status}>
-              <h4 className="font-medium text-sm text-slate-500 mb-2 capitalize">
-                {status.replace('_', ' ')} (
-                {participantsByStatus[status as ParticipationStatus].length})
+              <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 capitalize">
+                {status.replace('_', ' ')} ({participantsInStatus.length})
               </h4>
-              <div className="space-y-2">
-                {participantsByStatus[status as ParticipationStatus].map(
-                  (participant) => (
-                    <div
-                      key={participant.user_id}
-                      className="flex items-center text-sm text-slate-600 dark:text-slate-300"
-                    >
-                      <Users className="w-4 h-4 mr-2" />
+              <div className="flex flex-wrap gap-2">
+                {participantsInStatus.map((participant) => (
+                  <div key={participant.user_id} className="flex items-center">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {participant.user?.full_name?.[0] ||
+                          participant.user?.email[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm ml-2">
                       {participant.user?.full_name || participant.user?.email}
-                    </div>
-                  )
-                )}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -1,3 +1,5 @@
+// app/(default)/development/new-project-modal.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -125,8 +127,9 @@ export default function NewProjectModal() {
               disabled={isSubmitting}
             />
 
+            {/* Commented out for now */}
             {/* Project-specific Fields */}
-            <div>
+            {/* <div>
               <Label htmlFor="budget">Budget (£)</Label>
               <Input
                 id="budget"
@@ -138,8 +141,9 @@ export default function NewProjectModal() {
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
                 disabled={isSubmitting}
+                className="dark:bg-slate-700"
               />
-            </div>
+            </div> */}
 
             {/* Form Actions */}
             <div className="flex justify-end gap-2">

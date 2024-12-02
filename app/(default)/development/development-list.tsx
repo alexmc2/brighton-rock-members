@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import InitiativeCard from '../../../components/initiative-card';
+import InitiativeCard from './initiative-card';
 import {
   Select,
   SelectContent,

@@ -1,3 +1,5 @@
+// app/(default)/development/initiative-card.tsx
+
 import React from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
@@ -13,6 +15,7 @@ import {
   Code,
   GraduationCap,
   Globe2,
+  MessageSquare,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +47,15 @@ const getCategoryIcon = (category: DevelopmentCategory) => {
     general: <Rocket className="w-4 h-4" />,
   };
   return icons[category];
+};
+
+// Helper function to format time to 12-hour format
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
 };
 
 const InitiativeCard: React.FC<InitiativeCardProps> = ({
@@ -108,13 +120,13 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
             {initiative.event_date && (
               <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
                 <Calendar className="w-4 h-4 mr-2" />
-                {format(new Date(initiative.event_date), 'PPP')}
+                {format(new Date(initiative.event_date), 'EEEE, MMMM do yyyy')}
               </div>
             )}
             {initiative.start_time && (
               <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
                 <Clock className="w-4 h-4 mr-2" />
-                {initiative.start_time}
+                {formatTime(initiative.start_time)}
               </div>
             )}
             {initiative.location && (
@@ -123,11 +135,10 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
                 {initiative.location}
               </div>
             )}
-            {initiative.max_participants && (
+            {initiative.open_to_everyone && (
               <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
                 <Users className="w-4 h-4 mr-2" />
-                {initiative.participants?.length || 0} /{' '}
-                {initiative.max_participants} participants
+                {initiative.participants?.length || 0} / 12 participants
               </div>
             )}
           </div>
@@ -152,7 +163,11 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
             </span>
           </div>
 
-          <div className="flex items-center">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              {initiative.comments?.length || 0}
+            </div>
             <Link
               href={`/development/${initiative.id}`}
               className="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"

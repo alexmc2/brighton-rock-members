@@ -22,6 +22,13 @@ async function getInitiatives() {
             email,
             full_name
           )
+        ),
+        participants:event_participants(
+          *,
+          user:profiles!event_participants_user_id_fkey(
+            email,
+            full_name
+          )
         )
       `
       )

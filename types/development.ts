@@ -19,16 +19,22 @@ export type DevelopmentCategory =
 
 export type ParticipationStatus = 'going' | 'maybe' | 'not_going';
 
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  house_number: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface DevelopmentComment {
   id: string;
   initiative_id: string;
   user_id: string;
   content: string;
   created_at: string;
-  user: {
-    email: string;
-    full_name: string | null;
-  };
+  user: Pick<Profile, 'email' | 'full_name'>;
 }
 
 export interface EventParticipant {
@@ -37,13 +43,11 @@ export interface EventParticipant {
   status: ParticipationStatus;
   created_at: string;
   updated_at: string;
-  user?: {
+  user: {
     email: string;
     full_name: string | null;
   };
 }
-
-// Add to development.ts
 
 export type InitiativeType = 'event' | 'project';
 
@@ -54,7 +58,7 @@ export interface DevelopmentInitiative {
   status: DevelopmentStatus;
   priority: DevelopmentPriority;
   category: DevelopmentCategory;
-  initiative_type: InitiativeType; // Add this line
+  initiative_type: InitiativeType;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -63,15 +67,12 @@ export interface DevelopmentInitiative {
   duration: string | null;
   location: string | null;
   max_participants: number | null;
-  budget: number | null;
+  // budget: number | null;
+  open_to_everyone: boolean; // Added field
 }
 
-export interface DevelopmentInitiativeWithDetails
-  extends DevelopmentInitiative {
-  created_by_user: {
-    email: string;
-    full_name: string | null;
-  };
+export interface DevelopmentInitiativeWithDetails extends DevelopmentInitiative {
+  created_by_user: Pick<Profile, 'email' | 'full_name'>;
   comments: DevelopmentComment[];
   participants?: EventParticipant[];
 }
@@ -100,3 +101,12 @@ export type PartnerType =
 export interface InitiativeListProps {
   initiatives: DevelopmentInitiativeWithDetails[];
 }
+
+// Database types for type safety with Supabase
+export type Tables = {
+  profiles: Profile;
+  development_initiatives: DevelopmentInitiative;
+  development_comments: DevelopmentComment;
+  event_participants: EventParticipant;
+  partner_organisations: PartnerOrganisation;
+};

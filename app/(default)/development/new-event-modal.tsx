@@ -8,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import { Plus, Check } from 'lucide-react';
 import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
+import { Checkbox } from '@/components/ui/checkbox';
 
 export default function NewEventModal() {
   const router = useRouter();
@@ -27,7 +28,7 @@ export default function NewEventModal() {
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState('');
   const [location, setLocation] = useState('');
-  const [maxParticipants, setMaxParticipants] = useState('');
+  const [openToEveryone, setOpenToEveryone] = useState(false);
 
   const resetForm = () => {
     setTitle('');
@@ -38,7 +39,7 @@ export default function NewEventModal() {
     setStartTime('');
     setDuration('');
     setLocation('');
-    setMaxParticipants('');
+    setOpenToEveryone(false);
     setError(null);
   };
 
@@ -57,10 +58,13 @@ export default function NewEventModal() {
       if (userError || !user) throw new Error('User not authenticated');
 
       // Parse duration to interval
-      let parsedDuration = null;
+      let durationInterval: string | null = null;
       if (duration) {
-        const [hours, minutes] = duration.split(':').map(Number);
-        parsedDuration = `${hours} hours ${minutes} minutes`;
+        if (duration === '24') {
+          durationInterval = '24 hours';
+        } else {
+          durationInterval = `${duration} hours`;
+        }
       }
 
       const data = {
@@ -72,11 +76,10 @@ export default function NewEventModal() {
         created_by: user.id,
         event_date: eventDate ? new Date(eventDate).toISOString() : null,
         start_time: startTime || null,
-        duration: parsedDuration,
+        duration: durationInterval,
         location: location.trim() || null,
-        max_participants: maxParticipants
-          ? parseInt(maxParticipants, 10)
-          : null,
+        max_participants: openToEveryone ? 12 : null,
+        open_to_everyone: openToEveryone, // Add this line
       };
 
       const { error: insertError } = await supabase
@@ -224,20 +227,28 @@ export default function NewEventModal() {
                       </div>
                       <div>
                         <Label htmlFor="duration">Duration</Label>
-                        <Input
-                          type="time"
+                        <select
                           id="duration"
                           required
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
                           disabled={isSubmitting}
-                        />
+                          className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                        >
+                          <option value="">Select duration</option>
+                          <option value="0.5">Half an hour</option>
+                          <option value="1">1 hour</option>
+                          <option value="2">2 hours</option>
+                          <option value="3">3 hours</option>
+                          <option value="4">4 hours</option>
+                          <option value="24">All day</option>
+                        </select>
                       </div>
                     </div>
 
-                    {/* Location, Priority & Max Participants */}
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="col-span-2">
+                    {/* Location & Open to Everyone */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
                         <Label htmlFor="location">Location</Label>
                         <Input
                           id="location"
@@ -247,18 +258,12 @@ export default function NewEventModal() {
                           disabled={isSubmitting}
                         />
                       </div>
-                      <div>
-                        <Label htmlFor="max_participants">
-                          Max Participants
-                        </Label>
-                        <Input
-                          type="number"
-                          id="max_participants"
-                          required
-                          min="1"
-                          max="12"
-                          value={maxParticipants}
-                          onChange={(e) => setMaxParticipants(e.target.value)}
+                      <div className="flex items-center">
+                        <Checkbox
+                          id="openToEveryone"
+                          label="Open to everyone"
+                          checked={openToEveryone}
+                          onChange={setOpenToEveryone}
                           disabled={isSubmitting}
                         />
                       </div>

@@ -3,19 +3,19 @@
 'use client';
 
 import { format } from 'date-fns';
-import { TaskWithDetails } from '@/types/tasks';
+import { TodoWithDetails } from '@/types/todos';
 
-interface TaskDetailsProps {
-  task: TaskWithDetails;
+interface TodoDetailsProps {
+  todo: TodoWithDetails;
 }
 
-export default function TaskDetails({ task }: TaskDetailsProps) {
+export default function TodoDetails({ todo }: TodoDetailsProps) {
   return (
     <div className="bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
       <div className="px-5 py-4">
         <div className="mb-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-100">
-            Task Details
+            To do Details
           </h2>
         </div>
 
@@ -26,7 +26,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               Description
             </h3>
             <div className="text-sm text-slate-500 dark:text-slate-400 whitespace-pre-wrap break-words max-h-[300px] overflow-y-auto">
-              {task.description || '-'}
+              {todo.description || '-'}
             </div>
           </div>
 
@@ -36,8 +36,8 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               Assigned To
             </h3>
             <div className="text-sm text-slate-500 dark:text-slate-400">
-              {task.assigned_to_user?.full_name ||
-                task.assigned_to_user?.email ||
+              {todo.assigned_to_user?.full_name ||
+                todo.assigned_to_user?.email ||
                 '-'}
             </div>
           </div>
@@ -48,21 +48,20 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               Priority
             </h3>
             <div className="text-sm text-slate-500 dark:text-slate-400">
-              {task.priority ? 
-                task.priority.charAt(0).toUpperCase() + task.priority.slice(1)
-                : '-'
-              }
+              {todo.priority
+                ? todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)
+                : '-'}
             </div>
           </div>
 
           {/* Due Date */}
-          {task.due_date && (
+          {todo.due_date && (
             <div>
               <h3 className="text-sm font-medium text-slate-800 dark:text-slate-100 mb-1">
                 Due Date
               </h3>
               <div className="text-sm text-slate-500 dark:text-slate-400">
-                {format(new Date(task.due_date), 'MMM d, yyyy')}
+                {format(new Date(todo.due_date), 'MMM d, yyyy')}
               </div>
             </div>
           )}
@@ -73,7 +72,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               Created
             </h3>
             <div className="text-sm text-slate-500 dark:text-slate-400">
-              {format(new Date(task.created_at), 'MMM d, yyyy h:mm a')}
+              {format(new Date(todo.created_at), 'MMM d, yyyy h:mm a')}
             </div>
           </div>
 
@@ -83,7 +82,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
               Last Updated
             </h3>
             <div className="text-sm text-slate-500 dark:text-slate-400">
-              {format(new Date(task.updated_at), 'MMM d, yyyy h:mm a')}
+              {format(new Date(todo.updated_at), 'MMM d, yyyy h:mm a')}
             </div>
           </div>
         </div>

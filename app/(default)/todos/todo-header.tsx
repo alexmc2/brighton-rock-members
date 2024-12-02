@@ -2,7 +2,7 @@
 
 'use client';
 
-import NewTaskModal from './new-task-modal';
+import NewTaskModal from './new-todo-modal';
 
 export default function TaskHeader() {
   return (
@@ -10,7 +10,7 @@ export default function TaskHeader() {
       {/* Left: Title */}
       <div className="mb-4 sm:mb-0">
         <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">
-          Tasks 📋
+          To Do Items 📋
         </h1>
       </div>
 

@@ -3,32 +3,32 @@
 'use client';
 
 import Link from 'next/link';
-import { TaskWithDetails, TaskStatus, TaskPriority } from '@/types/tasks';
-import TaskActions from './task-actions';
+import { TodoWithDetails, TodoStatus, TodoPriority } from '@/types/todos';
+import TodoActions from './todo-actions';
 
-interface TaskHeaderProps {
-  task: TaskWithDetails;
+interface TodoHeaderProps {
+  todo: TodoWithDetails;
 }
 
-export default function TaskHeader({ task }: TaskHeaderProps) {
-  const getStatusColor = (status: TaskStatus) => {
+export default function TodoHeader({ todo }: TodoHeaderProps) {
+  const getStatusColor = (status: TodoStatus) => {
     const colors = {
       pending: 'text-yellow-600 dark:text-yellow-400',
       in_progress: 'text-blue-600 dark:text-blue-400',
       completed: 'text-green-600 dark:text-green-400',
       cancelled: 'text-slate-600 dark:text-slate-400',
-      todo: 'text-slate-600 dark:text-slate-400'
-    };
+      todo: 'text-slate-600 dark:text-slate-400',
+    } as const;
     return colors[status] || colors.pending;
   };
 
-  const getPriorityColor = (priority: TaskPriority) => {
+  const getPriorityColor = (priority: TodoPriority) => {
     const colors = {
       low: 'text-slate-600 dark:text-slate-400',
       medium: 'text-blue-600 dark:text-blue-400',
       high: 'text-orange-600 dark:text-orange-400',
       urgent: 'text-red-600 dark:text-red-400',
-    };
+    } as const;
     return colors[priority] || colors.medium;
   };
 
@@ -37,10 +37,10 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
       {/* Back button */}
       <div className="mb-4">
         <Link
-          href="/tasks"
+          href="/todos"
           className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
         >
-          ← Back to Tasks
+          ← Back to To do
         </Link>
       </div>
 
@@ -48,12 +48,12 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
         {/* Left: Title */}
         <div>
           <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
-            {task.title}
+            {todo.title}
           </h1>
           <div className="text-sm">
             <span className="text-slate-500 dark:text-slate-400">
               Type:{' '}
-              {task.task_type === 'minuted' ? 'Minuted Action' : 'General Task'}
+              {todo.todo_type === 'minuted' ? 'Minuted Action' : 'General'}
             </span>
           </div>
         </div>
@@ -63,22 +63,22 @@ export default function TaskHeader({ task }: TaskHeaderProps) {
           <div className="flex items-center gap-4">
             <div
               className={`inline-flex font-medium ${getStatusColor(
-                task.status as TaskStatus
+                todo.status
               )}`}
             >
-              {task.status.charAt(0).toUpperCase() + task.status.slice(1)}
+              {todo.status.charAt(0).toUpperCase() + todo.status.slice(1)}
             </div>
-            {task.priority && (
+            {todo.priority && (
               <div
                 className={`inline-flex font-medium ${getPriorityColor(
-                  task.priority
+                  todo.priority
                 )}`}
               >
-                {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                {todo.priority.charAt(0).toUpperCase() + todo.priority.slice(1)}
               </div>
             )}
           </div>
-          <TaskActions task={task} />
+          <TodoActions todo={todo} />
         </div>
       </div>
     </div>

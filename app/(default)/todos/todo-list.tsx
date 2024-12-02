@@ -1,4 +1,4 @@
-// app/(default)/tasks/task-list.tsx
+// app/(default)/todos/todo-list.tsx
 
 'use client';
 
@@ -14,25 +14,25 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import {
-  TaskWithDetails,
-  TaskPriority,
-  TaskStatus,
-  TaskCategory,
-} from '@/types/tasks';
+  TodoWithDetails,
+  TodoPriority,
+  TodoStatus,
+  TodoCategory,
+} from '@/types/todos';
 import { Button } from '@/components/ui/button';
 
-interface TaskListProps {
-  tasks: TaskWithDetails[];
+interface TodoListProps {
+  tasks: TodoWithDetails[];
 }
 
 const ITEMS_PER_PAGE = 10;
 
-export default function TaskList({ tasks }: TaskListProps) {
-  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
-  const [taskTypeFilter, setTaskTypeFilter] = useState<'all' | TaskCategory>(
+export default function TodoList({ tasks }: TodoListProps) {
+  const [statusFilter, setStatusFilter] = useState<'all' | TodoStatus>('all');
+  const [todoTypeFilter, setTodoTypeFilter] = useState<'all' | TodoCategory>(
     'all'
   );
-  const [priorityFilter, setPriorityFilter] = useState<'all' | TaskPriority>(
+  const [priorityFilter, setPriorityFilter] = useState<'all' | TodoPriority>(
     'all'
   );
   const [currentPage, setCurrentPage] = useState(1);
@@ -40,7 +40,7 @@ export default function TaskList({ tasks }: TaskListProps) {
   // Filter tasks based on selected filters
   const filteredTasks = tasks.filter((task) => {
     if (statusFilter !== 'all' && task.status !== statusFilter) return false;
-    if (taskTypeFilter !== 'all' && task.task_type !== taskTypeFilter)
+    if (todoTypeFilter !== 'all' && task.todo_type !== todoTypeFilter)
       return false;
     if (priorityFilter !== 'all' && task.priority !== priorityFilter)
       return false;
@@ -75,18 +75,18 @@ export default function TaskList({ tasks }: TaskListProps) {
     setCurrentPage(1); // Reset to first page
     switch (filterType) {
       case 'status':
-        setStatusFilter(value as 'all' | TaskStatus);
+        setStatusFilter(value as 'all' | TodoStatus);
         break;
       case 'type':
-        setTaskTypeFilter(value as 'all' | TaskCategory);
+        setTodoTypeFilter(value as 'all' | TodoCategory);
         break;
       case 'priority':
-        setPriorityFilter(value as 'all' | TaskPriority);
+        setPriorityFilter(value as 'all' | TodoPriority);
         break;
     }
   };
 
-  const getStatusColor = (status: TaskStatus) => {
+  const getStatusColor = (status: TodoStatus) => {
     const colors = {
       pending:
         'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
@@ -97,18 +97,18 @@ export default function TaskList({ tasks }: TaskListProps) {
       cancelled:
         'bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200',
       todo: 'bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200',
-    };
+    } as const;
     return colors[status] || colors.pending;
   };
 
-  const getPriorityColor = (priority: TaskPriority) => {
+  const getPriorityColor = (priority: TodoPriority) => {
     const colors = {
       low: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
       medium:
         'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
       high: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
       urgent: 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400',
-    };
+    } as const;
     return colors[priority] || colors.medium;
   };
 
@@ -144,21 +144,21 @@ export default function TaskList({ tasks }: TaskListProps) {
         <div className="flex flex-wrap gap-2">
           <Button
             onClick={() => handleFilterChange('type', 'all')}
-            variant={taskTypeFilter === 'all' ? 'default' : 'outline'}
+            variant={todoTypeFilter === 'all' ? 'default' : 'outline'}
             size="sm"
           >
             All Types
           </Button>
           <Button
             onClick={() => handleFilterChange('type', 'general')}
-            variant={taskTypeFilter === 'general' ? 'default' : 'outline'}
+            variant={todoTypeFilter === 'general' ? 'default' : 'outline'}
             size="sm"
           >
-            General Tasks
+            General
           </Button>
           <Button
             onClick={() => handleFilterChange('type', 'minuted')}
-            variant={taskTypeFilter === 'minuted' ? 'default' : 'outline'}
+            variant={todoTypeFilter === 'minuted' ? 'default' : 'outline'}
             size="sm"
           >
             Minuted Actions
@@ -207,17 +207,16 @@ export default function TaskList({ tasks }: TaskListProps) {
                 <TableRow key={task.id}>
                   <TableCell className="w-1/4">
                     <Link
-                      href={`/tasks/${task.id}`}
+                      href={`/todos/${task.id}`}
                       className="font-medium text-green-600 dark:text-green-400 hover:underline"
                     >
                       {task.title}
                     </Link>
-                  
                   </TableCell>
                   <TableCell className="w-1/6">
-                    {task.task_type === 'minuted'
+                    {task.todo_type === 'minuted'
                       ? 'Minuted Action'
-                      : 'General Task'}
+                      : 'General'}
                   </TableCell>
                   <TableCell className="w-1/6">
                     <div
@@ -258,7 +257,7 @@ export default function TaskList({ tasks }: TaskListProps) {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
                     <div className="text-slate-500 dark:text-slate-400">
-                      No tasks found
+                      No to do items found
                     </div>
                   </TableCell>
                 </TableRow>

@@ -1,18 +1,18 @@
-// types/task.ts
+// types/todo.ts
 
 // Define possible statuses as used in your code
-export type TaskStatus =
+export type TodoStatus =
   | "pending"
   | "in_progress"
   | "completed"
   | "cancelled"
   | "todo";
 
-// Define task priorities
-export type TaskPriority = "low" | "medium" | "high" | "urgent";
+// Define todo priorities
+export type TodoPriority = "low" | "medium" | "high" | "urgent";
 
-// Define task types/categories
-export type TaskCategory = "general" | "minuted";
+// Define todo types/categories
+export type TodoCategory = "general" | "minuted";
 
 // Base user profile interface
 interface UserProfile {
@@ -20,15 +20,15 @@ interface UserProfile {
   full_name: string | null;
 }
 
-// Interface for Task
-export interface Task {
+// Interface for Todo
+export interface Todo {
   id: string;
   title: string;
   description: string | null;
-  status: TaskStatus;
-  priority: TaskPriority;
+  status: TodoStatus;
+  priority: TodoPriority;
 
-  task_type: TaskCategory;
+  todo_type: TodoCategory;
   due_date?: string | null;
   created_at: string;
   updated_at: string;
@@ -36,32 +36,32 @@ export interface Task {
   assigned_to: string | null;
   created_by_profile?: UserProfile | null;
   assigned_to_profile?: UserProfile | null;
-  comments?: TaskComment[];
+  comments?: TodoComment[];
 }
 
-export interface TaskComment {
+export interface TodoComment {
   id: string;
-  task_id: string;
+  todo_id: string;
   content: string;
   created_at: string;
   updated_at: string;
   created_by: string | null;
-  user: UserProfile; // Made non-null to match DevelopmentComment
+  user: UserProfile;
 }
 
-// Extended Task interface with detailed information from database
-export interface TaskWithDetails
+// Extended Todo interface with detailed information from database
+export interface TodoWithDetails
   extends
-    Omit<Task, "created_by_profile" | "assigned_to_profile" | "comments"> {
+    Omit<Todo, "created_by_profile" | "assigned_to_profile" | "comments"> {
   created_by_user: UserProfile | null;
   assigned_to_user: UserProfile | null;
-  comments: TaskComment[];
+  comments: TodoComment[];
 }
 
 // Interface for database comment structure
-export interface DatabaseTaskComment {
+export interface DatabaseTodoComment {
   id: string;
-  task_id: string;
+  todo_id: string;
   content: string;
   created_at: string;
   updated_at: string;

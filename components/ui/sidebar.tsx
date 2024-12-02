@@ -550,14 +550,14 @@ export default function Sidebar({
               {/* Tasks */}
               <li
                 className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
-                  segments.includes('tasks') ? 'bg-violet-500/[0.12]' : ''
+                  segments.includes('todos') ? 'bg-violet-500/[0.12]' : ''
                 }`}
               >
-                <SidebarLink href="/tasks">
+                <SidebarLink href="/todos">
                   <div className="flex items-center">
                     <svg
                       className={`shrink-0 fill-current ${
-                        segments.includes('tasks')
+                        segments.includes('todos')
                           ? 'text-violet-500'
                           : 'text-gray-400 dark:text-gray-500'
                       }`}
@@ -570,7 +570,7 @@ export default function Sidebar({
                       <path d="M7 5.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5zm-1.496-.854a.5.5 0 0 1 0 .708l-1.5 1.5a.5.5 0 0 1-.708 0l-.5-.5a.5.5 0 1 1 .708-.708l.146.147 1.146-1.147a.5.5 0 0 1 .708 0z" />
                     </svg>
                     <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                      Tasks
+                      Todos
                     </span>
                   </div>
                 </SidebarLink>

@@ -1,10 +1,14 @@
-// app/(default)/tasks/new-task-modal.tsx
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  TodoWithDetails,
+  TodoStatus,
+  TodoPriority,
+  TodoCategory,
+} from '@/types/todos';
 import {
   Dialog,
   DialogContent,
@@ -15,7 +19,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus } from 'lucide-react';
+import { Edit, Trash2 } from 'lucide-react';
 
 // Define the Profile type based on your profiles table
 interface Profile {
@@ -24,25 +28,31 @@ interface Profile {
   full_name: string | null;
 }
 
-export default function NewTaskModal() {
+interface TodoActionsProps {
+  todo: TodoWithDetails;
+}
+
+export default function TodoActions({ todo }: TodoActionsProps) {
   const router = useRouter();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient();
 
-  // **State Variables for Controlled Inputs**
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [taskType, setTaskType] = useState('general'); // Renamed
-  const [priority, setPriority] = useState('medium');
-  const [assignedTo, setAssignedTo] = useState<string | null>(null);
+  // State Variables for Controlled Inputs
+  const [title, setTitle] = useState(todo.title);
+  const [description, setDescription] = useState(todo.description || '');
+  const [todoType, setTodoType] = useState<TodoCategory>(todo.todo_type);
+  const [priority, setPriority] = useState<TodoPriority>(todo.priority);
+  const [status, setStatus] = useState<TodoStatus>(todo.status);
+  const [assignedTo, setAssignedTo] = useState<string | null>(todo.assigned_to);
 
-  // **State for User Profiles**
+  // State for User Profiles
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isFetchingProfiles, setIsFetchingProfiles] = useState(false);
 
-  // **Function to Fetch Profiles**
+  // Function to Fetch Profiles
   const fetchProfiles = async () => {
     setIsFetchingProfiles(true);
     setError(null);
@@ -67,9 +77,7 @@ export default function NewTaskModal() {
     }
   };
 
-  // In new-task-modal.tsx - update handleSubmit
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
     setError(null);
@@ -82,26 +90,26 @@ export default function NewTaskModal() {
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
-      // Insert Task into Supabase
-      const { data: newTask, error: insertError } = await supabase
-        .from('tasks')
-        .insert({
+      // Update Todo in Supabase
+      const { data: updatedTodo, error: updateError } = await supabase
+        .from('todos')
+        .update({
           title: title.trim(),
           description: description.trim() || null,
-          task_type: taskType,
-          status: 'pending',
+          todo_type: todoType,
+          status,
           priority,
-          created_by: user.id,
           assigned_to: assignedTo || null,
         })
+        .eq('id', todo.id)
         .select(
           `
         *,
-        created_by_user:profiles!tasks_created_by_fkey(
+        created_by_user:profiles!todos_created_by_fkey(
           email,
           full_name
         ),
-        assigned_to_user:profiles!tasks_assigned_to_fkey(
+        assigned_to_user:profiles!todos_assigned_to_fkey(
           email,
           full_name
         )
@@ -109,103 +117,140 @@ export default function NewTaskModal() {
         )
         .single();
 
-      if (insertError) throw insertError;
+      if (updateError) throw updateError;
 
-      // Reset Form Fields
-      setTitle('');
-      setDescription('');
-      setTaskType('general');
-      setPriority('medium');
-      setAssignedTo(null);
-
-      // Refresh Page and Close Modal
+      // Close Modal and Refresh
+      setIsEditDialogOpen(false);
       router.refresh();
-      setIsOpen(false);
     } catch (error) {
-      console.error('Error creating task:', error);
+      console.error('Error updating todo:', error);
       setError(
-        error instanceof Error ? error.message : 'Failed to create task'
+        error instanceof Error ? error.message : 'Failed to update to do item'
       );
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // Handle Todo Deletion
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this to do item? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDeleting(true);
+
+      // Delete todo (comments will be cascade deleted)
+      const { error: deleteError } = await supabase
+        .from('todos')
+        .delete()
+        .eq('id', todo.id);
+
+      if (deleteError) throw deleteError;
+
+      router.push('/todos');
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to delete to do item'
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
-    <>
-      {/* **Trigger Button to Open Modal and Fetch Profiles** */}
+    <div className="flex items-center gap-2">
+      {/* Edit Button */}
       <Button
-        onClick={() => {
-          setIsOpen(true);
-          fetchProfiles(); // Fetch profiles when modal opens
-        }}
         variant="default"
+        size="sm"
+        onClick={() => {
+          setIsEditDialogOpen(true);
+          fetchProfiles(); // Fetch profiles when edit dialog opens
+        }}
+        disabled={isSubmitting || isDeleting}
       >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Task
+        <Edit className="h-4 w-4 mr-1" />
+        Edit
       </Button>
 
-      {/* **Modal Dialog** */}
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      {/* Delete Button */}
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete
+      </Button>
+
+      {/* Edit Dialog */}
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Task</DialogTitle>
+            <DialogTitle>Edit To do</DialogTitle>
           </DialogHeader>
 
-          {/* **Error Message** */}
+          {/* Error Message */}
           {error && (
             <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
               {error}
             </div>
           )}
 
-          {/* **Task Creation Form** */}
-          <form onSubmit={handleSubmit} className="space-y-4 ">
-            {/* **Title Field** */}
+          {/* Edit Todo Form */}
+          <form onSubmit={handleEdit} className="space-y-4">
+            {/* Title Field */}
             <div>
               <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 name="title"
                 required
-                placeholder="Enter task title"
+                placeholder="Enter title"
                 value={title}
-                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
-            {/* **Description Field** */}
+            {/* Description Field */}
             <div>
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 required
-                placeholder="Enter task description"
+                placeholder="Enter description"
                 className="min-h-[100px]"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
 
-            {/* **Task Type Field** */}
+            {/* Todo Type Field */}
             <div>
-              <Label htmlFor="task_type">Task Type</Label>
+              <Label htmlFor="todo_type">Type</Label>
               <select
-                id="task_type" // Updated
-                name="task_type" // Updated
+                id="todo_type"
+                name="todo_type"
                 required
-                value={taskType} // Updated
-                onChange={(e) => setTaskType(e.target.value)}
+                value={todoType}
+                onChange={(e) => setTodoType(e.target.value as TodoCategory)}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
               >
-                <option value="general">General Task</option>
+                <option value="general">General</option>
                 <option value="minuted">Minuted Action</option>
               </select>
             </div>
 
-            {/* **Priority Field** */}
+            {/* Priority Field */}
             <div>
               <Label htmlFor="priority">Priority</Label>
               <select
@@ -213,7 +258,7 @@ export default function NewTaskModal() {
                 name="priority"
                 required
                 value={priority}
-                onChange={(e) => setPriority(e.target.value)}
+                onChange={(e) => setPriority(e.target.value as TodoPriority)}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
               >
                 <option value="low">Low</option>
@@ -223,7 +268,25 @@ export default function NewTaskModal() {
               </select>
             </div>
 
-            {/* **Assign To Field** */}
+            {/* Status Field */}
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                name="status"
+                required
+                value={status}
+                onChange={(e) => setStatus(e.target.value as TodoStatus)}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+              >
+                <option value="todo">To Do</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Assign To Field */}
             <div>
               <Label htmlFor="assigned_to">Assign To</Label>
               <select
@@ -251,23 +314,23 @@ export default function NewTaskModal() {
               </select>
             </div>
 
-            {/* **Form Actions** */}
-            <div className="flex justify-end space-x-2">
+            {/* Form Actions */}
+            <div className="flex justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setIsOpen(false)}
+                onClick={() => setIsEditDialogOpen(false)}
                 disabled={isSubmitting}
               >
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Task'}
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

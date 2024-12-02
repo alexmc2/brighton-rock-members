@@ -7,7 +7,7 @@ import {
   DevelopmentInitiativeWithDetails,
   DevelopmentStatus,
 } from '@/types/development';
-import DevelopmentActions from './development-actions';
+import DevelopmentActions from './initiative-actions';
 
 interface InitiativeHeaderProps {
   initiative: DevelopmentInitiativeWithDetails;
@@ -34,7 +34,7 @@ export default function InitiativeHeader({
           href="/development"
           className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
         >
-          ← Back to Development Initiatives
+          ← Back to Development Projects and Events
         </Link>
       </div>
 

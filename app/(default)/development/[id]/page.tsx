@@ -3,10 +3,13 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import supabaseAdmin from '@/lib/supabaseAdmin';
-import { DevelopmentInitiativeWithDetails } from '@/types/development';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentComment,
+} from '@/types/development';
 import InitiativeHeader from './initiative-header';
 import InitiativeDetails from './initiative-details';
-import CommentSection from './comment-section';
+import  CommentSection  from '@/components/ui/comments-section';
 
 export const metadata: Metadata = {
   title: 'Development Initiative Details',
@@ -73,7 +76,16 @@ export default async function InitiativeDetailPage({
         {/* Left column - Initiative details and comments */}
         <div className="xl:col-span-2 space-y-6">
           <InitiativeDetails initiative={initiative} />
-          <CommentSection initiative={initiative} />
+          <CommentSection<DevelopmentComment>
+            comments={initiative.comments}
+            resourceId={initiative.id}
+            resourceType={{
+              type: 'development',
+              field: 'initiative_id',
+              contentField: 'content',
+              userField: 'user_id',
+            }}
+          />
         </div>
       </div>
     </div>

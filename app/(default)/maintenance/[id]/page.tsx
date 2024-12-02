@@ -1,13 +1,14 @@
-// app/(default)/maintenance/[id]/page.tsx
-
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import supabaseAdmin from '@/lib/supabaseAdmin';
-import { MaintenanceRequestWithDetails } from '@/types/maintenance';
+import {
+  MaintenanceRequestWithDetails,
+  MaintenanceComment,
+} from '@/types/maintenance';
+import CommentSection from '@/components/ui/comments-section';
 import RequestHeader from './request-header';
 import RequestDetails from './request-details';
 import VisitScheduler from './visit-scheduler';
-import CommentSection from './comment-section';
 
 export const metadata: Metadata = {
   title: 'Maintenance Request - Co-op Management',
@@ -72,6 +73,24 @@ async function getMaintenanceRequest(id: string) {
   }
 }
 
+async function getHouses() {
+  try {
+    const { data: houses, error } = await supabaseAdmin
+      .from('houses')
+      .select('id, name')
+      .order('name', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return houses;
+  } catch (err) {
+    console.error('Error fetching houses:', err);
+    return [];
+  }
+}
+
 interface MaintenanceRequestPageProps {
   params: {
     id: string;
@@ -87,18 +106,27 @@ export default async function MaintenanceRequestPage({
     notFound();
   }
 
+  const houses = await getHouses();
+
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
       <RequestHeader request={request} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-        {/* Left column - Request details and comments */}
         <div className="xl:col-span-2 space-y-6">
-          <RequestDetails request={request} />
-          <CommentSection request={request} />
+          <RequestDetails request={request} houses={houses} />
+          <CommentSection<MaintenanceComment>
+            comments={request.comments}
+            resourceId={request.id}
+            resourceType={{
+              type: 'maintenance',
+              field: 'request_id',
+              contentField: 'comment',
+              userField: 'user_id',
+            }}
+          />
         </div>
 
-        {/* Right column - Visit scheduling */}
         <div>
           <VisitScheduler request={request} />
         </div>

@@ -184,7 +184,7 @@ export default function DevelopmentActions({
         disabled={isSubmitting || isDeleting}
       >
         <Edit className="h-4 w-4 mr-1" />
-        Edit Initiative
+        Edit
       </Button>
 
       {/* Delete Button */}
@@ -195,7 +195,7 @@ export default function DevelopmentActions({
         disabled={isDeleting}
       >
         <Trash2 className="h-4 w-4 mr-1" />
-        Delete Initiative
+        Delete
       </Button>
 
       {/* Edit Dialog */}

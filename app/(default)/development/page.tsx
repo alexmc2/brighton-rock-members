@@ -1,7 +1,7 @@
 // app/(default)/development/page.tsx
 
 import DevelopmentHeader from './development-header'; // Import the header component
-import InitiativeList from './initiative-list';
+import InitiativeList from './development-list';
 import { DevelopmentInitiativeWithDetails } from '@/types/development';
 import supabaseAdmin from '@/lib/supabaseAdmin';
 

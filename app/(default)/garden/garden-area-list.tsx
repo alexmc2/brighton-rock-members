@@ -111,7 +111,7 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
                     <tr key={task.id}>
                       <td className="px-4 py-3 align-middle">
                         <Link
-                          href={`/garden/task/${task.id}`}
+                          href={`/garden/${task.id}`}
                           className="text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300 font-medium"
                         >
                           {task.title}

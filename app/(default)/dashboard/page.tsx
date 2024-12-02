@@ -197,7 +197,7 @@ export default function Dashboard() {
   return (
     <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
       {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-tr from-violet-500 to-violet-400 dark:from-violet-600 dark:to-violet-500 p-4 sm:p-6 rounded-sm overflow-hidden mb-8">
+      <div className="relative bg-gradient-to-tr  from-violet-500 to-violet-400 dark:from-violet-600 dark:to-violet-500 p-4 sm:p-6 rounded-lg overflow-hidden mb-8">
         {/* Background illustration */}
         <div
           className="absolute right-0 top-0 -mt-4 mr-16 pointer-events-none hidden xl:block"
@@ -272,12 +272,12 @@ export default function Dashboard() {
         </div>
 
         {/* Content */}
-        <div className="relative">
-          <h1 className="text-2xl md:text-3xl text-white font-bold mb-1">
+        <div className="relative ">
+          <h1 className="text-2xl md:text-3xl text-white font-bold mb-1 py-2">
             Welcome to Brighton Rock Housing Co-op. 👋
           </h1>
           <p className="text-white opacity-90">
-            Here's what's happening in our community today:
+            Here's what's happening in our co-op today:
           </p>
         </div>
       </div>

@@ -212,11 +212,7 @@ export default function TaskList({ tasks }: TaskListProps) {
                     >
                       {task.title}
                     </Link>
-                    {task.description && (
-                      <div className="text-sm text-slate-500 dark:text-slate-400 truncate">
-                        {task.description}
-                      </div>
-                    )}
+                  
                   </TableCell>
                   <TableCell className="w-1/6">
                     {task.task_type === 'minuted'

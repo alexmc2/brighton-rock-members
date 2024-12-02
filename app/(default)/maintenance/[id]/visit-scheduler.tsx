@@ -1,11 +1,10 @@
-// app/(default)/maintenance/[id]/visit-scheduler.tsx
-
 'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { MaintenanceRequestWithDetails } from '@/types/maintenance';
+import { createMaintenanceVisitEvent } from '@/lib/actions/calendar';
 import { Button } from '@/components/ui/button';
 
 interface VisitSchedulerProps {
@@ -15,6 +14,7 @@ interface VisitSchedulerProps {
 export default function VisitScheduler({ request }: VisitSchedulerProps) {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -32,15 +32,32 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
       const estimatedDuration = formData.get('estimated_duration') as string;
       const notes = formData.get('notes') || null;
 
+      // Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      // Get user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, email')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+
       // Insert the visit
-      const { error: insertError } = await supabase
+      const { data: newVisit, error: insertError } = await supabase
         .from('maintenance_visits')
         .insert({
           request_id: request.id,
           scheduled_date: scheduledDate,
           estimated_duration: `${estimatedDuration} hours`,
           notes,
-        });
+        })
+        .select()
+        .single();
 
       if (insertError) throw insertError;
 
@@ -54,29 +71,24 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
         if (updateError) throw updateError;
       }
 
-      // Insert an event into the calendar_events table
-      const scheduledTime = new Date(scheduledDate);
-      let endTime = new Date(
-        scheduledTime.getTime() + parseInt(estimatedDuration) * 60 * 60 * 1000
+      // Create calendar event
+      await createMaintenanceVisitEvent(
+        newVisit.id,
+        request.title,
+        `Maintenance visit for: ${request.title}${
+          notes ? `\nNotes: ${notes}` : ''
+        }`,
+        scheduledDate,
+        `${estimatedDuration} hours`,
+        user.id,
+        profile.full_name || profile.email
       );
-
-      const { error: calendarError } = await supabase
-        .from('calendar_events')
-        .insert({
-          title: 'P4P Visit',
-          description: `Maintenance visit for: ${request.title}`,
-          start_time: scheduledTime.toISOString(),
-          end_time: endTime.toISOString(),
-          event_type: 'maintenance',
-          category: 'P4P Visit', // Ensure this matches your legend and color mapping
-        });
-
-      if (calendarError) throw calendarError;
 
       form.reset();
       router.refresh();
     } catch (err) {
       console.error('Error scheduling visit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to schedule visit');
     } finally {
       setIsSubmitting(false);
     }
@@ -89,8 +101,13 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
           Schedule Visit
         </h2>
 
+        {error && (
+          <div className="mb-4 p-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/50 rounded">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Date */}
           <div>
             <label
               htmlFor="scheduled_date"
@@ -104,11 +121,10 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               id="scheduled_date"
               required
               min={new Date().toISOString().split('T')[0]}
-              className="mt-1 block w-full rounded-lg border"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
             />
           </div>
 
-          {/* Time */}
           <div>
             <label
               htmlFor="scheduled_time"
@@ -121,11 +137,10 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               name="scheduled_time"
               id="scheduled_time"
               required
-              className="mt-1 block w-full rounded-lg border"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
             />
           </div>
 
-          {/* Estimated Duration */}
           <div>
             <label
               htmlFor="estimated_duration"
@@ -138,7 +153,7 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               id="estimated_duration"
               required
               defaultValue="1"
-              className="mt-1 block w-full rounded-lg border"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
             >
               <option value="1">1 hour</option>
               <option value="2">2 hours</option>
@@ -148,7 +163,6 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
             </select>
           </div>
 
-          {/* Notes */}
           <div>
             <label
               htmlFor="notes"
@@ -160,12 +174,11 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               name="notes"
               id="notes"
               rows={3}
-              className="mt-1 block w-full rounded-lg border"
+              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
               placeholder="Any special instructions or notes for the visit"
             />
           </div>
 
-          {/* Submit Button */}
           <div className="flex justify-end">
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Scheduling...' : 'Schedule Visit'}

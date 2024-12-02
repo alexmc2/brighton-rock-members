@@ -149,7 +149,7 @@ export default function Calendar({ initialEvents }: CalendarProps) {
                       )}`}
                     >
                       {format(new Date(event.start_time), 'HH:mm')} -{' '}
-                      {event.title}
+                      {`${event.category}: ${event.title}`}
                     </button>
                   ))}
                 </div>

@@ -108,7 +108,7 @@ export async function createGardenTaskEvent(
 
   // Create single calendar event
   return createCalendarEvent(
-    `Garden Task: ${title}`,
+    title,
     description,
     date,
     endTime,
@@ -165,4 +165,54 @@ export async function deleteCalendarEvent(eventId: string) {
   if (error) {
     throw new Error(`Failed to delete calendar event: ${error.message}`);
   }
+}
+
+export async function createMaintenanceVisitEvent(
+  visitId: string,
+  title: string,
+  description: string,
+  scheduledDate: string,
+  estimatedDuration: string,
+  userId: string,
+  fullName: string | null,
+) {
+  const supabase = createClientComponentClient();
+
+  // Delete any existing events for this visit
+  await supabase
+    .from("calendar_events")
+    .delete()
+    .eq("reference_id", visitId)
+    .eq("event_type", "maintenance_visit");
+
+  // Calculate end time based on duration
+  const startTime = new Date(scheduledDate);
+  const durationHours = parseInt(estimatedDuration.split(" ")[0]);
+  const endTime = new Date(
+    startTime.getTime() + (durationHours * 60 * 60 * 1000),
+  );
+
+  // Create the calendar event
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert({
+      title,
+      description: description,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      event_type: "maintenance_visit",
+      reference_id: visitId,
+      category: "P4P Visit",
+      created_by: userId,
+      full_name: fullName,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Calendar event creation error:", error);
+    throw new Error(`Failed to create calendar event: ${error.message}`);
+  }
+
+  return data;
 }

@@ -43,6 +43,10 @@ export interface EventParticipant {
   };
 }
 
+// Add to development.ts
+
+export type InitiativeType = 'event' | 'project';
+
 export interface DevelopmentInitiative {
   id: string;
   title: string;
@@ -50,12 +54,13 @@ export interface DevelopmentInitiative {
   status: DevelopmentStatus;
   priority: DevelopmentPriority;
   category: DevelopmentCategory;
+  initiative_type: InitiativeType; // Add this line
   created_by: string;
   created_at: string;
   updated_at: string;
   event_date: string | null;
-  start_time: string | null; // Added start_time field
-  duration: string | null; // Added duration field
+  start_time: string | null;
+  duration: string | null;
   location: string | null;
   max_participants: number | null;
   budget: number | null;

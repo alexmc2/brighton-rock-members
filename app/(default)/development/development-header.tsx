@@ -1,8 +1,7 @@
-// app/(default)/development/development-header.tsx
-
 'use client';
 
-import NewInitiativeModal from './new-initiative-modal';
+import NewEventModal from './new-event-modal';
+import NewProjectModal from './new-project-modal';
 
 export default function DevelopmentHeader() {
   return (
@@ -10,14 +9,14 @@ export default function DevelopmentHeader() {
       {/* Left: Title */}
       <div className="mb-4 sm:mb-0">
         <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">
-          Development Initiatives 🚀
+          Development Projects and Events 🚀
         </h1>
       </div>
 
       {/* Right: Actions */}
       <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-        {/* The button will appear here */}
-        <NewInitiativeModal />
+        <NewEventModal />
+        <NewProjectModal />
       </div>
     </div>
   );

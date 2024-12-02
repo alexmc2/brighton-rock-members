@@ -33,7 +33,7 @@ export interface MaintenanceComment {
   created_at: string
   user: {
     email: string
-    full_name?: string | null
+    full_name: string | null  // Removed the ? to match DevelopmentComment
   }
 }
 

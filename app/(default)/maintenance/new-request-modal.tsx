@@ -1,5 +1,3 @@
-// app/(default)/maintenance/new-request-modal.tsx
-
 'use client';
 
 import { Fragment, useState } from 'react';
@@ -67,10 +65,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
 
   return (
     <>
-      <button
-        className="btn bg-coop-600 hover:bg-coop-700 text-white"
-        onClick={() => setIsOpen(true)}
-      >
+      <Button onClick={() => setIsOpen(true)} variant="default">
         <svg
           className="w-4 h-4 fill-current opacity-50 shrink-0"
           viewBox="0 0 16 16"
@@ -78,7 +73,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
           <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
         </svg>
         <span className="hidden xs:block ml-2">New Maintenance Job</span>
-      </button>
+      </Button>
 
       <Transition show={isOpen} as={Fragment}>
         <Dialog onClose={() => setIsOpen(false)} className="relative z-50">
@@ -213,7 +208,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                         Cancel
                       </Button>
                       <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Creating...' : 'Create Request'}
+                        {isSubmitting ? 'Creating...' : 'Create Job'}
                       </Button>
                     </div>
                   </form>

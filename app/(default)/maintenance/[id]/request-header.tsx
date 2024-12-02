@@ -10,6 +10,7 @@ import {
   MaintenanceStatus,
 } from '@/types/maintenance';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 interface RequestHeaderProps {
   request: MaintenanceRequestWithDetails;
@@ -19,6 +20,7 @@ export default function RequestHeader({ request }: RequestHeaderProps) {
   const router = useRouter();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const supabase = createClientComponentClient();
 
   const getStatusColor = (status: MaintenanceStatus) => {
@@ -55,6 +57,49 @@ export default function RequestHeader({ request }: RequestHeaderProps) {
     }
   };
 
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this maintenance request? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    setIsDeleting(true);
+
+    try {
+      // First delete all visits
+      const { error: visitsError } = await supabase
+        .from('maintenance_visits')
+        .delete()
+        .eq('request_id', request.id);
+
+      if (visitsError) throw visitsError;
+
+      // Then delete all comments
+      const { error: commentsError } = await supabase
+        .from('maintenance_comments')
+        .delete()
+        .eq('request_id', request.id);
+
+      if (commentsError) throw commentsError;
+
+      // Finally delete the request
+      const { error: deleteError } = await supabase
+        .from('maintenance_requests')
+        .delete()
+        .eq('id', request.id);
+
+      if (deleteError) throw deleteError;
+
+      router.push('/maintenance');
+    } catch (err) {
+      console.error('Error deleting request:', err);
+      setIsDeleting(false);
+    }
+  };
+
   const statusOptions: MaintenanceStatus[] = [
     'pending',
     'scheduled',
@@ -78,12 +123,13 @@ export default function RequestHeader({ request }: RequestHeaderProps) {
         </h1>
 
         <div className="flex items-center space-x-3">
-          <Link
-            href={`/maintenance/${request.id}/edit`}
-            className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={isDeleting}
           >
-            Edit Details
-          </Link>
+            {isDeleting ? 'Deleting...' : 'Delete Maintenance Job'}
+          </Button>
 
           <div className="relative">
             <button

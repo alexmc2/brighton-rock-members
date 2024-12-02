@@ -1,34 +1,3 @@
-alex@alex-lenovo:~/projects/brighton-rock-members$ npm run dev
-
-> mosaic-next@0.1.0 dev
-> next dev
-
-  ▲ Next.js 14.2.18
-  - Local:        http://localhost:3000
-  - Environments: .env.local
-
- ✓ Starting...
- ✓ Ready in 1082ms
- ✓ Compiled /middleware in 167ms (211 modules)
- ○ Compiling / ...
- ✓ Compiled / in 1741ms (716 modules)
- GET / 307 in 1905ms
- ○ Compiling /dashboard ...
- ✓ Compiled /dashboard in 1262ms (1259 modules)
- GET /dashboard 200 in 1285ms
- ○ Compiling /tasks ...
- ✓ Compiled /tasks in 594ms (1570 modules)
- ✓ Compiled /tasks/[id] in 312ms (1591 modules)
- ✓ Compiled /garden in 316ms (1600 modules)
- ✓ Compiled /garden/task/[id] in 248ms (1617 modules)
- ✓ Compiled /calendar in 488ms (1771 modules)
- ✓ Compiled in 800ms (1659 modules)
- ✓ Compiled /_not-found in 381ms (1647 modules)
- GET /garden/area/b121da11-751b-43d6-8e9b-9d0c91f85a22 404 in 67ms
- ✓ Compiled / in 151ms (874 modules)
- ✓ Compiled /maintenance in 316ms (1662 modules)
-^C
-
 alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 .
 ├── app
@@ -197,14 +166,17 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 │   │   │   └── page.tsx
 │   │   ├── development
 │   │   │   ├── development-header.tsx
+│   │   │   ├── development-list.tsx
 │   │   │   ├── [id]
-│   │   │   │   ├── comment-section.tsx
+│   │   │   │   ├── initiative-actions.tsx
 │   │   │   │   ├── initiative-details.tsx
 │   │   │   │   ├── initiative-header.tsx
 │   │   │   │   ├── page.tsx
 │   │   │   │   └── participant-list.tsx
-│   │   │   ├── initiative-list.tsx
-│   │   │   ├── new-initiative-modal.tsx
+│   │   │   ├── initiative-card.tsx
+│   │   │   ├── new-development-modal.tsx
+│   │   │   ├── new-event-modal.tsx
+│   │   │   ├── new-project-modal.tsx
 │   │   │   └── page.tsx
 │   │   ├── ecommerce
 │   │   │   ├── (cart)
@@ -242,10 +214,13 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 │   │   ├── garden
 │   │   │   ├── garden-area-list.tsx
 │   │   │   ├── garden-header.tsx
+│   │   │   ├── [id]
+│   │   │   │   ├── page.tsx
+│   │   │   │   ├── task-actions.tsx
+│   │   │   │   ├── task-details.tsx
+│   │   │   │   └── task-header.tsx
 │   │   │   ├── new-garden-task-modal.tsx
-│   │   │   ├── page.tsx
-│   │   │   └── task
-│   │   │       └── [id]
+│   │   │   └── page.tsx
 │   │   ├── jobs
 │   │   │   ├── company
 │   │   │   │   └── page.tsx
@@ -258,11 +233,11 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 │   │   ├── layout.tsx
 │   │   ├── maintenance
 │   │   │   ├── [id]
-│   │   │   │   ├── comment-section.tsx
-│   │   │   │   ├── edit
 │   │   │   │   ├── page.tsx
+│   │   │   │   ├── request-actions
 │   │   │   │   ├── request-details.tsx
 │   │   │   │   ├── request-header.tsx
+│   │   │   │   ├── visit-form.tsx
 │   │   │   │   └── visit-scheduler.tsx
 │   │   │   ├── maintenance-header.tsx
 │   │   │   ├── maintenance-list.tsx
@@ -405,6 +380,7 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 │   │   ├── badge.tsx
 │   │   ├── button.tsx
 │   │   ├── card.tsx
+│   │   ├── comments-section.tsx
 │   │   ├── dialog.tsx
 │   │   ├── dropdown-menu.tsx
 │   │   ├── dropdown-profile.tsx
@@ -432,7 +408,6 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 │   ├── actions
 │   │   └── calendar.ts
 │   ├── actions.ts
-│   ├── development-colors.ts
 │   ├── stores
 │   │   └── calendar-store.ts
 │   ├── supabaseAdmin.ts
@@ -624,6 +599,7 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
 ├── tsconfig.json
 └── types
     ├── calendar.ts
+    ├── comments.ts
     ├── database.ts
     ├── development.ts
     ├── garden.ts
@@ -631,4 +607,4 @@ alex@alex-lenovo:~/projects/brighton-rock-members$ tree -L5 -I "node_modules"
     ├── maintenance.ts
     └── tasks.ts
 
-110 directories, 490 files
+109 directories, 498 files

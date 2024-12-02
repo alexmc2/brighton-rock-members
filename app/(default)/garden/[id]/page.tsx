@@ -3,10 +3,10 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import supabaseAdmin from '@/lib/supabaseAdmin';
-import { GardenTaskWithDetails } from '@/types/garden';
+import { GardenTaskWithDetails, GardenComment } from '@/types/garden';
+import CommentSection from '@/components/ui/comments-section';
 import TaskHeader from './task-header';
 import TaskDetails from './task-details';
-import CommentSection from './comment-section';
 
 export const metadata: Metadata = {
   title: 'Garden Task - Co-op Management',
@@ -74,10 +74,18 @@ export default async function GardenTaskPage({ params }: GardenTaskPageProps) {
       <TaskHeader task={task} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-        {/* Left column - Task details and comments */}
         <div className="xl:col-span-2 space-y-6">
           <TaskDetails task={task} />
-          <CommentSection task={task} />
+          <CommentSection<GardenComment>
+            comments={task.comments}
+            resourceId={task.id}
+            resourceType={{
+              type: 'garden',
+              field: 'task_id',
+              contentField: 'comment',
+              userField: 'user_id',
+            }}
+          />
         </div>
       </div>
     </div>

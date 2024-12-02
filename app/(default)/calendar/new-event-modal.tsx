@@ -219,8 +219,6 @@ export default function NewEventModal() {
                         <option value="Sub Meeting">Sub Meeting</option>
                         <option value="Allocations">Allocations</option>
                         <option value="Social">Social</option>
-                        <option value="P4P Visit">P4P Visit</option>
-                        <option value="Garden Task">Garden Task</option>
                         <option value="AGM">AGM</option>
                         <option value="EGM">EGM</option>
                         <option value="General Maintenance">

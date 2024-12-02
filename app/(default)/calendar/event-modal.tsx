@@ -5,7 +5,12 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,10 +32,28 @@ export default function EventModal() {
     if (selectedEventId) {
       supabase
         .from('calendar_events')
-        .select('*, created_by_user:profiles!calendar_events_created_by_fkey(email), last_modified_by_user:profiles!calendar_events_last_modified_by_fkey(email)')
+        .select(
+          `
+          *,
+          created_by_user:profiles!calendar_events_created_by_fkey(
+            email,
+            full_name
+          ),
+          last_modified_by_user:profiles!calendar_events_last_modified_by_fkey(
+            email,
+            full_name
+          )
+        `
+        )
         .eq('id', selectedEventId)
         .single()
-        .then(({ data }) => setEvent(data));
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching event:', error);
+          } else {
+            setEvent(data);
+          }
+        });
     } else {
       setEvent(null);
       setIsEditing(false);
@@ -46,8 +69,12 @@ export default function EventModal() {
     const formData = new FormData(form);
 
     try {
-      const startTime = new Date(`${formData.get('date')}T${formData.get('start_time')}:00`);
-      const endTime = new Date(`${formData.get('date')}T${formData.get('end_time')}:00`);
+      const startTime = new Date(
+        `${formData.get('date')}T${formData.get('start_time')}:00`
+      );
+      const endTime = new Date(
+        `${formData.get('date')}T${formData.get('end_time')}:00`
+      );
 
       const { error } = await supabase
         .from('calendar_events')
@@ -71,7 +98,10 @@ export default function EventModal() {
   };
 
   const handleDelete = async () => {
-    if (!event || !window.confirm('Are you sure you want to delete this event?')) {
+    if (
+      !event ||
+      !window.confirm('Are you sure you want to delete this event?')
+    ) {
       return;
     }
 
@@ -96,16 +126,14 @@ export default function EventModal() {
   if (!event) return null;
 
   return (
-    <Dialog 
-      open={!!selectedEventId} 
+    <Dialog
+      open={!!selectedEventId}
       onOpenChange={(open) => !open && setSelectedEventId(null)}
     >
       <DialogContent>
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
-            <span>
-              {isEditing ? 'Edit Event' : event.title}
-            </span>
+            <span>{isEditing ? 'Edit Event' : event.title}</span>
             {!isEditing && event.event_type === 'manual' && (
               <div className="flex items-center gap-2">
                 <Button
@@ -157,7 +185,10 @@ export default function EventModal() {
                   type="date"
                   id="date"
                   name="date"
-                  defaultValue={format(new Date(event.start_time), 'yyyy-MM-dd')}
+                  defaultValue={format(
+                    new Date(event.start_time),
+                    'yyyy-MM-dd'
+                  )}
                   required
                 />
               </div>
@@ -211,7 +242,8 @@ export default function EventModal() {
             <div>
               <Label>Time</Label>
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                {format(new Date(event.start_time), 'MMMM d, yyyy h:mm a')} - {format(new Date(event.end_time), 'h:mm a')}
+                {format(new Date(event.start_time), 'MMMM d, yyyy h:mm a')} -{' '}
+                {format(new Date(event.end_time), 'h:mm a')}
               </p>
             </div>
 
@@ -226,7 +258,8 @@ export default function EventModal() {
               <div>
                 <Label>Created By</Label>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {event.created_by_user.email}
+                  {event.created_by_user.full_name ||
+                    event.created_by_user.email}
                 </p>
               </div>
             )}
@@ -235,7 +268,8 @@ export default function EventModal() {
               <div>
                 <Label>Last Modified By</Label>
                 <p className="text-sm text-slate-600 dark:text-slate-400">
-                  {event.last_modified_by_user.email}
+                  {event.last_modified_by_user.full_name ||
+                    event.last_modified_by_user.email}
                 </p>
               </div>
             )}

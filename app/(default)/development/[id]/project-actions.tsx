@@ -189,7 +189,7 @@ const handleDelete = async () => {
                     setCategory(e.target.value as DevelopmentCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
                 >
                   <option value="general">General</option>
                   <option value="development_meeting">
@@ -227,7 +227,7 @@ const handleDelete = async () => {
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
@@ -247,7 +247,7 @@ const handleDelete = async () => {
                   setPriority(e.target.value as DevelopmentPriority)
                 }
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>

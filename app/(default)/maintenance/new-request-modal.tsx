@@ -128,7 +128,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                         required
-                        className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
                       />
                     </div>
 
@@ -146,7 +146,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                         onChange={(e) => setDescription(e.target.value)}
                         required
                         rows={3}
-                        className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
                       />
                     </div>
 
@@ -163,7 +163,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                         required
                         onChange={(e) => setSelectedHouse(e.target.value)}
                         value={selectedHouse}
-                        className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
                       >
                         <option value="">Select a house</option>
                         {houses.map((house) => (
@@ -189,7 +189,7 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
                           setPriority(e.target.value as MaintenancePriority)
                         }
                         required
-                        className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
                       >
                         <option value="low">Low</option>
                         <option value="medium">Medium</option>

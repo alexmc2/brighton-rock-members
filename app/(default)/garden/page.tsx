@@ -29,7 +29,7 @@ async function getGardenAreas() {
         plants:garden_plants(*)
       `
       )
-      .order('created_at', { ascending: false });
+      .order('display_order', { ascending: true });
 
     if (error) {
       console.error('Error fetching garden areas:', error);

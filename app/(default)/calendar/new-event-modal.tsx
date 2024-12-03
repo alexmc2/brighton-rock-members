@@ -113,7 +113,7 @@ export default function NewEventModal() {
                 leaveFrom="opacity-100 translate-y-0 sm:scale-100"
                 leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
               >
-                <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl border border-green-500">
+                <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl ">
                   <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
                     Add New Event
                   </Dialog.Title>
@@ -135,7 +135,7 @@ export default function NewEventModal() {
                         placeholder="Event title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-md px-3 py-2"
+                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md px-3 py-2"
                       />
                     </div>
 
@@ -146,7 +146,7 @@ export default function NewEventModal() {
                         id="description"
                         name="description"
                         placeholder="Event description"
-                        className="min-h-[100px] dark:bg-slate-700"
+                        className="min-h-[100px] dark:bg-slate-700 dark:text-slate-100"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                       />
@@ -164,7 +164,7 @@ export default function NewEventModal() {
                           min={new Date().toISOString().split('T')[0]}
                           value={date}
                           onChange={(e) => setDate(e.target.value)}
-                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-md px-3 py-2"
+                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md px-3 py-2"
                         />
                       </div>
 
@@ -177,7 +177,7 @@ export default function NewEventModal() {
                           required
                           value={startTime}
                           onChange={(e) => setStartTime(e.target.value)}
-                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-md px-3 py-2"
+                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md px-3 py-2"
                         />
                       </div>
 
@@ -187,7 +187,7 @@ export default function NewEventModal() {
                           id="duration"
                           name="duration"
                           required
-                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-md px-3 py-2"
+                          className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md px-3 py-2"
                           value={duration}
                           onChange={(e) => setDuration(e.target.value)}
                         >
@@ -209,7 +209,7 @@ export default function NewEventModal() {
                         id="category"
                         name="category"
                         required
-                        className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-md px-3 py-2"
+                        className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md px-3 py-2"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                       >

@@ -38,20 +38,20 @@ export async function createCalendarEvent(
   description: string | null,
   startTime: Date,
   endTime: Date,
-  eventType: "manual" | "garden_task" = "manual",
+  eventType: "manual" | "garden_task" | "development_event" | "maintenance_visit" = "manual",
   userId: string,
   fullName?: string | null,
   referenceId?: string,
 ) {
   const supabase = createClientComponentClient();
 
-  // Delete any existing events for this reference if it's a garden task
-  if (eventType === "garden_task" && referenceId) {
+  // Delete any existing events for this reference if it's a garden task or development event
+  if ((eventType === "garden_task" || eventType === "development_event") && referenceId) {
     await supabase
       .from("calendar_events")
       .delete()
       .eq("reference_id", referenceId)
-      .eq("event_type", "garden_task");
+      .eq("event_type", eventType);
   }
 
   const { data, error } = await supabase
@@ -65,7 +65,14 @@ export async function createCalendarEvent(
       created_by: userId,
       full_name: fullName,
       reference_id: referenceId,
-      category: eventType === "garden_task" ? "Garden Task" : "Miscellaneous",
+      category: 
+        eventType === "garden_task" 
+          ? "Garden" 
+          : eventType === "development_event"
+          ? "Development Event"
+          : eventType === "maintenance_visit"
+          ? "P4P Visit"
+          : "Miscellaneous",
     })
     .select()
     .single();
@@ -215,4 +222,45 @@ export async function createMaintenanceVisitEvent(
   }
 
   return data;
+}
+
+export async function createDevelopmentEvent(
+  title: string,
+  description: string,
+  eventDate: string,
+  startTime: string | null,
+  duration: string | null,
+  userId: string,
+  fullName: string | null,
+  initiativeId: string,
+) {
+  // Create a Date object for the event date
+  const date = new Date(eventDate);
+
+  // If there's a scheduled time, parse and set it
+  if (startTime) {
+    const [hours, minutes] = startTime.split(':');
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+  } else {
+    // Default to 9 AM if no time specified
+    date.setHours(9, 0);
+  }
+
+  // Calculate end time based on duration
+  const durationMs = parseDuration(duration);
+
+  // End time is start time plus duration
+  const endTime = new Date(date.getTime() + durationMs);
+
+  // Create single calendar event
+  return createCalendarEvent(
+    title,
+    description,
+    date,
+    endTime,
+    'development_event',
+    userId,
+    fullName,
+    initiativeId,
+  );
 }

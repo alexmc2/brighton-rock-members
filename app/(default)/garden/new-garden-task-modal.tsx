@@ -130,13 +130,13 @@ export default function NewGardenTaskModal() {
         variant="default"
       >
         <Plus className="h-4 w-4 mr-2" />
-        Add Task
+        Add Job
       </Button>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>New Garden Task</DialogTitle>
+            <DialogTitle>New Garden Job</DialogTitle>
           </DialogHeader>
 
           {error && (
@@ -152,8 +152,8 @@ export default function NewGardenTaskModal() {
                 id="title"
                 name="title"
                 required
-                placeholder="Enter task title"
-                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
+                placeholder="Enter job title"
+                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
               />
             </div>
 
@@ -163,8 +163,8 @@ export default function NewGardenTaskModal() {
                 id="description"
                 name="description"
                 required
-                placeholder="Enter task description"
-                className="min-h-[100px] "
+                placeholder="Enter job description"
+                className="min-h-[100px] dark:bg-slate-700 dark:text-slate-100"
               />
             </div>
 
@@ -175,7 +175,7 @@ export default function NewGardenTaskModal() {
                   id="area_id"
                   name="area_id"
                   required
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select an area</option>
                   {areas.map((area) => (
@@ -193,7 +193,7 @@ export default function NewGardenTaskModal() {
                   name="priority"
                   required
                   defaultValue="medium"
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -209,7 +209,7 @@ export default function NewGardenTaskModal() {
                   name="assigned_to"
                   placeholder="Enter any name"
                   defaultValue="Everyone"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
+                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
                 />
               </div>
 
@@ -219,7 +219,7 @@ export default function NewGardenTaskModal() {
                   type="date"
                   id="due_date"
                   name="due_date"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
+                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
                 />
               </div>
 
@@ -229,7 +229,7 @@ export default function NewGardenTaskModal() {
                   type="time"
                   id="scheduled_time"
                   name="scheduled_time"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-md py-5"
+                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
                 />
               </div>
 
@@ -239,7 +239,7 @@ export default function NewGardenTaskModal() {
                 <select
                   id="duration"
                   name="duration"
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -262,7 +262,7 @@ export default function NewGardenTaskModal() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Task'}
+                {isSubmitting ? 'Creating...' : 'Create Job'}
               </Button>
             </div>
           </form>

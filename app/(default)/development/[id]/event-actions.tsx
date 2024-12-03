@@ -23,6 +23,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Edit, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { createDevelopmentEvent } from '@/lib/actions/calendar';
 
 interface EventActionsProps {
   initiative: DevelopmentInitiativeWithDetails;
@@ -72,6 +73,14 @@ const handleDelete = async () => {
   try {
     setIsDeleting(true);
 
+    // Delete associated calendar events first
+    await supabase
+      .from("calendar_events")
+      .delete()
+      .eq("reference_id", initiative.id)
+      .eq("event_type", "development_event");
+
+    // Then delete the initiative
     const { data, error } = await supabase.rpc('delete_initiative', {
       p_initiative_id: initiative.id,
     });
@@ -112,6 +121,14 @@ const handleDelete = async () => {
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
+      // Get user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+
       // Parse duration to interval
       let durationInterval: string | null = null;
       if (duration) {
@@ -142,6 +159,20 @@ const handleDelete = async () => {
         .eq('id', initiative.id);
 
       if (updateError) throw updateError;
+
+      // Update calendar event if date is set
+      if (eventDate) {
+        await createDevelopmentEvent(
+          title,
+          description,
+          eventDate,
+          startTime,
+          duration,
+          user.id,
+          profile.full_name,
+          initiative.id
+        );
+      }
 
       setIsEditDialogOpen(false);
       router.refresh();
@@ -214,7 +245,7 @@ const handleDelete = async () => {
                     setCategory(e.target.value as DevelopmentCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
                 >
                   <option value="general">General</option>
                   <option value="development_meeting">
@@ -278,7 +309,7 @@ const handleDelete = async () => {
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -324,7 +355,7 @@ const handleDelete = async () => {
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
@@ -344,7 +375,7 @@ const handleDelete = async () => {
                   setPriority(e.target.value as DevelopmentPriority)
                 }
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>

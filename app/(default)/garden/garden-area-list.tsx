@@ -9,7 +9,7 @@ import {
   GardenAreaWithDetails,
   GardenTaskStatus,
   GardenTask,
-  GardenComment
+  GardenComment,
 } from '@/types/garden';
 import { Button } from '@/components/ui/button';
 import {
@@ -39,10 +39,14 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
 
   const getStatusColor = (status: GardenTaskStatus) => {
     const colors = {
-      pending: 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
-      in_progress: 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
-      completed: 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200',
-      cancelled: 'bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200',
+      pending:
+        'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-200',
+      in_progress:
+        'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200',
+      completed:
+        'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200',
+      cancelled:
+        'bg-gray-100 dark:bg-gray-900/50 text-gray-800 dark:text-gray-200',
     };
     return colors[status];
   };
@@ -50,7 +54,8 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
   const getPriorityColor = (priority: string) => {
     const colors: Record<string, string> = {
       low: 'bg-slate-100 text-slate-600 dark:bg-slate-500/20 dark:text-slate-400',
-      medium: 'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
+      medium:
+        'bg-blue-100 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400',
       high: 'bg-orange-100 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400',
       urgent: 'bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400',
     };
@@ -80,16 +85,19 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
           >
             All Status
           </Button>
-          {['pending', 'in_progress', 'completed', 'cancelled'].map((status) => (
-            <Button
-              key={status}
-              variant={statusFilter === status ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setStatusFilter(status as GardenTaskStatus)}
-            >
-              {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
-            </Button>
-          ))}
+          {['pending', 'in_progress', 'completed', 'cancelled'].map(
+            (status) => (
+              <Button
+                key={status}
+                variant={statusFilter === status ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setStatusFilter(status as GardenTaskStatus)}
+              >
+                {status.charAt(0).toUpperCase() +
+                  status.slice(1).replace('_', ' ')}
+              </Button>
+            )
+          )}
         </div>
       </div>
 
@@ -144,58 +152,74 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
                     <Table className="min-w-[800px] w-full">
                       <TableHeader>
                         <TableRow>
-                          <TableHead className="w-[30%]">Task</TableHead>
-                          <TableHead className="w-[15%]">Status</TableHead>
-                          <TableHead className="w-[15%]">Priority</TableHead>
-                          <TableHead className="w-[15%]">Due Date</TableHead>
-                          <TableHead className="w-[15%]">Assigned To</TableHead>
+                          <TableHead className="w-[20%]">Job Title</TableHead>
+                          <TableHead className="w-[14%]">Status</TableHead>
+                          <TableHead className="w-[14%]">Priority</TableHead>
+                          <TableHead className="w-[14%]">Created</TableHead>
+                          <TableHead className="w-[14%]">Due Date</TableHead>
+                          <TableHead className="w-[14%]">Assigned To</TableHead>
                           <TableHead className="w-[10%]">Comments</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {(paginatedTasks as GardenTaskWithComments[]).map((task) => (
-                          <TableRow key={task.id}>
-                            <TableCell>
-                              <Link
-                                href={`/garden/${task.id}`}
-                                className="font-medium text-green-600 dark:text-green-400 hover:underline"
-                              >
-                                {task.title}
-                              </Link>
-                            </TableCell>
-                            <TableCell>
-                              <div
-                                className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
-                                  task.status
-                                )}`}
-                              >
-                                {task.status.charAt(0).toUpperCase() +
-                                  task.status.slice(1).replace('_', ' ')}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div
-                                className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
-                                  task.priority
-                                )}`}
-                              >
-                                {task.priority.charAt(0).toUpperCase() +
-                                  task.priority.slice(1)}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {task.due_date
-                                ? format(new Date(task.due_date), 'MMM d, yyyy')
-                                : '-'}
-                            </TableCell>
-                            <TableCell>
-                              {task.assigned_to && task.assigned_to.trim() ? task.assigned_to : '-'}
-                            </TableCell>
-                            <TableCell className="text-center">
-                              {task.comments.length}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {(paginatedTasks as GardenTaskWithComments[]).map(
+                          (task) => (
+                            <TableRow key={task.id}>
+                              <TableCell>
+                                <Link
+                                  href={`/garden/${task.id}`}
+                                  className="font-medium text-green-600 dark:text-green-400 hover:underline"
+                                >
+                                  {task.title}
+                                </Link>
+                              </TableCell>
+                              <TableCell>
+                                <div
+                                  className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
+                                    task.status
+                                  )}`}
+                                >
+                                  {task.status.charAt(0).toUpperCase() +
+                                    task.status.slice(1).replace('_', ' ')}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                <div
+                                  className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
+                                    task.priority
+                                  )}`}
+                                >
+                                  {task.priority.charAt(0).toUpperCase() +
+                                    task.priority.slice(1)}
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {task.created_at
+                                  ? format(
+                                      new Date(task.created_at),
+                                      'MMM d, yyyy'
+                                    )
+                                  : '-'}
+                              </TableCell>
+                              <TableCell>
+                                {task.due_date
+                                  ? format(
+                                      new Date(task.due_date),
+                                      'MMM d, yyyy'
+                                    )
+                                  : '-'}
+                              </TableCell>
+                              <TableCell>
+                                {task.assigned_to && task.assigned_to.trim()
+                                  ? task.assigned_to
+                                  : '-'}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {task.comments.length}
+                              </TableCell>
+                            </TableRow>
+                          )
+                        )}
                         {paginatedTasks.length === 0 && (
                           <TableRow>
                             <TableCell colSpan={6} className="text-center py-8">
@@ -224,7 +248,9 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
                     <ul className="flex justify-center">
                       <li className="ml-3 first:ml-0">
                         <button
-                          onClick={() => handlePageChange(area.id, currentPage - 1)}
+                          onClick={() =>
+                            handlePageChange(area.id, currentPage - 1)
+                          }
                           disabled={currentPage === 1}
                           className={`btn ${
                             currentPage === 1
@@ -237,7 +263,9 @@ export default function GardenAreaList({ areas }: GardenAreaListProps) {
                       </li>
                       <li className="ml-3 first:ml-0">
                         <button
-                          onClick={() => handlePageChange(area.id, currentPage + 1)}
+                          onClick={() =>
+                            handlePageChange(area.id, currentPage + 1)
+                          }
                           disabled={currentPage >= totalPages}
                           className={`btn ${
                             currentPage >= totalPages

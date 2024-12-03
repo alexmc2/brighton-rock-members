@@ -216,6 +216,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 required
                 placeholder="Enter title"
                 value={title}
+                className="dark:bg-slate-700 dark:text-slate-100"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
@@ -228,7 +229,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 name="description"
                 required
                 placeholder="Enter description"
-                className="min-h-[100px]"
+                className="min-h-[100px] dark:bg-slate-700 dark:text-slate-100"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -243,7 +244,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 required
                 value={todoType}
                 onChange={(e) => setTodoType(e.target.value as TodoCategory)}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
               >
                 <option value="general">General</option>
                 <option value="minuted">Minuted Action</option>
@@ -259,7 +260,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 required
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as TodoPriority)}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-2"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -277,7 +278,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 required
                 value={status}
                 onChange={(e) => setStatus(e.target.value as TodoStatus)}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-2"
               >
                 <option value="todo">To Do</option>
                 <option value="in_progress">In Progress</option>
@@ -296,7 +297,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
                 onChange={(e) =>
                   setAssignedTo(e.target.value === '' ? null : e.target.value)
                 }
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 px-3 py-2"
                 disabled={isFetchingProfiles}
               >
                 <option value="">Unassigned</option>

@@ -11,6 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Plus, Check } from 'lucide-react';
 import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
 import { Checkbox } from '@/components/ui/checkbox';
+import { createDevelopmentEvent } from '@/lib/actions/calendar';
 
 export default function NewEventModal() {
   const router = useRouter();
@@ -57,6 +58,14 @@ export default function NewEventModal() {
       } = await supabase.auth.getUser();
       if (userError || !user) throw new Error('User not authenticated');
 
+      // Get user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+
       // Parse duration to interval
       let durationInterval: string | null = null;
       if (duration) {
@@ -79,14 +88,31 @@ export default function NewEventModal() {
         duration: durationInterval,
         location: location.trim() || null,
         max_participants: openToEveryone ? 12 : null,
-        open_to_everyone: openToEveryone, // Add this line
+        open_to_everyone: openToEveryone,
       };
 
-      const { error: insertError } = await supabase
+      // Insert the development initiative
+      const { data: newInitiative, error: insertError } = await supabase
         .from('development_initiatives')
-        .insert(data);
+        .insert(data)
+        .select()
+        .single();
 
       if (insertError) throw insertError;
+
+      // Create calendar event if date is set
+      if (eventDate && newInitiative) {
+        await createDevelopmentEvent(
+          title,
+          description,
+          eventDate,
+          startTime,
+          duration,
+          user.id,
+          profile.full_name,
+          newInitiative.id
+        );
+      }
 
       resetForm();
       setIsOpen(false);

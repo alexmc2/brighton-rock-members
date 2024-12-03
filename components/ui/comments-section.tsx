@@ -21,6 +21,7 @@ const getTableName = (type: CommentResourceType['type']) => {
     garden: 'garden_comments',
     maintenance: 'maintenance_comments',
     task: 'task_comments',
+    todo: 'todo_comments'
   };
   return tables[type];
 };

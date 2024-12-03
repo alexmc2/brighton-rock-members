@@ -68,7 +68,7 @@ export default function Calendar({ initialEvents }: CalendarProps) {
         return 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300';
       case 'P4P Visit':
         return 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300';
-      case 'Garden Task':
+      case 'Garden':
         return 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300';
       case 'AGM':
         return 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300';
@@ -80,7 +80,7 @@ export default function Calendar({ initialEvents }: CalendarProps) {
         return 'bg-lime-100 dark:bg-lime-900/50 text-lime-700 dark:text-lime-300';
       case 'Treasury Meeting':
         return 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300';
-      case 'Development':
+      case 'Development Event':
         return 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300';
       case 'Miscellaneous':
         return 'bg-gray-100 dark:bg-gray-900/50 text-gray-700 dark:text-gray-300';
@@ -149,7 +149,11 @@ export default function Calendar({ initialEvents }: CalendarProps) {
                       )}`}
                     >
                       {format(new Date(event.start_time), 'HH:mm')} -{' '}
-                      {`${event.category}: ${event.title}`}
+                      {`${
+                        event.category === 'Development Event'
+                          ? 'Development'
+                          : event.category
+                      }: ${event.title}`}
                     </button>
                   ))}
                 </div>

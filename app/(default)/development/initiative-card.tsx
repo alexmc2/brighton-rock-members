@@ -38,13 +38,13 @@ interface InitiativeCardProps {
 // Helper function to get category icon
 const getCategoryIcon = (category: DevelopmentCategory) => {
   const icons: Record<DevelopmentCategory, JSX.Element> = {
-    development_meeting: <Users2 className="w-4 h-4" />,
-    social: <Users className="w-4 h-4" />,
-    outreach: <Globe2 className="w-4 h-4" />,
-    policy: <BookOpen className="w-4 h-4" />,
-    training: <GraduationCap className="w-4 h-4" />,
-    research: <Code className="w-4 h-4" />,
-    general: <Rocket className="w-4 h-4" />,
+    development_meeting: <Users2 className="w-5 h-5" />,
+    social: <Users className="w-5 h-5" />,
+    outreach: <Globe2 className="w-5 h-5" />,
+    policy: <BookOpen className="w-5 h-5" />,
+    training: <GraduationCap className="w-5 h-5" />,
+    research: <Code className="w-5 h-5" />,
+    general: <Rocket className="w-5 h-5" />,
   };
   return icons[category];
 };
@@ -66,37 +66,54 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
 
   const statusColors: Record<DevelopmentStatus, string> = {
     active:
-      'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+      'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300',
     completed:
-      'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+      'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
     on_hold:
-      'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
-    cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300',
+    cancelled: 
+      'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
   };
 
   const priorityColors: Record<DevelopmentPriority, string> = {
-    low: 'bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200',
-    medium: 'bg-blue-100 text-blue-800 dark:bg-blue-800 dark:text-blue-200',
-    high: 'bg-orange-100 text-orange-800 dark:bg-orange-800 dark:text-orange-200',
-    urgent: 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-200',
+    low: 'bg-slate-100 text-slate-800 dark:bg-slate-700/50 dark:text-slate-300',
+    medium: 'bg-blue-100 text-blue-800 dark:bg-blue-700/50 dark:text-blue-300',
+    high: 'bg-orange-100 text-orange-800 dark:bg-orange-700/50 dark:text-orange-300',
+    urgent: 'bg-red-100 text-red-800 dark:bg-red-700/50 dark:text-red-300',
+  };
+
+  const categoryColors: Record<DevelopmentCategory, string> = {
+    development_meeting: 'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300',
+    social: 'bg-pink-100 text-pink-800 dark:bg-pink-800/30 dark:text-pink-300',
+    outreach: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/30 dark:text-cyan-300',
+    policy: 'bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300',
+    training: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300',
+    research: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-300',
+    general: 'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-300',
   };
 
   return (
     <Card className="flex flex-col h-full bg-white dark:bg-slate-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
       <div className="p-5 flex flex-col h-full">
-        {/* Header with Type Badge and Category */}
-        <div className="flex justify-between items-start mb-4">
-          <Badge variant={isEvent ? 'default' : 'secondary'} className="mb-2">
+        {/* Header with Type Badge and Category - Updated sizing and alignment */}
+        <div className="flex justify-between items-center mb-4 pl-0">
+          <Badge 
+            className={`mb-0 px-3 py-1.5 text-sm ${
+              isEvent 
+                ? 'bg-green-100/80 text-green-800 dark:bg-green-800/40 dark:text-green-300' 
+                : 'bg-blue-100/80 text-blue-800 dark:bg-blue-800/40 dark:text-blue-300'
+            }`}
+          >
             {isEvent ? (
-              <Calendar className="w-3 h-3 mr-1" />
+              <Calendar className="w-4 h-4 mr-1.5" />
             ) : (
-              <LayoutPanelLeft className="w-3 h-3 mr-1" />
+              <LayoutPanelLeft className="w-4 h-4 mr-1.5" />
             )}
             {isEvent ? 'Event' : 'Project'}
           </Badge>
-          <div className="flex items-center">
+          <div className={`flex items-center px-3 py-1.5 rounded-full ${categoryColors[initiative.category]}`}>
             {getCategoryIcon(initiative.category)}
-            <span className="ml-1 text-xs text-slate-600 dark:text-slate-400">
+            <span className="ml-1.5 text-sm capitalize">
               {initiative.category.replace('_', ' ')}
             </span>
           </div>
@@ -104,7 +121,7 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
 
         {/* Title */}
         <Link href={`/development/${initiative.id}`}>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-2 hover:text-green-600 dark:hover:text-green-400">
+          <h3 className="text-lg lg:text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 hover:text-green-600 dark:hover:text-green-400">
             {initiative.title}
           </h3>
         </Link>

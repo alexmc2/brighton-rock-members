@@ -15,7 +15,7 @@ export default function TaskDetails({ task }: TaskDetailsProps) {
       <div className="px-5 py-4">
         <div className="mb-4">
           <h2 className="font-semibold text-slate-800 dark:text-slate-100">
-            Task Details
+            Job Details
           </h2>
         </div>
 

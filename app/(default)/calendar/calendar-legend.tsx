@@ -9,7 +9,7 @@ export default function CalendarLegend() {
     { name: 'Allocations', colorClass: 'bg-teal-500' },
     { name: 'Social', colorClass: 'bg-green-500' },
     { name: 'P4P Visit', colorClass: 'bg-red-500' },
-    { name: 'Garden Task', colorClass: 'bg-purple-500' },
+    { name: 'Garden', colorClass: 'bg-purple-500' },
     { name: 'AGM', colorClass: 'bg-orange-500' },
     { name: 'EGM', colorClass: 'bg-pink-500' },
     { name: 'General Maintenance', colorClass: 'bg-yellow-500' },

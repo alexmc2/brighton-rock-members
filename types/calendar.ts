@@ -4,7 +4,7 @@ export interface CalendarEvent {
   description: string | null;
   start_time: string;
   end_time: string;
-  event_type: "maintenance_visit" | "garden_task" | "manual";
+  event_type: "maintenance_visit" | "garden_task" | "development_event" | "manual";
   reference_id: string | null;
   created_at: string;
   updated_at: string;

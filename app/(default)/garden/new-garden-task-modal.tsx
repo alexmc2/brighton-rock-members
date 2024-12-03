@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -122,60 +123,61 @@ export default function NewGardenTaskModal() {
 
   return (
     <>
-      <Button
-        onClick={() => {
-          setIsOpen(true);
-          fetchAreas();
-        }}
-        variant="default"
-      >
-        <Plus className="h-4 w-4 mr-2" />
-        Add Job
-      </Button>
-
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        <DialogTrigger asChild>
+          <Button
+            onClick={() => {
+              setIsOpen(true);
+              fetchAreas();
+            }}
+            variant="default"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Job
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>New Garden Job</DialogTitle>
           </DialogHeader>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
-              {error}
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
               <Input
                 id="title"
                 name="title"
                 required
                 placeholder="Enter job title"
-                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 required
                 placeholder="Enter job description"
-                className="min-h-[100px] dark:bg-slate-700 dark:text-slate-100"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="area_id">Area</Label>
+                <Label htmlFor="area_id" className="text-slate-900 dark:text-slate-300">Area</Label>
                 <select
                   id="area_id"
                   name="area_id"
                   required
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select an area</option>
                   {areas.map((area) => (
@@ -187,13 +189,13 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
                 <select
                   id="priority"
                   name="priority"
                   required
                   defaultValue="medium"
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -203,43 +205,42 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="assigned_to">Assigned To</Label>
+                <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assigned To</Label>
                 <Input
                   id="assigned_to"
                   name="assigned_to"
                   placeholder="Enter any name"
                   defaultValue="Everyone"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <Label htmlFor="due_date">Date</Label>
+                <Label htmlFor="due_date" className="text-slate-900 dark:text-slate-300">Date</Label>
                 <Input
                   type="date"
                   id="due_date"
                   name="due_date"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
               <div>
-                <Label htmlFor="scheduled_time">Time</Label>
+                <Label htmlFor="scheduled_time" className="text-slate-900 dark:text-slate-300">Time</Label>
                 <Input
                   type="time"
                   id="scheduled_time"
                   name="scheduled_time"
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
-              {/* Duration Field */}
               <div>
-                <Label htmlFor="duration">Duration</Label>
+                <Label htmlFor="duration" className="text-slate-900 dark:text-slate-300">Duration</Label>
                 <select
                   id="duration"
                   name="duration"
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -252,17 +253,26 @@ export default function NewGardenTaskModal() {
               </div>
             </div>
 
-            <div className="flex justify-end space-x-2">
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsOpen(false)}
-                disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Job'}
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                variant="default"
+              >
+                {isSubmitting ? 'Creating...' : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Job
+                  </>
+                )}
               </Button>
             </div>
           </form>

@@ -12,8 +12,6 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Plus } from 'lucide-react';
 import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
 import BaseInitiativeForm from '@/components/base-initiative-form';
@@ -100,15 +98,15 @@ export default function NewProjectModal() {
 
       {/* Modal Dialog */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>New Project</DialogTitle>
           </DialogHeader>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
-              {error}
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
@@ -127,36 +125,28 @@ export default function NewProjectModal() {
               disabled={isSubmitting}
             />
 
-            {/* Commented out for now */}
-            {/* Project-specific Fields */}
-            {/* <div>
-              <Label htmlFor="budget">Budget (£)</Label>
-              <Input
-                id="budget"
-                name="budget"
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="0.00"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                disabled={isSubmitting}
-                className="dark:bg-slate-700"
-              />
-            </div> */}
-
             {/* Form Actions */}
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsOpen(false)}
-                disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Project'}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="default"
+                className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+              >
+                {isSubmitting ? 'Creating...' : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Project
+                  </>
+                )}
               </Button>
             </div>
           </form>

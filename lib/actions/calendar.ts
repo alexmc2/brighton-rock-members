@@ -51,17 +51,13 @@ export async function createCalendarEvent(
   const supabase = createClientComponentClient();
 
   // Delete any existing events for this reference if it's a garden task or development event
-  if (
-    (eventType === "garden_task" || eventType === "development_event") &&
-    referenceId
-  ) {
+   if (referenceId) {
     await supabase
       .from("calendar_events")
       .delete()
       .eq("reference_id", referenceId)
       .eq("event_type", eventType);
   }
-
   const { data, error } = await supabase
     .from("calendar_events")
     .insert({

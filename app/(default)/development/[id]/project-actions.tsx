@@ -49,45 +49,45 @@ export default function ProjectActions({ initiative }: ProjectActionsProps) {
   //     initiative.budget ? initiative.budget.toString() : ''
   //   );
 
-const handleDelete = async () => {
-  if (
-    !window.confirm(
-      'Are you sure you want to delete this project? This action cannot be undone.'
-    )
-  ) {
-    return;
-  }
-
-  try {
-    setIsDeleting(true);
-
-    const { data, error } = await supabase.rpc('delete_initiative', {
-      p_initiative_id: initiative.id,
-    });
-
-    if (error) {
-      throw error;
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this project? This action cannot be undone.'
+      )
+    ) {
+      return;
     }
 
-    if (data === true) {
-      router.push('/development');
-    } else {
-      throw new Error('Failed to delete initiative');
+    try {
+      setIsDeleting(true);
+
+      const { data, error } = await supabase.rpc('delete_initiative', {
+        p_initiative_id: initiative.id,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data === true) {
+        router.push('/development');
+      } else {
+        throw new Error('Failed to delete initiative');
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to delete project'
+      );
+      // Show error to user
+      window.alert(
+        'Failed to delete project: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+    } finally {
+      setIsDeleting(false);
     }
-  } catch (error) {
-    console.error('Error deleting project:', error);
-    setError(
-      error instanceof Error ? error.message : 'Failed to delete project'
-    );
-    // Show error to user
-    window.alert(
-      'Failed to delete project: ' +
-        (error instanceof Error ? error.message : 'Unknown error')
-    );
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  };
 
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -148,19 +148,20 @@ const handleDelete = async () => {
         size="sm"
         onClick={handleDelete}
         disabled={isDeleting}
+        className="hover:bg-red-50 dark:hover:bg-red-900/50"
       >
         <Trash2 className="h-4 w-4 mr-1" />
         Delete
       </Button>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>Edit Project</DialogTitle>
           </DialogHeader>
 
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
               <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
@@ -169,18 +170,28 @@ const handleDelete = async () => {
             {/* Title & Category */}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="title">Title</Label>
+                <Label
+                  htmlFor="title"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Title
+                </Label>
                 <Input
                   id="title"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="category">Category</Label>
+                <Label
+                  htmlFor="category"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Category
+                </Label>
                 <select
                   id="category"
                   required
@@ -189,7 +200,7 @@ const handleDelete = async () => {
                     setCategory(e.target.value as DevelopmentCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="general">General</option>
                   <option value="development_meeting">
@@ -206,11 +217,16 @@ const handleDelete = async () => {
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 required
-                className="resize-none dark:bg-slate-700"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -220,14 +236,19 @@ const handleDelete = async () => {
 
             {/* Status */}
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label
+                htmlFor="status"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Status
+              </Label>
               <select
                 id="status"
                 required
                 value={status}
                 onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
               >
                 <option value="active">Active</option>
                 <option value="completed">Completed</option>
@@ -238,7 +259,12 @@ const handleDelete = async () => {
 
             {/* Priority */}
             <div>
-              <Label htmlFor="priority">Priority</Label>
+              <Label
+                htmlFor="priority"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Priority
+              </Label>
               <select
                 id="priority"
                 required
@@ -247,7 +273,7 @@ const handleDelete = async () => {
                   setPriority(e.target.value as DevelopmentPriority)
                 }
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -256,31 +282,17 @@ const handleDelete = async () => {
               </select>
             </div>
 
-            {/* Budget */}
-            {/* <div>
-              <Label htmlFor="budget">Budget (£)</Label>
-              <Input
-                id="budget"
-                type="number"
-                min="0"
-                step="0.01"
-                value={budget}
-                onChange={(e) => setBudget(e.target.value)}
-                disabled={isSubmitting}
-              />
-            </div> */}
-
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditDialogOpen(false)}
-                disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} variant="default">
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

@@ -79,74 +79,37 @@ export default function InitiativeDetails({
   }, [initiative.id, supabase]);
 
   // Fetch participants and handle realtime updates
-  useEffect(() => {
-    async function fetchParticipants() {
-      if (initiative.initiative_type !== 'event') return;
+useEffect(() => {
+  if (initiative.initiative_type !== 'event') {
+    return; // Exit early if not an event
+  }
 
-      type ParticipantResponse = {
-        event_id: string;
-        user_id: string;
-        status: ParticipationStatus;
-        created_at: string;
-        updated_at: string;
-        user: {
-          email: string;
-          full_name: string | null;
-        };
-      };
+  async function fetchParticipants() {
+    // Existing code to fetch participants
+  }
 
-      const { data, error } = await supabase
-        .from('event_participants')
-        .select(
-          `
-          event_id,
-          user_id,
-          status,
-          created_at,
-          updated_at,
-          user:profiles!event_participants_user_id_fkey (
-            email,
-            full_name
-          )
-        `
-        )
-        .eq('event_id', initiative.id)
-        .returns<ParticipantResponse[]>();
+  fetchParticipants();
 
-      if (error) {
-        console.error('Error fetching participants:', error);
-        return;
-      }
+  // Set up real-time subscription
+  const channel = supabase
+    .channel('event_participants_changes')
+    .on(
+      'postgres_changes',
+      {
+        event: '*',
+        schema: 'public',
+        table: 'event_participants',
+        filter: `event_id=eq.${initiative.id}`,
+      },
+      fetchParticipants
+    )
+    .subscribe();
 
-      if (data) {
-        setInitiative((prev) => ({
-          ...prev,
-          participants: data,
-        }));
-      }
-    }
+  return () => {
+    supabase.removeChannel(channel);
+  };
+}, [initiative.id, initiative.initiative_type, supabase]);
 
-    fetchParticipants();
-
-    // Set up realtime subscription
-    const channel = supabase
-      .channel('event_participants_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'event_participants',
-          filter: `event_id=eq.${initiative.id}`,
-        },
-        fetchParticipants
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [initiative.id, initiative.initiative_type, supabase]);
 
   const handleParticipationUpdate = async (
     newStatus: ParticipationStatus | null
@@ -339,101 +302,105 @@ export default function InitiativeDetails({
         </div>
 
         {/* Participants Section */}
-        {initiative.open_to_everyone && (
-          <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-            <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
-              <div className="flex items-center justify-between mb-6">
-                <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                  Participants ({initiative.participants?.length || 0}
-                  {initiative.max_participants
-                    ? ` / ${initiative.max_participants}`
-                    : ''}
-                  )
+        {initiative.initiative_type === 'event' &&
+          initiative.open_to_everyone && (
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+              <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                    Participants ({initiative.participants?.length || 0}
+                    {initiative.max_participants
+                      ? ` / ${initiative.max_participants}`
+                      : ''}
+                    )
+                  </div>
                 </div>
-              </div>
 
-              {/* Participation Buttons */}
-              <div className="flex flex-wrap gap-3 mb-6">
-                <Button
-                  variant={
-                    currentUserStatus === 'going' ? 'default' : 'outline'
-                  }
-                  onClick={() => handleParticipationUpdate('going')}
-                  disabled={isUpdating}
-                >
-                  Going
-                </Button>
-                <Button
-                  variant={currentUserStatus === 'maybe' ? 'orange' : 'outline'}
-                  onClick={() => handleParticipationUpdate('maybe')}
-                  disabled={isUpdating}
-                >
-                  Maybe
-                </Button>
-                <Button
-                  variant={
-                    currentUserStatus === 'not_going'
-                      ? 'destructive'
-                      : 'outline'
-                  }
-                  onClick={() => handleParticipationUpdate('not_going')}
-                  disabled={isUpdating}
-                >
-                  Not Going
-                </Button>
-                {currentUserStatus && (
+                {/* Participation Buttons */}
+                <div className="flex flex-wrap gap-3 mb-6">
                   <Button
-                    variant="ghost"
-                    onClick={() => handleParticipationUpdate(null)}
+                    variant={
+                      currentUserStatus === 'going' ? 'default' : 'outline'
+                    }
+                    onClick={() => handleParticipationUpdate('going')}
                     disabled={isUpdating}
                   >
-                    Clear
+                    Going
                   </Button>
-                )}
-              </div>
+                  <Button
+                    variant={
+                      currentUserStatus === 'maybe' ? 'orange' : 'outline'
+                    }
+                    onClick={() => handleParticipationUpdate('maybe')}
+                    disabled={isUpdating}
+                  >
+                    Maybe
+                  </Button>
+                  <Button
+                    variant={
+                      currentUserStatus === 'not_going'
+                        ? 'destructive'
+                        : 'outline'
+                    }
+                    onClick={() => handleParticipationUpdate('not_going')}
+                    disabled={isUpdating}
+                  >
+                    Not Going
+                  </Button>
+                  {currentUserStatus && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleParticipationUpdate(null)}
+                      disabled={isUpdating}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
 
-              {/* Participant Lists */}
-              <div className="space-y-6">
-                {['going', 'maybe', 'not_going'].map((status) => {
-                  const participants =
-                    participantsByStatus?.[status as ParticipationStatus] || [];
-                  if (participants.length === 0) return null;
+                {/* Participant Lists */}
+                <div className="space-y-6">
+                  {['going', 'maybe', 'not_going'].map((status) => {
+                    const participants =
+                      participantsByStatus?.[status as ParticipationStatus] ||
+                      [];
+                    if (participants.length === 0) return null;
 
-                  return (
-                    <div key={status}>
-                      <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
-                        {status.replace('_', ' ')} ({participants.length})
-                      </h4>
-                      <div className="bg-white dark:bg-slate-800 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
-                        {participants.map((participant: EventParticipant) => (
-                          <div
-                            key={participant.user_id}
-                            className="flex items-center px-4 py-3 "
-                          >
+                    return (
+                      <div key={status}>
+                        <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
+                          {status.replace('_', ' ')} ({participants.length})
+                        </h4>
+                        <div className="bg-white dark:bg-slate-800 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
+                          {participants.map((participant: EventParticipant) => (
                             <div
-                              className={`h-8 w-8 rounded-full ${getUserColor(
-                                participant.user_id
-                              )} flex items-center justify-center`}
+                              key={participant.user_id}
+                              className="flex items-center px-4 py-3 "
                             >
-                              <span className="text-sm font-medium text-white">
-                                {participant.user?.full_name?.[0]?.toUpperCase() ||
-                                  participant.user?.email[0]?.toUpperCase()}
+                              <div
+                                className={`h-8 w-8 rounded-full ${getUserColor(
+                                  participant.user_id
+                                )} flex items-center justify-center`}
+                              >
+                                <span className="text-sm font-medium text-white">
+                                  {participant.user?.full_name?.[0]?.toUpperCase() ||
+                                    participant.user?.email[0]?.toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
+                                {participant.user?.full_name ||
+                                  participant.user?.email}
                               </span>
                             </div>
-                            <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
-                              {participant.user?.full_name ||
-                                participant.user?.email}
-                            </span>
-                          </div>
-                        ))}
+                          ))}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )}
 
         {/* Created By and Dates */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">

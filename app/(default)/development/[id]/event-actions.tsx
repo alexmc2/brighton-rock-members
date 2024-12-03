@@ -16,6 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -54,7 +55,11 @@ export default function EventActions({ initiative }: EventActionsProps) {
   );
   const [startTime, setStartTime] = useState(initiative.start_time || '');
   const [duration, setDuration] = useState(
-    initiative.duration?.split(' ')[0] || ''
+    initiative.duration
+      ? initiative.duration.split(' ')[0] === '24'
+        ? '8'
+        : initiative.duration.split(' ')[0]
+      : ''
   );
   const [location, setLocation] = useState(initiative.location || '');
   const [openToEveryone, setOpenToEveryone] = useState(
@@ -132,11 +137,7 @@ const handleDelete = async () => {
       // Parse duration to interval
       let durationInterval: string | null = null;
       if (duration) {
-        if (duration === '24') {
-          durationInterval = '24 hours';
-        } else {
-          durationInterval = `${duration} hours`;
-        }
+        durationInterval = `${duration} hours`;
       }
 
       const data = {
@@ -188,55 +189,56 @@ const handleDelete = async () => {
 
   return (
     <div className="flex items-center gap-2">
-      <Button
-        variant="default"
-        size="sm"
-        onClick={() => setIsEditDialogOpen(true)}
-        disabled={isSubmitting || isDeleting}
-      >
-        <Edit className="h-4 w-4 mr-1" />
-        Edit
-      </Button>
-
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={handleDelete}
-        disabled={isDeleting}
-      >
-        <Trash2 className="h-4 w-4 mr-1" />
-        Delete
-      </Button>
-
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogTrigger asChild>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsEditDialogOpen(true)}
+            disabled={isSubmitting || isDeleting}
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            Edit
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
           </DialogHeader>
 
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
               <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleEdit} className="space-y-4">
-            {/* Form fields from NewEventModal */}
             {/* Title & Category */}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="title">Title</Label>
+                <Label
+                  htmlFor="title"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Title
+                </Label>
                 <Input
                   id="title"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="category">Category</Label>
+                <Label
+                  htmlFor="category"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Category
+                </Label>
                 <select
                   id="category"
                   required
@@ -245,7 +247,7 @@ const handleDelete = async () => {
                     setCategory(e.target.value as DevelopmentCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="general">General</option>
                   <option value="development_meeting">
@@ -262,11 +264,16 @@ const handleDelete = async () => {
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 required
-                className="resize-none dark:bg-slate-700"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -274,42 +281,103 @@ const handleDelete = async () => {
               />
             </div>
 
-            {/* Date, Time & Duration */}
-            <div className="grid grid-cols-3 gap-4">
+            {/* Status & Priority */}
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="event_date">Date</Label>
+                <Label
+                  htmlFor="status"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Status
+                </Label>
+                <select
+                  id="status"
+                  required
+                  value={status}
+                  onChange={(e) =>
+                    setStatus(e.target.value as DevelopmentStatus)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                >
+                  <option value="upcoming">Upcoming</option>
+                  <option value="in_progress">In Progress</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div>
+                <Label
+                  htmlFor="priority"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Priority
+                </Label>
+                <select
+                  id="priority"
+                  required
+                  value={priority}
+                  onChange={(e) =>
+                    setPriority(e.target.value as DevelopmentPriority)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Date, Time & Duration */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <Label
+                  htmlFor="event_date"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Date
+                </Label>
                 <Input
                   type="date"
                   id="event_date"
-                  required
-                  min={new Date().toISOString().split('T')[0]}
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
               <div>
-                <Label htmlFor="start_time">Start Time</Label>
+                <Label
+                  htmlFor="start_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Start Time
+                </Label>
                 <Input
                   type="time"
                   id="start_time"
-                  required
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
               <div>
-                <Label htmlFor="duration">Duration</Label>
+                <Label
+                  htmlFor="duration"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Duration
+                </Label>
                 <select
                   id="duration"
-                  required
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -317,90 +385,69 @@ const handleDelete = async () => {
                   <option value="2">2 hours</option>
                   <option value="3">3 hours</option>
                   <option value="4">4 hours</option>
-                  <option value="24">All day</option>
+                  <option value="8">All day</option>
                 </select>
               </div>
             </div>
 
-            {/* Location & Open to Everyone */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="location">Location</Label>
-                <Input
-                  id="location"
-                  required
-                  value={location}
-                  onChange={(e) => setLocation(e.target.value)}
-                  disabled={isSubmitting}
-                  className="dark:bg-slate-700"
-                />
-              </div>
-              <div className="flex items-center">
-                <Checkbox
-                  id="openToEveryone"
-                  label="Open to everyone"
-                  checked={openToEveryone}
-                  onChange={setOpenToEveryone}
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-
-            {/* Status */}
+            {/* Location */}
             <div>
-              <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                required
-                value={status}
-                onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
-                disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              <Label
+                htmlFor="location"
+                className="text-slate-900 dark:text-slate-300"
               >
-                <option value="active">Active</option>
-                <option value="completed">Completed</option>
-                <option value="on_hold">On Hold</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
+                Location
+              </Label>
+              <Input
+                id="location"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+              />
             </div>
 
-            {/* Priority */}
-            <div>
-              <Label htmlFor="priority">Priority</Label>
-              <select
-                id="priority"
-                required
-                value={priority}
-                onChange={(e) =>
-                  setPriority(e.target.value as DevelopmentPriority)
-                }
+            <div className="flex items-center">
+              <Checkbox
+                id="openToEveryone"
+                label="Open to everyone"
+                checked={openToEveryone}
+                onChange={setOpenToEveryone}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
-              >
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
-              </select>
+              />
             </div>
 
-            {/* Actions */}
-            <div className="flex justify-end gap-3 pt-2">
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditDialogOpen(false)}
-                disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="default"
+              >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
+
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete
+      </Button>
     </div>
   );
 }

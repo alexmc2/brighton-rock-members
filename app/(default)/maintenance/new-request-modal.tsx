@@ -1,12 +1,22 @@
 'use client';
 
-import { Fragment, useState } from 'react';
-import { Dialog, Transition } from '@headlessui/react';
+import { useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { MaintenancePriority } from '@/types/maintenance';
 import { House } from '@/types/house';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Plus } from 'lucide-react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
+} from '@/components/ui/dialog';
 
 interface NewRequestModalProps {
   houses: House[];
@@ -65,159 +75,122 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
 
   return (
     <>
-      <Button onClick={() => setIsOpen(true)} variant="default">
-        <svg
-          className="w-4 h-4 fill-current opacity-50 shrink-0"
-          viewBox="0 0 16 16"
-        >
-          <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-        </svg>
-        <span className="hidden xs:block ml-2">New Maintenance Job</span>
-      </Button>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button onClick={() => setIsOpen(true)} variant="default">
+            <Plus className="h-4 w-4 mr-2" />
+            <span className="hidden xs:block">New Maintenance Job</span>
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
+          <DialogHeader>
+            <DialogTitle>New Maintenance Job</DialogTitle>
+          </DialogHeader>
 
-      <Transition show={isOpen} as={Fragment}>
-        <Dialog onClose={() => setIsOpen(false)} className="relative z-50">
-          {/* Background overlay */}
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/30" />
-          </Transition.Child>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {error && (
+              <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+                <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+              </div>
+            )}
 
-          {/* Dialog content */}
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                enterTo="opacity-100 translate-y-0 sm:scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
-                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
-                  <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
-                    New Maintenance Job
-                  </Dialog.Title>
-
-                  <form onSubmit={handleSubmit} className="space-y-4">
-                    {error && (
-                      <div className="rounded-md bg-red-50 p-4">
-                        <p className="text-sm text-red-700">{error}</p>
-                      </div>
-                    )}
-
-                    {/* Title */}
-                    <div>
-                      <label
-                        htmlFor="title"
-                        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Title
-                      </label>
-                      <input
-                        type="text"
-                        id="title"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                        required
-                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
-                      />
-                    </div>
-
-                    {/* Description */}
-                    <div>
-                      <label
-                        htmlFor="description"
-                        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Description
-                      </label>
-                      <textarea
-                        id="description"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                        rows={3}
-                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
-                      />
-                    </div>
-
-                    {/* House */}
-                    <div>
-                      <label
-                        htmlFor="house_id"
-                        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        House
-                      </label>
-                      <select
-                        id="house_id"
-                        required
-                        onChange={(e) => setSelectedHouse(e.target.value)}
-                        value={selectedHouse}
-                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
-                      >
-                        <option value="">Select a house</option>
-                        {houses.map((house) => (
-                          <option key={house.id} value={house.id}>
-                            {house.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    {/* Priority */}
-                    <div>
-                      <label
-                        htmlFor="priority"
-                        className="block text-sm font-medium text-slate-700 dark:text-slate-300"
-                      >
-                        Priority
-                      </label>
-                      <select
-                        id="priority"
-                        value={priority}
-                        onChange={(e) =>
-                          setPriority(e.target.value as MaintenancePriority)
-                        }
-                        required
-                        className="mt-1 block w-full rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2 text-sm"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                      </select>
-                    </div>
-
-                    {/* Submit Button */}
-                    <div className="flex justify-end space-x-3">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => setIsOpen(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button type="submit" disabled={isSubmitting}>
-                        {isSubmitting ? 'Creating...' : 'Create Job'}
-                      </Button>
-                    </div>
-                  </form>
-                </Dialog.Panel>
-              </Transition.Child>
+            {/* Title */}
+            <div>
+              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">
+                Title
+              </Label>
+              <Input
+                type="text"
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                required
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+              />
             </div>
-          </div>
-        </Dialog>
-      </Transition>
+
+            {/* Description */}
+            <div>
+              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">
+                Description
+              </Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                required
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+              />
+            </div>
+
+            {/* House */}
+            <div>
+              <Label htmlFor="house_id" className="text-slate-900 dark:text-slate-300">
+                House
+              </Label>
+              <select
+                id="house_id"
+                required
+                onChange={(e) => setSelectedHouse(e.target.value)}
+                value={selectedHouse}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+              >
+                <option value="">Select a house</option>
+                {houses.map((house) => (
+                  <option key={house.id} value={house.id}>
+                    {house.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">
+                Priority
+              </Label>
+              <select
+                id="priority"
+                value={priority}
+                onChange={(e) =>
+                  setPriority(e.target.value as MaintenancePriority)
+                }
+                required
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-3">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsOpen(false)}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                variant="default"
+              >
+                {isSubmitting ? 'Creating...' : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Job
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -15,6 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -182,73 +183,62 @@ export default function TaskActions({ task }: TaskActionsProps) {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Edit Button */}
-      <Button
-        variant="default"
-        size="sm"
-        onClick={() => setIsEditDialogOpen(true)}
-        disabled={isUpdating || isDeleting}
-      >
-        <Edit className="h-4 w-4 mr-1" />
-        Edit Job
-      </Button>
-
-      {/* Delete Button */}
-      <Button
-        variant="destructive"
-        size="sm"
-        onClick={handleDelete}
-        disabled={isDeleting}
-      >
-        <Trash2 className="h-4 w-4 mr-1" />
-        Delete Task
-      </Button>
-
-      {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogTrigger asChild>
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => setIsEditDialogOpen(true)}
+            disabled={isUpdating || isDeleting}
+          >
+            <Edit className="h-4 w-4 mr-1" />
+            Edit Job
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent className="w-full max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Job</DialogTitle>
           </DialogHeader>
 
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
-              {error}
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleEdit} className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
               <Input
                 id="title"
                 name="title"
                 required
                 defaultValue={task.title}
-                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 required
                 defaultValue={task.description}
-                className="min-h-[100px] rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="area_id">Area</Label>
+                <Label htmlFor="area_id" className="text-slate-900 dark:text-slate-300">Area</Label>
                 <select
                   id="area_id"
                   name="area_id"
                   required
                   defaultValue={task.area_id}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select an area</option>
                   {areas.map((area) => (
@@ -260,13 +250,13 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
                 <select
                   id="priority"
                   name="priority"
                   required
                   defaultValue={task.priority}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -276,13 +266,13 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="status">Status</Label>
+                <Label htmlFor="status" className="text-slate-900 dark:text-slate-300">Status</Label>
                 <select
                   id="status"
                   name="status"
                   required
                   defaultValue={task.status}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
@@ -292,47 +282,46 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="assigned_to">Assigned To</Label>
-                <Label htmlFor="assigned_to">Assigned To</Label>
+                <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assigned To</Label>
                 <Input
                   id="assigned_to"
                   name="assigned_to"
-                  placeholder="Enter any name"
                   defaultValue={task.assigned_to || 'Everyone'}
-                  className="bg-white dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
+            </div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="due_date">Date</Label>
+                <Label htmlFor="due_date" className="text-slate-900 dark:text-slate-300">Due Date</Label>
                 <Input
                   type="date"
                   id="due_date"
                   name="due_date"
-                  defaultValue={task.due_date || ''}
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100"
+                  defaultValue={task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : ''}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
               <div>
-                <Label htmlFor="scheduled_time">Time</Label>
+                <Label htmlFor="scheduled_time" className="text-slate-900 dark:text-slate-300">Time</Label>
                 <Input
                   type="time"
                   id="scheduled_time"
                   name="scheduled_time"
                   defaultValue={task.scheduled_time || ''}
-                  className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
-              {/* Duration Field */}
               <div>
-                <Label htmlFor="duration">Duration</Label>
+                <Label htmlFor="duration" className="text-slate-900 dark:text-slate-300">Duration</Label>
                 <select
                   id="duration"
                   name="duration"
                   defaultValue={parseDurationToValue(task.duration)}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -345,22 +334,37 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsEditDialogOpen(false)}
-                disabled={isUpdating}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isUpdating}>
+              <Button 
+                type="submit" 
+                disabled={isUpdating}
+                className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+              >
                 {isUpdating ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
           </form>
         </DialogContent>
       </Dialog>
+
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete Task
+      </Button>
     </div>
   );
 }

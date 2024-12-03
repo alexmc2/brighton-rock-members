@@ -235,6 +235,7 @@ export default function RequestDetails({
           <Button
             onClick={() => setIsEditingRequest(!isEditingRequest)}
             size="sm"
+            variant="default"
           >
             {isEditingRequest ? 'Cancel Edit' : 'Edit Details'}
           </Button>
@@ -382,10 +383,11 @@ export default function RequestDetails({
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditingRequest(false)}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button type="submit" disabled={isSubmitting} variant="default">
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
@@ -516,6 +518,7 @@ export default function RequestDetails({
                             onClick={() => setEditingVisit(visit.id)}
                             variant="default"
                             size="sm"
+                            className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
                           >
                             Edit
                           </Button>
@@ -523,6 +526,7 @@ export default function RequestDetails({
                             onClick={() => handleVisitDelete(visit.id)}
                             variant="destructive"
                             size="sm"
+                            className="hover:bg-red-50 dark:hover:bg-red-900/50"
                           >
                             Delete
                           </Button>

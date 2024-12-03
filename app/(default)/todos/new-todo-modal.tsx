@@ -145,43 +145,43 @@ export default function NewTodoModal() {
 
       {/* **Modal Dialog** */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent>
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>New Todo</DialogTitle>
           </DialogHeader>
 
           {/* **Error Message** */}
           {error && (
-            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
-              {error}
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
           {/* **Todo Creation Form** */}
-          <form onSubmit={handleSubmit} className="space-y-4 ">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* **Title Field** */}
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
               <Input
                 id="title"
                 name="title"
                 required
                 placeholder="Enter todo title"
                 value={title}
-                className="rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 text-md py-5"
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 onChange={(e) => setTitle(e.target.value)}
               />
             </div>
 
             {/* **Description Field** */}
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 required
                 placeholder="Enter todo description"
-                className="min-h-[100px] dark:bg-slate-700 dark:text-slate-100"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -189,14 +189,14 @@ export default function NewTodoModal() {
 
             {/* **Todo Type Field** */}
             <div>
-              <Label htmlFor="todo_type">Todo Type</Label>
+              <Label htmlFor="todo_type" className="text-slate-900 dark:text-slate-300">Todo Type</Label>
               <select
                 id="todo_type"
                 name="todo_type"
                 required
                 value={todoType}
                 onChange={(e) => setTodoType(e.target.value)}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
               >
                 <option value="general">General</option>
                 <option value="minuted">Minuted Action</option>
@@ -205,14 +205,14 @@ export default function NewTodoModal() {
 
             {/* **Priority Field** */}
             <div>
-              <Label htmlFor="priority">Priority</Label>
+              <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
               <select
                 id="priority"
                 name="priority"
                 required
                 value={priority}
                 onChange={(e) => setPriority(e.target.value)}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -223,7 +223,7 @@ export default function NewTodoModal() {
 
             {/* **Assign To Field** */}
             <div>
-              <Label htmlFor="assigned_to">Assign To</Label>
+              <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assign To</Label>
               <select
                 id="assigned_to"
                 name="assigned_to"
@@ -231,7 +231,7 @@ export default function NewTodoModal() {
                 onChange={(e) =>
                   setAssignedTo(e.target.value === '' ? null : e.target.value)
                 }
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 dark:text-slate-100 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 disabled={isFetchingProfiles}
               >
                 <option value="">Unassigned</option>
@@ -249,18 +249,27 @@ export default function NewTodoModal() {
               </select>
             </div>
 
-            {/* **Form Actions** */}
-            <div className="flex justify-end space-x-2">
+            {/* Submit Button */}
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsOpen(false)}
-                disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? 'Creating...' : 'Create Todo'}
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="default"
+              >
+                {isSubmitting ? 'Creating...' : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Todo
+                  </>
+                )}
               </Button>
             </div>
           </form>

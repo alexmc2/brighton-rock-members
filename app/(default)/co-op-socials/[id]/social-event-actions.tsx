@@ -48,7 +48,13 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
       : ''
   );
   const [startTime, setStartTime] = useState(event.start_time || '');
-  const [duration, setDuration] = useState(event.duration?.split(' ')[0] || '');
+  const [duration, setDuration] = useState(
+    event.duration
+      ? event.duration.split(' ')[0] === '24'
+        ? '8'
+        : event.duration.split(' ')[0]
+      : ''
+  );
   const [location, setLocation] = useState(event.location || '');
   const [openToEveryone, setOpenToEveryone] = useState(event.open_to_everyone);
 
@@ -119,11 +125,7 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
       // Parse duration to interval
       let durationInterval: string | null = null;
       if (duration) {
-        if (duration === '24') {
-          durationInterval = '24 hours';
-        } else {
-          durationInterval = `${duration} hours`;
-        }
+        durationInterval = `${duration} hours`;
       }
 
       const data = {
@@ -195,33 +197,43 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
       </Button>
 
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
             <DialogTitle>Edit Event</DialogTitle>
           </DialogHeader>
 
           {error && (
-            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
               <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
 
           <form onSubmit={handleEdit} className="space-y-4">
             {/* Title & Category */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="title">Title</Label>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="col-span-1">
+                <Label
+                  htmlFor="title"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Title
+                </Label>
                 <Input
                   id="title"
                   required
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
-              <div className="col-span-2 sm:col-span-1">
-                <Label htmlFor="category">Category</Label>
+              <div className="col-span-1">
+                <Label
+                  htmlFor="category"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Category
+                </Label>
                 <select
                   id="category"
                   required
@@ -230,9 +242,8 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
                     setCategory(e.target.value as SocialEventCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
-                  {/* Category options */}
                   <option value="film_night">Film Night</option>
                   <option value="album_night">Album Night</option>
                   <option value="meal">Meal</option>
@@ -252,11 +263,16 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 required
-                className="resize-none dark:bg-slate-700"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -265,9 +281,14 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
             </div>
 
             {/* Date, Time & Duration */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="event_date">Date</Label>
+                <Label
+                  htmlFor="event_date"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Date
+                </Label>
                 <Input
                   type="date"
                   id="event_date"
@@ -276,11 +297,16 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
               <div>
-                <Label htmlFor="start_time">Start Time</Label>
+                <Label
+                  htmlFor="start_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Start Time
+                </Label>
                 <Input
                   type="time"
                   id="start_time"
@@ -288,18 +314,23 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
               <div>
-                <Label htmlFor="duration">Duration</Label>
+                <Label
+                  htmlFor="duration"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Duration
+                </Label>
                 <select
                   id="duration"
                   required
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -307,49 +338,61 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
                   <option value="2">2 hours</option>
                   <option value="3">3 hours</option>
                   <option value="4">4 hours</option>
-                  <option value="24">All day</option>
+                  <option value="8">All day</option>
                 </select>
               </div>
             </div>
 
             {/* Location & Open to Everyone */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="location">Location</Label>
+                <Label
+                  htmlFor="location"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Location
+                </Label>
                 <Input
                   id="location"
                   required
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   disabled={isSubmitting}
-                  className="dark:bg-slate-700"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
-              <div className="flex items-center mt-6">
-                <Checkbox
-                  id="openToEveryone"
-                  label="Open to everyone"
-                  checked={openToEveryone}
-                  onChange={setOpenToEveryone}
-                  disabled={isSubmitting}
-                />
-                <Tooltip bg="dark" size="md" className='ml-2'>
-                  Check this box to invite all co-op members and create an event
-                  participant list
-                </Tooltip>
+              <div className="flex items-center">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="openToEveryone"
+                    label="Open to everyone"
+                    checked={openToEveryone}
+                    onChange={setOpenToEveryone}
+                    disabled={isSubmitting}
+                  />
+                  <Tooltip bg="dark" size="md">
+                    Check this box to invite all co-op members and create an
+                    event participant list
+                  </Tooltip>
+                </div>
               </div>
             </div>
 
             {/* Status */}
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label
+                htmlFor="status"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Status
+              </Label>
               <select
                 id="status"
                 required
                 value={status}
                 onChange={(e) => setStatus(e.target.value as SocialEventStatus)}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
               >
                 <option value="upcoming">Upcoming</option>
                 <option value="completed">Completed</option>
@@ -363,6 +406,7 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditDialogOpen(false)}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
                 disabled={isSubmitting}
               >
                 Cancel

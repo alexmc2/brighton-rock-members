@@ -130,24 +130,25 @@ export default function EventModal() {
       open={!!selectedEventId}
       onOpenChange={(open) => !open && setSelectedEventId(null)}
     >
-      <DialogContent>
+      <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{isEditing ? 'Edit Event' : event.title}</span>
             {!isEditing && event.event_type === 'manual' && (
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="icon"
                   onClick={() => setIsEditing(true)}
+                  className="hover:bg-slate-100 dark:hover:bg-slate-800"
                 >
                   <Pencil className="h-4 w-4" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="icon"
                   onClick={handleDelete}
-                  className="text-red-600 hover:text-red-700"
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/50"
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -159,28 +160,29 @@ export default function EventModal() {
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title">Title</Label>
+              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
               <Input
                 id="title"
                 name="title"
                 defaultValue={event.title}
                 required
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div>
-              <Label htmlFor="description">Description</Label>
+              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 defaultValue={event.description || ''}
-                className="min-h-[100px]"
+                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="date">Date</Label>
+                <Label htmlFor="date" className="text-slate-900 dark:text-slate-300">Date</Label>
                 <Input
                   type="date"
                   id="date"
@@ -190,42 +192,51 @@ export default function EventModal() {
                     'yyyy-MM-dd'
                   )}
                   required
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
               <div>
-                <Label htmlFor="start_time">Start Time</Label>
+                <Label htmlFor="start_time" className="text-slate-900 dark:text-slate-300">Start Time</Label>
                 <Input
                   type="time"
                   id="start_time"
                   name="start_time"
                   defaultValue={format(new Date(event.start_time), 'HH:mm')}
                   required
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
 
               <div>
-                <Label htmlFor="end_time">End Time</Label>
+                <Label htmlFor="end_time" className="text-slate-900 dark:text-slate-300">End Time</Label>
                 <Input
                   type="time"
                   id="end_time"
                   name="end_time"
                   defaultValue={format(new Date(event.end_time), 'HH:mm')}
                   required
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end space-x-3">
               <Button
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsEditing(false)}
                 disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="default"
+                className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+              >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
@@ -233,14 +244,14 @@ export default function EventModal() {
         ) : (
           <div className="space-y-4">
             <div>
-              <Label>Description</Label>
+              <Label className="text-slate-900 dark:text-slate-300">Description</Label>
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {event.description || 'No description provided'}
               </p>
             </div>
 
             <div>
-              <Label>Time</Label>
+              <Label className="text-slate-900 dark:text-slate-300">Time</Label>
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {format(new Date(event.start_time), 'MMMM d, yyyy h:mm a')} -{' '}
                 {format(new Date(event.end_time), 'h:mm a')}

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { getUserColor } from '@/lib/utils';
 import {
   BaseComment,
   CommentSectionProps,
@@ -21,7 +22,8 @@ const getTableName = (type: CommentResourceType['type']) => {
     garden: 'garden_comments',
     maintenance: 'maintenance_comments',
     task: 'task_comments',
-    todo: 'todo_comments'
+    todo: 'todo_comments',
+    social_event: 'social_event_comments',
   };
   return tables[type];
 };
@@ -213,7 +215,11 @@ export default function CommentSection<T extends BaseComment>({
               className="flex space-x-3 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg"
             >
               <div className="flex-shrink-0">
-                <div className="w-8 h-8 rounded-full bg-coop-600 flex items-center justify-center">
+                <div
+                  className={`w-8 h-8 rounded-full ${getUserColor(
+                    getCommentUserId(comment)
+                  )} flex items-center justify-center`}
+                >
                   <span className="text-sm font-medium text-white">
                     {comment.user?.full_name?.charAt(0).toUpperCase() ||
                       comment.user?.email?.charAt(0).toUpperCase() ||

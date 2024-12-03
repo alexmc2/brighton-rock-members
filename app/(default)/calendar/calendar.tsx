@@ -82,6 +82,8 @@ export default function Calendar({ initialEvents }: CalendarProps) {
         return 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300';
       case 'Development Event':
         return 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300';
+      case 'Co-op Social':
+        return 'bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300';
       case 'Miscellaneous':
         return 'bg-gray-100 dark:bg-gray-900/50 text-gray-700 dark:text-gray-300';
       default:

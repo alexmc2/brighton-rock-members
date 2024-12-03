@@ -1,4 +1,4 @@
-// app/(default)/development/[id]/initiative-details.tsx
+// app/(default)/co-op-socials/[id]/social-event-details.tsx
 
 'use client';
 
@@ -6,20 +6,17 @@ import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import {
-  DevelopmentInitiativeWithDetails,
-  DevelopmentStatus,
-  DevelopmentPriority,
+  SocialEventWithDetails,
   ParticipationStatus,
-  EventParticipant,
-} from '@/types/development';
+  SocialEventParticipant,
+} from '@/types/social';
 import { Card } from '@/components/ui/card';
-import { Calendar, Clock, Users, PoundSterling, MapPin } from 'lucide-react';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Calendar, Clock, Users, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getUserColor } from '@/lib/utils';
 
-interface InitiativeDetailsProps {
-  initiative: DevelopmentInitiativeWithDetails;
+interface SocialEventDetailsProps {
+  event: SocialEventWithDetails;
 }
 
 const formatTime = (time: string) => {
@@ -30,14 +27,14 @@ const formatTime = (time: string) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
-export default function InitiativeDetails({
-  initiative: initialInitiative,
-}: InitiativeDetailsProps) {
+export default function SocialEventDetails({
+  event: initialEvent,
+}: SocialEventDetailsProps) {
   const supabase = createClientComponentClient();
   const [isUpdating, setIsUpdating] = useState(false);
   const [currentUserStatus, setCurrentUserStatus] =
     useState<ParticipationStatus | null>(null);
-  const [initiative, setInitiative] = useState(initialInitiative);
+  const [event, setEvent] = useState(initialEvent);
   const [currentUser, setCurrentUser] = useState<{
     id: string;
     email: string;
@@ -64,9 +61,9 @@ export default function InitiativeDetails({
 
         // Get participation status
         const { data: participation } = await supabase
-          .from('event_participants')
+          .from('social_event_participants')
           .select('status')
-          .eq('event_id', initiative.id)
+          .eq('event_id', event.id)
           .eq('user_id', user.id)
           .single();
 
@@ -76,42 +73,24 @@ export default function InitiativeDetails({
       }
     }
     fetchUserAndStatus();
-  }, [initiative.id, supabase]);
+  }, [event.id, supabase]);
 
   // Fetch participants and handle realtime updates
   useEffect(() => {
     async function fetchParticipants() {
-      if (initiative.initiative_type !== 'event') return;
-
-      type ParticipantResponse = {
-        event_id: string;
-        user_id: string;
-        status: ParticipationStatus;
-        created_at: string;
-        updated_at: string;
-        user: {
-          email: string;
-          full_name: string | null;
-        };
-      };
-
       const { data, error } = await supabase
-        .from('event_participants')
+        .from('social_event_participants')
         .select(
           `
-          event_id,
-          user_id,
-          status,
-          created_at,
-          updated_at,
-          user:profiles!event_participants_user_id_fkey (
+          *,
+          user:profiles!social_event_participants_user_id_fkey (
             email,
             full_name
           )
         `
         )
-        .eq('event_id', initiative.id)
-        .returns<ParticipantResponse[]>();
+        .eq('event_id', event.id)
+        .returns<SocialEventParticipant[]>();
 
       if (error) {
         console.error('Error fetching participants:', error);
@@ -119,7 +98,7 @@ export default function InitiativeDetails({
       }
 
       if (data) {
-        setInitiative((prev) => ({
+        setEvent((prev) => ({
           ...prev,
           participants: data,
         }));
@@ -130,14 +109,14 @@ export default function InitiativeDetails({
 
     // Set up realtime subscription
     const channel = supabase
-      .channel('event_participants_changes')
+      .channel('social_event_participants_changes')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'event_participants',
-          filter: `event_id=eq.${initiative.id}`,
+          table: 'social_event_participants',
+          filter: `event_id=eq.${event.id}`,
         },
         fetchParticipants
       )
@@ -146,7 +125,7 @@ export default function InitiativeDetails({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [initiative.id, initiative.initiative_type, supabase]);
+  }, [event.id, supabase]);
 
   const handleParticipationUpdate = async (
     newStatus: ParticipationStatus | null
@@ -159,15 +138,15 @@ export default function InitiativeDetails({
       if (newStatus === null) {
         // Remove participation
         const { error } = await supabase
-          .from('event_participants')
+          .from('social_event_participants')
           .delete()
-          .eq('event_id', initiative.id)
+          .eq('event_id', event.id)
           .eq('user_id', currentUser.id);
 
         if (error) throw error;
 
         // Update local state
-        setInitiative((prev) => ({
+        setEvent((prev) => ({
           ...prev,
           participants:
             prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
@@ -177,20 +156,20 @@ export default function InitiativeDetails({
       } else {
         // Prepare participant data
         const participantData = {
-          event_id: initiative.id,
+          event_id: event.id,
           user_id: currentUser.id,
           status: newStatus,
         };
 
         // Use upsert instead of insert
         const { error } = await supabase
-          .from('event_participants')
+          .from('social_event_participants')
           .upsert(participantData);
 
         if (error) throw error;
 
         // Update local state
-        setInitiative((prev) => {
+        setEvent((prev) => {
           const otherParticipants =
             prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
             [];
@@ -206,7 +185,7 @@ export default function InitiativeDetails({
                   email: currentUser.email,
                   full_name: currentUser.full_name,
                 },
-              } as EventParticipant,
+              } as SocialEventParticipant,
             ],
           };
         });
@@ -220,7 +199,7 @@ export default function InitiativeDetails({
   };
 
   // Group participants by status
-  const participantsByStatus = initiative.participants?.reduce(
+  const participantsByStatus = event.participants?.reduce(
     (acc, participant) => {
       if (!acc[participant.status]) {
         acc[participant.status] = [];
@@ -228,128 +207,69 @@ export default function InitiativeDetails({
       acc[participant.status].push(participant);
       return acc;
     },
-    {} as Record<ParticipationStatus, EventParticipant[]>
+    {} as Record<ParticipationStatus, SocialEventParticipant[]>
   );
-
-  const getStatusColor = (status: DevelopmentStatus): string => {
-    const colors: Record<DevelopmentStatus, string> = {
-      active:
-        'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
-      completed:
-        'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
-      on_hold:
-        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
-      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
-    };
-    return colors[status];
-  };
-
-  const getPriorityColor = (priority: DevelopmentPriority): string => {
-    const colors: Record<DevelopmentPriority, string> = {
-      low: 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200',
-      medium:
-        'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
-      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
-      urgent: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
-    };
-    return colors[priority];
-  };
 
   return (
     <Card className="p-6">
       <div className="space-y-6">
         {/* Description */}
         <div>
-          <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
             Description
-          </div>
+          </h3>
           <p className="text-base text-slate-600 dark:text-slate-300 whitespace-pre-wrap break-words">
-            {initiative.description}
+            {event.description}
           </p>
         </div>
 
         {/* Event Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {initiative.event_date && (
+          {event.event_date && (
             <div>
-              <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Event Date
-              </div>
+              </h3>
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Calendar className="w-4 h-4 mr-2" />
-                {format(new Date(initiative.event_date), 'EEEE, MMMM do yyyy')}
+                {format(new Date(event.event_date), 'EEEE, MMMM do yyyy')}
               </div>
             </div>
           )}
 
-          {initiative.start_time && (
+          {event.start_time && (
             <div>
-              <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Start Time
-              </div>
+              </h3>
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Clock className="w-4 h-4 mr-2" />
-                {formatTime(initiative.start_time)}
+                {formatTime(event.start_time)}
               </div>
             </div>
           )}
 
-          {initiative.location && (
+          {event.location && (
             <div>
-              <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Location
-              </div>
+              </h3>
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <MapPin className="w-4 h-4 mr-2" />
-                {initiative.location}
+                {event.location}
               </div>
             </div>
           )}
-        </div>
-
-        {/* Status and Priority */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
-              Status
-            </div>
-            <span
-              className={`inline-flex px-2.5 py-1 rounded-full text-sm font-medium ${getStatusColor(
-                initiative.status as DevelopmentStatus
-              )}`}
-            >
-              {initiative.status.charAt(0).toUpperCase() +
-                initiative.status.slice(1).replace('_', ' ')}
-            </span>
-          </div>
-
-          <div>
-            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
-              Priority
-            </div>
-            <span
-              className={`inline-flex px-2.5 py-1 rounded-full text-sm font-medium ${getPriorityColor(
-                initiative.priority as DevelopmentPriority
-              )}`}
-            >
-              {initiative.priority.charAt(0).toUpperCase() +
-                initiative.priority.slice(1)}
-            </span>
-          </div>
         </div>
 
         {/* Participants Section */}
-        {initiative.open_to_everyone && (
+        {event.open_to_everyone && (
           <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-            <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-6">
-                <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                  Participants ({initiative.participants?.length || 0}
-                  {initiative.max_participants
-                    ? ` / ${initiative.max_participants}`
-                    : ''}
-                  )
-                </div>
+                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                  Participants ({event.participants?.length || 0})
+                </h3>
               </div>
 
               {/* Participation Buttons */}
@@ -404,11 +324,11 @@ export default function InitiativeDetails({
                       <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
                         {status.replace('_', ' ')} ({participants.length})
                       </h4>
-                      <div className="bg-white dark:bg-slate-800 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
-                        {participants.map((participant: EventParticipant) => (
+                      <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
+                        {participants.map((participant) => (
                           <div
                             key={participant.user_id}
-                            className="flex items-center px-4 py-3 "
+                            className="flex items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700"
                           >
                             <div
                               className={`h-8 w-8 rounded-full ${getUserColor(
@@ -438,30 +358,29 @@ export default function InitiativeDetails({
         {/* Created By and Dates */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
           <div>
-            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created By
-            </div>
+            </h3>
             <p className="text-base text-slate-600 dark:text-slate-300">
-              {initiative.created_by_user.full_name ||
-                initiative.created_by_user.email}
+              {event.created_by_user?.full_name || event.created_by_user?.email || 'Unknown user'}
             </p>
           </div>
 
           <div>
-            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created
-            </div>
+            </h3>
             <p className="text-base text-slate-600 dark:text-slate-300">
-              {format(new Date(initiative.created_at), 'PPp')}
+              {format(new Date(event.created_at), 'PPp')}
             </p>
           </div>
 
           <div>
-            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Last Updated
-            </div>
+            </h3>
             <p className="text-base text-slate-600 dark:text-slate-300">
-              {format(new Date(initiative.updated_at), 'PPp')}
+              {format(new Date(event.updated_at), 'PPp')}
             </p>
           </div>
         </div>

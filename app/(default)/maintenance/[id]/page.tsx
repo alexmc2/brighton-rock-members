@@ -114,8 +114,27 @@ export default async function MaintenanceRequestPage({
       <RequestHeader request={request} />
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
-        <div className="xl:col-span-2 space-y-6">
+        <div className="xl:col-span-2">
           <RequestDetails request={request} houses={houses} />
+        </div>
+
+        <div className="space-y-6">
+          <VisitScheduler request={request} />
+          <div className="xl:hidden">
+            <CommentSection<MaintenanceComment>
+              comments={request.comments}
+              resourceId={request.id}
+              resourceType={{
+                type: 'maintenance',
+                field: 'request_id',
+                contentField: 'comment',
+                userField: 'user_id',
+              }}
+            />
+          </div>
+        </div>
+
+        <div className="hidden xl:block xl:col-span-2">
           <CommentSection<MaintenanceComment>
             comments={request.comments}
             resourceId={request.id}
@@ -126,10 +145,6 @@ export default async function MaintenanceRequestPage({
               userField: 'user_id',
             }}
           />
-        </div>
-
-        <div>
-          <VisitScheduler request={request} />
         </div>
       </div>
     </div>

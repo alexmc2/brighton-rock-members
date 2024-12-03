@@ -117,25 +117,26 @@ export default function RequestHeader({ request }: RequestHeaderProps) {
         ← Back to Maintenance
       </Link>
 
-      <div className="flex justify-between items-center mt-2">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-2 mt-2">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
           {request.title}
         </h1>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row items-start gap-3">
           <Button
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
+            className="min-w-[140px] justify-center"
           >
-            {isDeleting ? 'Deleting...' : 'Delete Maintenance Job'}
+            {isDeleting ? 'Deleting...' : 'Delete'}
           </Button>
 
           <div className="relative">
             <button
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               disabled={isUpdating}
-              className={`inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getStatusColor(
+              className={`min-w-[140px] justify-center inline-flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors ${getStatusColor(
                 request.status
               )}`}
             >

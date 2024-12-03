@@ -1,3 +1,4 @@
+// app/(default)/maintenance/maintenance-list.tsx
 'use client';
 
 import { useState } from 'react';
@@ -9,6 +10,14 @@ import {
   MaintenancePriority,
 } from '@/types/maintenance';
 import { Button } from '@/components/ui/button';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
 interface MaintenanceListProps {
   requests: MaintenanceRequestWithDetails[];
@@ -145,121 +154,133 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
 
       {/* Maintenance Requests Table */}
       <div className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
-        <div className="overflow-x-auto">
-          <table className="table-auto w-full divide-y divide-slate-200 dark:divide-slate-700">
-            <thead className="bg-slate-50 dark:bg-slate-900/20">
-              <tr>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Title
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  House
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Status
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Priority
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
-                  Reported By
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
-                  Assigned To
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Date
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden md:table-cell">
-                  Next P4P Visit
-                </th>
-                <th className="px-4 py-3 text-center text-sm font-semibold text-slate-800 dark:text-slate-100">
-                  Comments
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
-              {paginatedRequests.map((request) => {
-                const nextVisit = request.visits
-                  .filter(
-                    (v) =>
-                      !v.completed_at && new Date(v.scheduled_date) > new Date()
-                  )
-                  .sort(
-                    (a, b) =>
-                      new Date(a.scheduled_date).getTime() -
-                      new Date(b.scheduled_date).getTime()
-                  )[0];
+        <div className="relative w-full">
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden">
+                <Table className="min-w-[1000px] w-full divide-y divide-slate-200 dark:divide-slate-700">
+                  <TableHeader className="bg-slate-50 dark:bg-slate-900/20">
+                    <TableRow>
+                      <TableHead className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Title
+                      </TableHead>
+                      <TableHead className="w-[15%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        House
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Status
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Priority
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
+                        Reported By
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
+                        Assigned To
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Date
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden md:table-cell">
+                        Next P4P Visit
+                      </TableHead>
+                      <TableHead className="w-[5%] px-4 py-3 text-center text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Comments
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedRequests.map((request) => {
+                      const nextVisit = request.visits
+                        .filter(
+                          (v) =>
+                            !v.completed_at &&
+                            new Date(v.scheduled_date) > new Date()
+                        )
+                        .sort(
+                          (a, b) =>
+                            new Date(a.scheduled_date).getTime() -
+                            new Date(b.scheduled_date).getTime()
+                        )[0];
 
-                return (
-                  <tr key={request.id}>
-                    <td className="px-4 py-3">
-                      <Link
-                        href={`/maintenance/${request.id}`}
-                        className="font-medium text-coop-600 dark:text-coop-400 hover:underline"
-                      >
-                        {request.title}
-                      </Link>
-                    </td>
-                    <td className="px-4 py-3">{request.house.name}</td>
-                    <td className="px-4 py-3">
-                      <div
-                        className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
-                          request.status
-                        )}`}
-                      >
-                        {request.status.charAt(0).toUpperCase() +
-                          request.status.slice(1).replace('_', ' ')}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div
-                        className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
-                          request.priority
-                        )}`}
-                      >
-                        {request.priority.charAt(0).toUpperCase() +
-                          request.priority.slice(1)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      {request.reported_by_user.full_name ||
-                        request.reported_by_user.email}
-                    </td>
-                    <td className="px-4 py-3 hidden lg:table-cell">
-                      {request.assigned_to_user?.full_name ||
-                        request.assigned_to_user?.email ||
-                        '-'}
-                    </td>
-                    <td className="px-4 py-3">
-                      {format(new Date(request.created_at), 'MMM d, yyyy')}
-                    </td>
-                    <td className="px-4 py-3 hidden md:table-cell">
-                      {nextVisit
-                        ? format(
-                            new Date(nextVisit.scheduled_date),
-                            'MMM d, yyyy h:mm a'
-                          )
-                        : '-'}
-                    </td>
-                    <td className="px-4 py-3 text-center">
-                      {request.comments.length}
-                    </td>
-                  </tr>
-                );
-              })}
-              {paginatedRequests.length === 0 && (
-                <tr>
-                  <td
-                    colSpan={8}
-                    className="text-center py-8 text-slate-500 dark:text-slate-400"
-                  >
-                    No maintenance requests found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+                      return (
+                        <TableRow key={request.id}>
+                          <TableCell className="px-4 py-3">
+                            <Link
+                              href={`/maintenance/${request.id}`}
+                              className="font-medium text-coop-600 dark:text-coop-400 hover:underline"
+                            >
+                              {request.title}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            {request.house.name}
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div
+                              className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
+                                request.status
+                              )}`}
+                            >
+                              {request.status.charAt(0).toUpperCase() +
+                                request.status.slice(1).replace('_', ' ')}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            <div
+                              className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
+                                request.priority
+                              )}`}
+                            >
+                              {request.priority.charAt(0).toUpperCase() +
+                                request.priority.slice(1)}
+                            </div>
+                          </TableCell>
+                          <TableCell className="px-4 py-3 hidden lg:table-cell">
+                            {request.reported_by_user.full_name ||
+                              request.reported_by_user.email}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 hidden lg:table-cell">
+                            {request.assigned_to_user?.full_name ||
+                              request.assigned_to_user?.email ||
+                              '-'}
+                          </TableCell>
+                          <TableCell className="px-4 py-3">
+                            {format(
+                              new Date(request.created_at),
+                              'MMM d, yyyy'
+                            )}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 hidden md:table-cell">
+                            {nextVisit
+                              ? format(
+                                  new Date(nextVisit.scheduled_date),
+                                  'MMM d, yyyy h:mm a'
+                                )
+                              : '-'}
+                          </TableCell>
+                          <TableCell className="px-4 py-3 text-center">
+                            {request.comments.length}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                    {paginatedRequests.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={9}
+                          className="text-center py-8 text-slate-500 dark:text-slate-400"
+                        >
+                          No maintenance requests found
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Pagination */}

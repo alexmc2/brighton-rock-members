@@ -1,0 +1,3164 @@
+Please could you create a section in my site for "Co-op Socials" 
+
+I will give you all the code from the development section, where event scheduling is implemented. You can take the code from here to make a co-op socials section, including participants, calendar scheduling, etc. 
+
+The nature of the social events will be a bit different to the development events (more informal). 
+
+I would like the categories to be
+
+Film Night
+Album Night
+Meal
+Fire
+Board Games
+TV
+Book Club
+Christmas Dinner
+Bike Ride
+Party
+Hang Out
+Beach
+Writing Club
+
+
+I would also like to make a section for a doodle poll, where people can set up social events and add a list of potential dates, and users can select which days they can make it. It should then be possible to create the event from the doodle poll, based on the most popular date (although the user can manually select another if they wish)
+
+The doodle poll might be a much to do in one request, so we can do this later, but this is a feature that I would like to add. 
+
+Please ensure that the social events section is visually similar to the development events, with the cards etc. 
+
+I will give you all the code from the development section, the types, the calendar file for automatic updates to the calendar, and the database. I will give you the code in two messages, as it's a lot. PLEASE DON'T START YOUR RESPONSE UNTIL YOU HAVE ALL THE CODE
+
+// Code files extracted from brighton-rock-members/app/(default)/development
+// Generated on 2024-12-03 03:03:33
+// Included extensions: .tsx, .ts, .js, .jsx, .json, .sql
+// Excluded files: package-lock.json, yarn.lock, pnpm-lock.yaml, .DS_Store
+
+
+================================================================================
+// File: development-header.tsx
+================================================================================
+
+'use client';
+
+import NewEventModal from './new-event-modal';
+import NewProjectModal from './new-project-modal';
+
+export default function DevelopmentHeader() {
+  return (
+    <div className="sm:flex sm:justify-between sm:items-center mb-8">
+      {/* Left: Title */}
+      <div className="mb-4 sm:mb-0">
+        <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold">
+          Development Projects and Events 🚀
+        </h1>
+      </div>
+
+      {/* Right: Actions */}
+      <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+        <NewEventModal />
+        <NewProjectModal />
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: development-list.tsx
+================================================================================
+
+'use client';
+
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import InitiativeCard from './initiative-card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentCategory,
+  DevelopmentStatus,
+  InitiativeType, // Make sure to import this from your updated types
+} from '@/types/development';
+
+interface InitiativeListProps {
+  initiatives?: DevelopmentInitiativeWithDetails[];
+}
+
+const ITEMS_PER_PAGE = 9;
+
+export default function InitiativeList({
+  initiatives = [],
+}: InitiativeListProps) {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [typeFilter, setTypeFilter] = useState<'all' | InitiativeType>('all');
+  const [categoryFilter, setStatusFilter] = useState<
+    'all' | DevelopmentCategory
+  >('all');
+  const [statusFilter, setCategoryFilter] = useState<'all' | DevelopmentStatus>(
+    'all'
+  );
+
+  // Filter initiatives
+  const filteredInitiatives = initiatives.filter((initiative) => {
+    if (typeFilter !== 'all' && initiative.initiative_type !== typeFilter)
+      return false;
+    if (categoryFilter !== 'all' && initiative.category !== categoryFilter)
+      return false;
+    if (statusFilter !== 'all' && initiative.status !== statusFilter)
+      return false;
+    return true;
+  });
+
+  // Pagination logic
+  const totalItems = filteredInitiatives.length;
+  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
+  const paginatedInitiatives = filteredInitiatives.slice(startIndex, endIndex);
+
+  // Get unique categories and statuses from initiatives
+  const categories: Array<'all' | DevelopmentCategory> = [
+    'all',
+    ...(Array.from(
+      new Set(initiatives.map((i) => i.category))
+    ) as DevelopmentCategory[]),
+  ];
+
+  const statuses: Array<'all' | DevelopmentStatus> = [
+    'all',
+    ...(Array.from(
+      new Set(initiatives.map((i) => i.status))
+    ) as DevelopmentStatus[]),
+  ];
+
+  const formatFilterLabel = (value: string): string => {
+    if (value === 'all') return 'All';
+    return value
+      .split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Filters */}
+      <div className="flex flex-wrap gap-4">
+        <Select
+          value={typeFilter}
+          onValueChange={(value: 'all' | InitiativeType) => {
+            setTypeFilter(value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="event">Events</SelectItem>
+            <SelectItem value="project">Projects</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={categoryFilter}
+          onValueChange={(value: 'all' | DevelopmentCategory) => {
+            setStatusFilter(value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            {categories.map((category) => (
+              <SelectItem key={category} value={category}>
+                {formatFilterLabel(category)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={statusFilter}
+          onValueChange={(value: 'all' | DevelopmentStatus) => {
+            setCategoryFilter(value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Select status" />
+          </SelectTrigger>
+          <SelectContent>
+            {statuses.map((status) => (
+              <SelectItem key={status} value={status}>
+                {formatFilterLabel(status)}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Grid of Initiative Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {paginatedInitiatives.map((initiative) => (
+          <InitiativeCard key={initiative.id} initiative={initiative} />
+        ))}
+      </div>
+
+      {/* Empty State */}
+      {paginatedInitiatives.length === 0 && (
+        <div className="text-center py-12">
+          <p className="text-slate-500 dark:text-slate-400">
+            No initiatives found matching your filters
+          </p>
+        </div>
+      )}
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={() => setCurrentPage(currentPage - 1)}
+            disabled={currentPage === 1}
+            variant="outline"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-slate-600 dark:text-slate-400">
+            Page {currentPage} of {totalPages}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            variant="outline"
+          >
+            Next
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: initiative-card.tsx
+================================================================================
+
+// app/(default)/development/initiative-card.tsx
+
+import React from 'react';
+import Link from 'next/link';
+import { format } from 'date-fns';
+import {
+  Calendar,
+  Users,
+  Clock,
+  MapPin,
+  LayoutPanelLeft,
+  BookOpen,
+  Users2,
+  Rocket,
+  Code,
+  GraduationCap,
+  Globe2,
+  MessageSquare,
+} from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentCategory,
+  DevelopmentStatus,
+  DevelopmentPriority,
+  ParticipationStatus,
+} from '@/types/development';
+
+interface InitiativeCardProps {
+  initiative: DevelopmentInitiativeWithDetails;
+  onParticipate?: (
+    initiativeId: string,
+    status: ParticipationStatus
+  ) => Promise<void>;
+}
+
+// Helper function to get category icon
+const getCategoryIcon = (category: DevelopmentCategory) => {
+  const icons: Record<DevelopmentCategory, JSX.Element> = {
+    development_meeting: <Users2 className="w-5 h-5" />,
+    social: <Users className="w-5 h-5" />,
+    outreach: <Globe2 className="w-5 h-5" />,
+    policy: <BookOpen className="w-5 h-5" />,
+    training: <GraduationCap className="w-5 h-5" />,
+    research: <Code className="w-5 h-5" />,
+    general: <Rocket className="w-5 h-5" />,
+  };
+  return icons[category];
+};
+
+// Helper function to format time to 12-hour format
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
+const InitiativeCard: React.FC<InitiativeCardProps> = ({
+  initiative,
+  onParticipate,
+}) => {
+  const isEvent = initiative.initiative_type === 'event';
+
+  const statusColors: Record<DevelopmentStatus, string> = {
+    active:
+      'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300',
+    completed:
+      'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
+    on_hold:
+      'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300',
+    cancelled: 
+      'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
+  };
+
+  const priorityColors: Record<DevelopmentPriority, string> = {
+    low: 'bg-slate-100 text-slate-800 dark:bg-slate-700/50 dark:text-slate-300',
+    medium: 'bg-blue-100 text-blue-800 dark:bg-blue-700/50 dark:text-blue-300',
+    high: 'bg-orange-100 text-orange-800 dark:bg-orange-700/50 dark:text-orange-300',
+    urgent: 'bg-red-100 text-red-800 dark:bg-red-700/50 dark:text-red-300',
+  };
+
+  const categoryColors: Record<DevelopmentCategory, string> = {
+    development_meeting: 'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300',
+    social: 'bg-pink-100 text-pink-800 dark:bg-pink-800/30 dark:text-pink-300',
+    outreach: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/30 dark:text-cyan-300',
+    policy: 'bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300',
+    training: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300',
+    research: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-300',
+    general: 'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-300',
+  };
+
+  return (
+    <Card className="flex flex-col h-full bg-white dark:bg-slate-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+      <div className="p-5 flex flex-col h-full">
+        {/* Header with Type Badge and Category - Updated sizing and alignment */}
+        <div className="flex justify-between items-center mb-4 pl-0">
+          <Badge 
+            className={`mb-0 px-3 py-1.5 text-sm ${
+              isEvent 
+                ? 'bg-green-100/80 text-green-800 dark:bg-green-800/40 dark:text-green-300' 
+                : 'bg-blue-100/80 text-blue-800 dark:bg-blue-800/40 dark:text-blue-300'
+            }`}
+          >
+            {isEvent ? (
+              <Calendar className="w-4 h-4 mr-1.5" />
+            ) : (
+              <LayoutPanelLeft className="w-4 h-4 mr-1.5" />
+            )}
+            {isEvent ? 'Event' : 'Project'}
+          </Badge>
+          <div className={`flex items-center px-3 py-1.5 rounded-full ${categoryColors[initiative.category]}`}>
+            {getCategoryIcon(initiative.category)}
+            <span className="ml-1.5 text-sm capitalize">
+              {initiative.category.replace('_', ' ')}
+            </span>
+          </div>
+        </div>
+
+        {/* Title */}
+        <Link href={`/development/${initiative.id}`}>
+          <h3 className="text-lg lg:text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 hover:text-green-600 dark:hover:text-green-400">
+            {initiative.title}
+          </h3>
+        </Link>
+
+        {/* Description */}
+        <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
+          {initiative.description}
+        </p>
+
+        {/* Event Details */}
+        {isEvent && (
+          <div className="space-y-2 mb-4">
+            {initiative.event_date && (
+              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                <Calendar className="w-4 h-4 mr-2" />
+                {format(new Date(initiative.event_date), 'EEEE, MMMM do yyyy')}
+              </div>
+            )}
+            {initiative.start_time && (
+              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                <Clock className="w-4 h-4 mr-2" />
+                {formatTime(initiative.start_time)}
+              </div>
+            )}
+            {initiative.location && (
+              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                <MapPin className="w-4 h-4 mr-2" />
+                {initiative.location}
+              </div>
+            )}
+            {initiative.open_to_everyone && (
+              <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+                <Users className="w-4 h-4 mr-2" />
+                {initiative.participants?.length || 0} / 12 participants
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-auto pt-4 flex flex-wrap items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                statusColors[initiative.status]
+              }`}
+            >
+              {initiative.status.replace('_', ' ')}
+            </span>
+            <span
+              className={`px-2.5 py-0.5 text-xs font-medium rounded-full ${
+                priorityColors[initiative.priority]
+              }`}
+            >
+              {initiative.priority}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
+              <MessageSquare className="w-4 h-4 mr-1" />
+              {initiative.comments?.length || 0}
+            </div>
+            <Link
+              href={`/development/${initiative.id}`}
+              className="text-sm font-medium text-green-600 hover:text-green-700 dark:text-green-400 dark:hover:text-green-300"
+            >
+              View Details →
+            </Link>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+};
+
+export default InitiativeCard;
+
+
+
+================================================================================
+// File: new-event-modal.tsx
+================================================================================
+
+'use client';
+
+import { Fragment, useState } from 'react';
+import { Dialog, Transition } from '@headlessui/react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, Check } from 'lucide-react';
+import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
+import { Checkbox } from '@/components/ui/checkbox';
+import { createDevelopmentEvent } from '@/lib/actions/calendar';
+
+export default function NewEventModal() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  // Form state
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<DevelopmentCategory>('general');
+  const [priority, setPriority] = useState<DevelopmentPriority>('medium');
+  const [eventDate, setEventDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [duration, setDuration] = useState('');
+  const [location, setLocation] = useState('');
+  const [openToEveryone, setOpenToEveryone] = useState(false);
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setCategory('general');
+    setPriority('medium');
+    setEventDate('');
+    setStartTime('');
+    setDuration('');
+    setLocation('');
+    setOpenToEveryone(false);
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      // Get user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+
+      // Parse duration to interval
+      let durationInterval: string | null = null;
+      if (duration) {
+        if (duration === '24') {
+          durationInterval = '24 hours';
+        } else {
+          durationInterval = `${duration} hours`;
+        }
+      }
+
+      const data = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        priority,
+        initiative_type: 'event' as const,
+        created_by: user.id,
+        event_date: eventDate ? new Date(eventDate).toISOString() : null,
+        start_time: startTime || null,
+        duration: durationInterval,
+        location: location.trim() || null,
+        max_participants: openToEveryone ? 12 : null,
+        open_to_everyone: openToEveryone,
+      };
+
+      // Insert the development initiative
+      const { data: newInitiative, error: insertError } = await supabase
+        .from('development_initiatives')
+        .insert(data)
+        .select()
+        .single();
+
+      if (insertError) throw insertError;
+
+      // Create calendar event if date is set
+      if (eventDate && newInitiative) {
+        await createDevelopmentEvent(
+          title,
+          description,
+          eventDate,
+          startTime,
+          duration,
+          user.id,
+          profile.full_name,
+          newInitiative.id
+        );
+      }
+
+      resetForm();
+      setIsOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error creating event:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to create event'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)} variant="default">
+        <Plus className="h-4 w-4 mr-2" />
+        Add Event
+      </Button>
+
+      <Transition show={isOpen} as={Fragment}>
+        <Dialog onClose={() => setIsOpen(false)} className="relative z-50">
+          {/* Background overlay */}
+          <Transition.Child
+            as={Fragment}
+            enter="ease-out duration-300"
+            enterFrom="opacity-0"
+            enterTo="opacity-100"
+            leave="ease-in duration-200"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <div className="fixed inset-0 bg-black/30" />
+          </Transition.Child>
+
+          {/* Dialog content */}
+          <div className="fixed inset-0 overflow-y-auto">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <Transition.Child
+                as={Fragment}
+                enter="ease-out duration-300"
+                enterFrom="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                enterTo="opacity-100 translate-y-0 sm:scale-100"
+                leave="ease-in duration-200"
+                leaveFrom="opacity-100 translate-y-0 sm:scale-100"
+                leaveTo="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+              >
+                <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
+                  <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
+                    New Event
+                  </Dialog.Title>
+
+                  {error && (
+                    <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+                      <p className="text-sm text-red-700 dark:text-red-200">
+                        {error}
+                      </p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* Title & Category */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="col-span-2 sm:col-span-1">
+                        <Label htmlFor="title">Title</Label>
+                        <Input
+                          id="title"
+                          required
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1">
+                        <Label htmlFor="category">Category</Label>
+                        <select
+                          id="category"
+                          required
+                          value={category}
+                          onChange={(e) =>
+                            setCategory(e.target.value as DevelopmentCategory)
+                          }
+                          disabled={isSubmitting}
+                          className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                        >
+                          <option value="general">General</option>
+                          <option value="development_meeting">
+                            Development Meeting
+                          </option>
+                          <option value="social">Social Event</option>
+                          <option value="outreach">Outreach</option>
+                          <option value="policy">Policy</option>
+                          <option value="training">Training</option>
+                          <option value="research">Research</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <div>
+                      <Label htmlFor="description">Description</Label>
+                      <Textarea
+                        id="description"
+                        required
+                        className="resize-none"
+                        rows={3}
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                        disabled={isSubmitting}
+                      />
+                    </div>
+
+                    {/* Date, Time & Duration */}
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor="event_date">Date</Label>
+                        <Input
+                          type="date"
+                          id="event_date"
+                          required
+                          min={new Date().toISOString().split('T')[0]}
+                          value={eventDate}
+                          onChange={(e) => setEventDate(e.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="start_time">Start Time</Label>
+                        <Input
+                          type="time"
+                          id="start_time"
+                          required
+                          value={startTime}
+                          onChange={(e) => setStartTime(e.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="duration">Duration</Label>
+                        <select
+                          id="duration"
+                          required
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          disabled={isSubmitting}
+                          className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                        >
+                          <option value="">Select duration</option>
+                          <option value="0.5">Half an hour</option>
+                          <option value="1">1 hour</option>
+                          <option value="2">2 hours</option>
+                          <option value="3">3 hours</option>
+                          <option value="4">4 hours</option>
+                          <option value="24">All day</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Location & Open to Everyone */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="location">Location</Label>
+                        <Input
+                          id="location"
+                          required
+                          value={location}
+                          onChange={(e) => setLocation(e.target.value)}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                      <div className="flex items-center">
+                        <Checkbox
+                          id="openToEveryone"
+                          label="Open to everyone"
+                          checked={openToEveryone}
+                          onChange={setOpenToEveryone}
+                          disabled={isSubmitting}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Priority */}
+                    <div>
+                      <Label htmlFor="priority">Priority</Label>
+                      <select
+                        id="priority"
+                        required
+                        value={priority}
+                        onChange={(e) =>
+                          setPriority(e.target.value as DevelopmentPriority)
+                        }
+                        disabled={isSubmitting}
+                        className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                      >
+                        <option value="low">Low</option>
+                        <option value="medium">Medium</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                      </select>
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex justify-end gap-3 pt-2">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={() => setIsOpen(false)}
+                        disabled={isSubmitting}
+                      >
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={isSubmitting}>
+                        {isSubmitting ? 'Creating...' : 'Create Event'}
+                      </Button>
+                    </div>
+                  </form>
+                </Dialog.Panel>
+              </Transition.Child>
+            </div>
+          </div>
+        </Dialog>
+      </Transition>
+    </>
+  );
+}
+
+
+
+================================================================================
+// File: new-project-modal.tsx
+================================================================================
+
+// app/(default)/development/new-project-modal.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Plus } from 'lucide-react';
+import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
+import BaseInitiativeForm from '@/components/base-initiative-form';
+
+export default function NewProjectModal() {
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  // State for BaseInitiativeForm
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<DevelopmentCategory>('general');
+  const [priority, setPriority] = useState<DevelopmentPriority>('medium');
+
+  // Project-specific state
+  const [budget, setBudget] = useState('');
+
+  const resetForm = () => {
+    setTitle('');
+    setDescription('');
+    setCategory('general');
+    setPriority('medium');
+    setBudget('');
+    setError(null);
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      // Get Current User
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      // Prepare data for insertion
+      const data = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        priority,
+        initiative_type: 'project' as const,
+        created_by: user.id,
+        budget: budget ? parseFloat(budget) : null,
+      };
+
+      // Insert Project into Supabase
+      const { error: insertError } = await supabase
+        .from('development_initiatives')
+        .insert(data);
+
+      if (insertError) throw insertError;
+
+      // Reset form and close modal
+      resetForm();
+      setIsOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error creating project:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to create project'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      {/* Trigger Button */}
+      <Button onClick={() => setIsOpen(true)} variant="default">
+        <Plus className="h-4 w-4 mr-2" />
+        Add Project
+      </Button>
+
+      {/* Modal Dialog */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>New Project</DialogTitle>
+          </DialogHeader>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-200 p-3 rounded-md text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Project Creation Form */}
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <BaseInitiativeForm
+              title={title}
+              setTitle={setTitle}
+              description={description}
+              setDescription={setDescription}
+              category={category}
+              setCategory={setCategory}
+              priority={priority}
+              setPriority={setPriority}
+              initiativeType="project"
+              disabled={isSubmitting}
+            />
+
+            {/* Commented out for now */}
+            {/* Project-specific Fields */}
+            {/* <div>
+              <Label htmlFor="budget">Budget (£)</Label>
+              <Input
+                id="budget"
+                name="budget"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                disabled={isSubmitting}
+                className="dark:bg-slate-700"
+              />
+            </div> */}
+
+            {/* Form Actions */}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Creating...' : 'Create Project'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}
+
+
+
+================================================================================
+// File: page.tsx
+================================================================================
+
+// app/(default)/development/page.tsx
+
+import DevelopmentHeader from './development-header'; // Import the header component
+import InitiativeList from './development-list';
+import { DevelopmentInitiativeWithDetails } from '@/types/development';
+import supabaseAdmin from '@/lib/supabaseAdmin';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getInitiatives() {
+  try {
+    const { data: initiatives, error } = await supabaseAdmin
+      .from('development_initiatives')
+      .select(
+        `
+        *,
+        created_by_user:profiles!development_initiatives_created_by_fkey(email, full_name),
+        comments:development_comments(
+          *,
+          user:profiles!development_comments_user_id_fkey(
+            email,
+            full_name
+          )
+        ),
+        participants:event_participants(
+          *,
+          user:profiles!event_participants_user_id_fkey(
+            email,
+            full_name
+          )
+        )
+      `
+      )
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching initiatives:', error);
+      return [];
+    }
+
+    return initiatives as DevelopmentInitiativeWithDetails[];
+  } catch (err) {
+    console.error('Error fetching initiatives:', err);
+    return [];
+  }
+}
+
+export default async function DevelopmentPage() {
+  const initiatives = await getInitiatives();
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      {/* Include the DevelopmentHeader here */}
+      <DevelopmentHeader />
+      <InitiativeList initiatives={initiatives} />
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/event-actions.tsx
+================================================================================
+
+// app/(default)/development/[id]/event-actions.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentStatus,
+  DevelopmentPriority,
+  DevelopmentCategory,
+} from '@/types/development';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Edit, Trash2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { createDevelopmentEvent } from '@/lib/actions/calendar';
+
+interface EventActionsProps {
+  initiative: DevelopmentInitiativeWithDetails;
+}
+
+export default function EventActions({ initiative }: EventActionsProps) {
+  const router = useRouter();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  // Form state for events
+  const [title, setTitle] = useState(initiative.title);
+  const [description, setDescription] = useState(initiative.description || '');
+  const [category, setCategory] = useState<DevelopmentCategory>(
+    initiative.category
+  );
+  const [priority, setPriority] = useState<DevelopmentPriority>(
+    initiative.priority
+  );
+  const [status, setStatus] = useState<DevelopmentStatus>(initiative.status);
+  const [eventDate, setEventDate] = useState(
+    initiative.event_date
+      ? new Date(initiative.event_date).toISOString().slice(0, 10)
+      : ''
+  );
+  const [startTime, setStartTime] = useState(initiative.start_time || '');
+  const [duration, setDuration] = useState(
+    initiative.duration?.split(' ')[0] || ''
+  );
+  const [location, setLocation] = useState(initiative.location || '');
+  const [openToEveryone, setOpenToEveryone] = useState(
+    initiative.open_to_everyone
+  );
+
+const handleDelete = async () => {
+  if (
+    !window.confirm(
+      'Are you sure you want to delete this event? This action cannot be undone.'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setIsDeleting(true);
+
+    // Delete associated calendar events first
+    await supabase
+      .from("calendar_events")
+      .delete()
+      .eq("reference_id", initiative.id)
+      .eq("event_type", "development_event");
+
+    // Then delete the initiative
+    const { data, error } = await supabase.rpc('delete_initiative', {
+      p_initiative_id: initiative.id,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (data === true) {
+      router.push('/development');
+    } else {
+      throw new Error('Failed to delete initiative');
+    }
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    setError(error instanceof Error ? error.message : 'Failed to delete event');
+    // Show error to user
+    window.alert(
+      'Failed to delete event: ' +
+        (error instanceof Error ? error.message : 'Unknown error')
+    );
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      // Get user's profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('id', user.id)
+        .single();
+      if (profileError) throw profileError;
+
+      // Parse duration to interval
+      let durationInterval: string | null = null;
+      if (duration) {
+        if (duration === '24') {
+          durationInterval = '24 hours';
+        } else {
+          durationInterval = `${duration} hours`;
+        }
+      }
+
+      const data = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        priority,
+        status,
+        event_date: eventDate ? new Date(eventDate).toISOString() : null,
+        start_time: startTime || null,
+        duration: durationInterval,
+        location: location.trim() || null,
+        max_participants: openToEveryone ? 12 : null,
+        open_to_everyone: openToEveryone,
+      };
+
+      const { error: updateError } = await supabase
+        .from('development_initiatives')
+        .update(data)
+        .eq('id', initiative.id);
+
+      if (updateError) throw updateError;
+
+      // Update calendar event if date is set
+      if (eventDate) {
+        await createDevelopmentEvent(
+          title,
+          description,
+          eventDate,
+          startTime,
+          duration,
+          user.id,
+          profile.full_name,
+          initiative.id
+        );
+      }
+
+      setIsEditDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error updating event:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to update event'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => setIsEditDialogOpen(true)}
+        disabled={isSubmitting || isDeleting}
+      >
+        <Edit className="h-4 w-4 mr-1" />
+        Edit
+      </Button>
+
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete
+      </Button>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Event</DialogTitle>
+          </DialogHeader>
+
+          {error && (
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleEdit} className="space-y-4">
+            {/* Form fields from NewEventModal */}
+            {/* Title & Category */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 sm:col-span-1">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  disabled={isSubmitting}
+                  className="dark:bg-slate-700"
+                />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <Label htmlFor="category">Category</Label>
+                <select
+                  id="category"
+                  required
+                  value={category}
+                  onChange={(e) =>
+                    setCategory(e.target.value as DevelopmentCategory)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                >
+                  <option value="general">General</option>
+                  <option value="development_meeting">
+                    Development Meeting
+                  </option>
+                  <option value="social">Social Event</option>
+                  <option value="outreach">Outreach</option>
+                  <option value="policy">Policy</option>
+                  <option value="training">Training</option>
+                  <option value="research">Research</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                required
+                className="resize-none dark:bg-slate-700"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {/* Date, Time & Duration */}
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="event_date">Date</Label>
+                <Input
+                  type="date"
+                  id="event_date"
+                  required
+                  min={new Date().toISOString().split('T')[0]}
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  disabled={isSubmitting}
+                  className="dark:bg-slate-700"
+                />
+              </div>
+              <div>
+                <Label htmlFor="start_time">Start Time</Label>
+                <Input
+                  type="time"
+                  id="start_time"
+                  required
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  disabled={isSubmitting}
+                  className="dark:bg-slate-700"
+                />
+              </div>
+              <div>
+                <Label htmlFor="duration">Duration</Label>
+                <select
+                  id="duration"
+                  required
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  disabled={isSubmitting}
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                >
+                  <option value="">Select duration</option>
+                  <option value="0.5">Half an hour</option>
+                  <option value="1">1 hour</option>
+                  <option value="2">2 hours</option>
+                  <option value="3">3 hours</option>
+                  <option value="4">4 hours</option>
+                  <option value="24">All day</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Location & Open to Everyone */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  required
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  disabled={isSubmitting}
+                  className="dark:bg-slate-700"
+                />
+              </div>
+              <div className="flex items-center">
+                <Checkbox
+                  id="openToEveryone"
+                  label="Open to everyone"
+                  checked={openToEveryone}
+                  onChange={setOpenToEveryone}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                required
+                value={status}
+                onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
+                disabled={isSubmitting}
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              >
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="on_hold">On Hold</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <select
+                id="priority"
+                required
+                value={priority}
+                onChange={(e) =>
+                  setPriority(e.target.value as DevelopmentPriority)
+                }
+                disabled={isSubmitting}
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/initiative-actions.tsx
+================================================================================
+
+// app/(default)/development/[id]/initiative-actions.tsx
+
+'use client';
+
+import { DevelopmentInitiativeWithDetails } from '@/types/development';
+import EventActions from './event-actions';
+import ProjectActions from './project-actions';
+
+interface InitiativeActionsProps {
+  initiative: DevelopmentInitiativeWithDetails;
+}
+
+export default function InitiativeActions({
+  initiative,
+}: InitiativeActionsProps) {
+  if (initiative.initiative_type === 'event') {
+    return <EventActions initiative={initiative} />;
+  }
+
+  return <ProjectActions initiative={initiative} />;
+}
+
+
+
+================================================================================
+// File: [id]/initiative-details.tsx
+================================================================================
+
+// app/(default)/development/[id]/initiative-details.tsx
+
+'use client';
+
+import { format } from 'date-fns';
+import { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentStatus,
+  DevelopmentPriority,
+  ParticipationStatus,
+  EventParticipant,
+} from '@/types/development';
+import { Card } from '@/components/ui/card';
+import { Calendar, Clock, Users, PoundSterling, MapPin } from 'lucide-react';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { getUserColor } from '@/lib/utils';
+
+interface InitiativeDetailsProps {
+  initiative: DevelopmentInitiativeWithDetails;
+}
+
+const formatTime = (time: string) => {
+  const [hours, minutes] = time.split(':');
+  const hour = parseInt(hours);
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const hour12 = hour % 12 || 12;
+  return `${hour12}:${minutes} ${ampm}`;
+};
+
+export default function InitiativeDetails({
+  initiative: initialInitiative,
+}: InitiativeDetailsProps) {
+  const supabase = createClientComponentClient();
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [currentUserStatus, setCurrentUserStatus] =
+    useState<ParticipationStatus | null>(null);
+  const [initiative, setInitiative] = useState(initialInitiative);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    full_name: string | null;
+  } | null>(null);
+
+  // Fetch current user and their participation status on mount
+  useEffect(() => {
+    async function fetchUserAndStatus() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get user profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setCurrentUser(profile);
+
+        // Get participation status
+        const { data: participation } = await supabase
+          .from('event_participants')
+          .select('status')
+          .eq('event_id', initiative.id)
+          .eq('user_id', user.id)
+          .single();
+
+        if (participation) {
+          setCurrentUserStatus(participation.status as ParticipationStatus);
+        }
+      }
+    }
+    fetchUserAndStatus();
+  }, [initiative.id, supabase]);
+
+  // Fetch participants and handle realtime updates
+  useEffect(() => {
+    async function fetchParticipants() {
+      if (initiative.initiative_type !== 'event') return;
+
+      type ParticipantResponse = {
+        event_id: string;
+        user_id: string;
+        status: ParticipationStatus;
+        created_at: string;
+        updated_at: string;
+        user: {
+          email: string;
+          full_name: string | null;
+        };
+      };
+
+      const { data, error } = await supabase
+        .from('event_participants')
+        .select(
+          `
+          event_id,
+          user_id,
+          status,
+          created_at,
+          updated_at,
+          user:profiles!event_participants_user_id_fkey (
+            email,
+            full_name
+          )
+        `
+        )
+        .eq('event_id', initiative.id)
+        .returns<ParticipantResponse[]>();
+
+      if (error) {
+        console.error('Error fetching participants:', error);
+        return;
+      }
+
+      if (data) {
+        setInitiative((prev) => ({
+          ...prev,
+          participants: data,
+        }));
+      }
+    }
+
+    fetchParticipants();
+
+    // Set up realtime subscription
+    const channel = supabase
+      .channel('event_participants_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_participants',
+          filter: `event_id=eq.${initiative.id}`,
+        },
+        fetchParticipants
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initiative.id, initiative.initiative_type, supabase]);
+
+  const handleParticipationUpdate = async (
+    newStatus: ParticipationStatus | null
+  ) => {
+    if (!currentUser || isUpdating) return;
+
+    setIsUpdating(true);
+
+    try {
+      if (newStatus === null) {
+        // Remove participation
+        const { error } = await supabase
+          .from('event_participants')
+          .delete()
+          .eq('event_id', initiative.id)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        // Update local state
+        setInitiative((prev) => ({
+          ...prev,
+          participants:
+            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
+            [],
+        }));
+        setCurrentUserStatus(null);
+      } else {
+        // Prepare participant data
+        const participantData = {
+          event_id: initiative.id,
+          user_id: currentUser.id,
+          status: newStatus,
+        };
+
+        // Use upsert instead of insert
+        const { error } = await supabase
+          .from('event_participants')
+          .upsert(participantData);
+
+        if (error) throw error;
+
+        // Update local state
+        setInitiative((prev) => {
+          const otherParticipants =
+            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
+            [];
+          return {
+            ...prev,
+            participants: [
+              ...otherParticipants,
+              {
+                ...participantData,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                user: {
+                  email: currentUser.email,
+                  full_name: currentUser.full_name,
+                },
+              } as EventParticipant,
+            ],
+          };
+        });
+        setCurrentUserStatus(newStatus);
+      }
+    } catch (error) {
+      console.error('Error updating participation:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Group participants by status
+  const participantsByStatus = initiative.participants?.reduce(
+    (acc, participant) => {
+      if (!acc[participant.status]) {
+        acc[participant.status] = [];
+      }
+      acc[participant.status].push(participant);
+      return acc;
+    },
+    {} as Record<ParticipationStatus, EventParticipant[]>
+  );
+
+  const getStatusColor = (status: DevelopmentStatus): string => {
+    const colors: Record<DevelopmentStatus, string> = {
+      active:
+        'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-200',
+      completed:
+        'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+      on_hold:
+        'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-200',
+      cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+    };
+    return colors[status];
+  };
+
+  const getPriorityColor = (priority: DevelopmentPriority): string => {
+    const colors: Record<DevelopmentPriority, string> = {
+      low: 'bg-slate-100 text-slate-800 dark:bg-slate-900/50 dark:text-slate-200',
+      medium:
+        'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200',
+      high: 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-200',
+      urgent: 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-200',
+    };
+    return colors[priority];
+  };
+
+  return (
+    <Card className="p-6">
+      <div className="space-y-6">
+        {/* Description */}
+        <div>
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            Description
+          </h3>
+          <p className="text-base text-slate-600 dark:text-slate-300 whitespace-pre-wrap break-words">
+            {initiative.description}
+          </p>
+        </div>
+
+        {/* Event Details */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {initiative.event_date && (
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+                Event Date
+              </h3>
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
+                <Calendar className="w-4 h-4 mr-2" />
+                {format(new Date(initiative.event_date), 'EEEE, MMMM do yyyy')}
+              </div>
+            </div>
+          )}
+
+          {initiative.start_time && (
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+                Start Time
+              </h3>
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
+                <Clock className="w-4 h-4 mr-2" />
+                {formatTime(initiative.start_time)}
+              </div>
+            </div>
+          )}
+
+          {initiative.location && (
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+                Location
+              </h3>
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
+                <MapPin className="w-4 h-4 mr-2" />
+                {initiative.location}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Status and Priority */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              Status
+            </h3>
+            <span
+              className={`inline-flex px-2.5 py-1 rounded-full text-sm font-medium ${getStatusColor(
+                initiative.status as DevelopmentStatus
+              )}`}
+            >
+              {initiative.status.charAt(0).toUpperCase() +
+                initiative.status.slice(1).replace('_', ' ')}
+            </span>
+          </div>
+
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              Priority
+            </h3>
+            <span
+              className={`inline-flex px-2.5 py-1 rounded-full text-sm font-medium ${getPriorityColor(
+                initiative.priority as DevelopmentPriority
+              )}`}
+            >
+              {initiative.priority.charAt(0).toUpperCase() +
+                initiative.priority.slice(1)}
+            </span>
+          </div>
+        </div>
+
+        {/* Participants Section */}
+        {initiative.open_to_everyone && (
+          <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
+            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
+                  Participants ({initiative.participants?.length || 0}
+                  {initiative.max_participants
+                    ? ` / ${initiative.max_participants}`
+                    : ''}
+                  )
+                </h3>
+              </div>
+
+              {/* Participation Buttons */}
+              <div className="flex flex-wrap gap-3 mb-6">
+                <Button
+                  variant={
+                    currentUserStatus === 'going' ? 'default' : 'outline'
+                  }
+                  onClick={() => handleParticipationUpdate('going')}
+                  disabled={isUpdating}
+                >
+                  Going
+                </Button>
+                <Button
+                  variant={currentUserStatus === 'maybe' ? 'orange' : 'outline'}
+                  onClick={() => handleParticipationUpdate('maybe')}
+                  disabled={isUpdating}
+                >
+                  Maybe
+                </Button>
+                <Button
+                  variant={
+                    currentUserStatus === 'not_going'
+                      ? 'destructive'
+                      : 'outline'
+                  }
+                  onClick={() => handleParticipationUpdate('not_going')}
+                  disabled={isUpdating}
+                >
+                  Not Going
+                </Button>
+                {currentUserStatus && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => handleParticipationUpdate(null)}
+                    disabled={isUpdating}
+                  >
+                    Clear
+                  </Button>
+                )}
+              </div>
+
+              {/* Participant Lists */}
+              <div className="space-y-6">
+                {['going', 'maybe', 'not_going'].map((status) => {
+                  const participants =
+                    participantsByStatus?.[status as ParticipationStatus] || [];
+                  if (participants.length === 0) return null;
+
+                  return (
+                    <div key={status}>
+                      <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
+                        {status.replace('_', ' ')} ({participants.length})
+                      </h4>
+                      <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
+                        {participants.map((participant) => (
+                          <div
+                            key={participant.user_id}
+                            className="flex items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-700"
+                          >
+                            <div
+                              className={`h-8 w-8 rounded-full ${getUserColor(
+                                participant.user_id
+                              )} flex items-center justify-center`}
+                            >
+                              <span className="text-sm font-medium text-white">
+                                {participant.user?.full_name?.[0]?.toUpperCase() ||
+                                  participant.user?.email[0]?.toUpperCase()}
+                              </span>
+                            </div>
+                            <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
+                              {participant.user?.full_name ||
+                                participant.user?.email}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Created By and Dates */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              Created By
+            </h3>
+            <p className="text-base text-slate-600 dark:text-slate-300">
+              {initiative.created_by_user.full_name ||
+                initiative.created_by_user.email}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              Created
+            </h3>
+            <p className="text-base text-slate-600 dark:text-slate-300">
+              {format(new Date(initiative.created_at), 'PPp')}
+            </p>
+          </div>
+
+          <div>
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+              Last Updated
+            </h3>
+            <p className="text-base text-slate-600 dark:text-slate-300">
+              {format(new Date(initiative.updated_at), 'PPp')}
+            </p>
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/initiative-header.tsx
+================================================================================
+
+// app/(default)/development/[id]/initiative-header.tsx
+
+'use client';
+
+import Link from 'next/link';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentStatus,
+} from '@/types/development';
+import DevelopmentActions from './initiative-actions';
+
+interface InitiativeHeaderProps {
+  initiative: DevelopmentInitiativeWithDetails;
+}
+
+export default function InitiativeHeader({
+  initiative,
+}: InitiativeHeaderProps) {
+  const getStatusColor = (status: DevelopmentStatus): string => {
+    const colors: Record<DevelopmentStatus, string> = {
+      active: 'text-green-600 dark:text-green-400',
+      completed: 'text-blue-600 dark:text-blue-400',
+      on_hold: 'text-yellow-600 dark:text-yellow-400',
+      cancelled: 'text-red-600 dark:text-red-400',
+    };
+    return colors[status];
+  };
+
+  return (
+    <div className="mb-8">
+      {/* Back button */}
+      <div className="mb-4">
+        <Link
+          href="/development"
+          className="text-sm font-medium text-coop-600 hover:text-coop-700 dark:text-coop-400 dark:hover:text-coop-300"
+        >
+          ← Back to Development Projects and Events
+        </Link>
+      </div>
+
+      <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
+        {/* Left: Title */}
+        <div>
+          <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
+            {initiative.title}
+          </h1>
+          <div className="text-sm">
+            <span className="text-slate-500 dark:text-slate-400">
+              Category:{' '}
+              {initiative.category.charAt(0).toUpperCase() +
+                initiative.category.slice(1).replace('_', ' ')}
+            </span>
+          </div>
+        </div>
+
+        {/* Right: Status and Actions */}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-4">
+            <div
+              className={`inline-flex font-medium ${getStatusColor(
+                initiative.status as DevelopmentStatus
+              )}`}
+            >
+              {initiative.status.charAt(0).toUpperCase() +
+                initiative.status.slice(1).replace('_', ' ')}
+            </div>
+          </div>
+          <DevelopmentActions initiative={initiative} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/page.tsx
+================================================================================
+
+// app/(default)/development/[id]/page.tsx
+
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import supabaseAdmin from '@/lib/supabaseAdmin';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentComment,
+} from '@/types/development';
+import InitiativeHeader from './initiative-header';
+import InitiativeDetails from './initiative-details';
+import  CommentSection  from '@/components/ui/comments-section';
+
+export const metadata: Metadata = {
+  title: 'Development Initiative Details',
+  description: 'View and manage development initiative details',
+};
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
+async function getInitiative(id: string) {
+  try {
+    const { data: initiative, error } = await supabaseAdmin
+      .from('development_initiatives')
+      .select(
+        `
+        *,
+        created_by_user:profiles!development_initiatives_created_by_fkey(email, full_name),
+        comments:development_comments(
+          *,
+          user:profiles!development_comments_user_id_fkey(
+            email,
+            full_name
+          )
+        )
+      `
+      )
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
+
+    return initiative as DevelopmentInitiativeWithDetails;
+  } catch (err) {
+    console.error('Error fetching initiative:', err);
+    return null;
+  }
+}
+
+interface InitiativeDetailPageProps {
+  params: {
+    id: string;
+  };
+}
+
+export default async function InitiativeDetailPage({
+  params,
+}: InitiativeDetailPageProps) {
+  const initiative = await getInitiative(params.id);
+
+  if (!initiative) {
+    notFound();
+  }
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+      <InitiativeHeader initiative={initiative} />
+
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+        {/* Left column - Initiative details and comments */}
+        <div className="xl:col-span-2 space-y-6">
+          <InitiativeDetails initiative={initiative} />
+          <CommentSection<DevelopmentComment>
+            comments={initiative.comments}
+            resourceId={initiative.id}
+            resourceType={{
+              type: 'development',
+              field: 'initiative_id',
+              contentField: 'content',
+              userField: 'user_id',
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/participant-list.tsx
+================================================================================
+
+// app/(default)/development/[id]/participant-list.tsx
+
+'use client';
+
+import { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  EventParticipant,
+  ParticipationStatus,
+  DevelopmentInitiativeWithDetails,
+} from '@/types/development';
+import { Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+
+interface ParticipantListProps {
+  initiativeId: string;
+}
+
+export default function ParticipantList({
+  initiativeId,
+}: ParticipantListProps) {
+  const supabase = createClientComponentClient();
+  const [participants, setParticipants] = useState<EventParticipant[]>([]);
+  const [currentUser, setCurrentUser] = useState<{
+    id: string;
+    email: string;
+    full_name: string | null;
+  } | null>(null);
+  const [currentUserStatus, setCurrentUserStatus] =
+    useState<ParticipationStatus | null>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  // Fetch participants and current user
+  useEffect(() => {
+    async function fetchParticipants() {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUser({
+          id: user.id,
+          email: user.email!,
+          full_name: user.user_metadata.full_name || null,
+        });
+      }
+
+      const { data, error } = await supabase
+        .from('event_participants')
+        .select(
+          `
+          *,
+          user:profiles (
+            email,
+            full_name
+          )
+        `
+        )
+        .eq('event_id', initiativeId);
+
+      if (error) {
+        console.error('Error fetching participants:', error);
+        return;
+      }
+
+      setParticipants(data as EventParticipant[]);
+
+      if (user) {
+        const currentUserParticipation = data.find(
+          (p) => p.user_id === user.id
+        );
+        if (currentUserParticipation) {
+          setCurrentUserStatus(currentUserParticipation.status);
+        }
+      }
+    }
+
+    fetchParticipants();
+  }, [initiativeId, supabase]);
+
+  const handleParticipationUpdate = async (
+    newStatus: ParticipationStatus | null
+  ) => {
+    if (!currentUser || isUpdating) return;
+
+    setIsUpdating(true);
+
+    try {
+      if (newStatus === null) {
+        // Remove participation
+        const { error } = await supabase
+          .from('event_participants')
+          .delete()
+          .eq('event_id', initiativeId)
+          .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+
+        setParticipants((prev) =>
+          prev.filter((p) => p.user_id !== currentUser.id)
+        );
+        setCurrentUserStatus(null);
+      } else {
+        const participantData = {
+          event_id: initiativeId,
+          user_id: currentUser.id,
+          status: newStatus,
+        };
+
+        const { error } = await supabase
+          .from('event_participants')
+          .upsert(participantData);
+
+        if (error) throw error;
+
+        setParticipants((prev) => [
+          ...prev.filter((p) => p.user_id !== currentUser.id),
+          {
+            ...participantData,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            user: {
+              email: currentUser.email,
+              full_name: currentUser.full_name,
+            },
+          },
+        ]);
+        setCurrentUserStatus(newStatus);
+      }
+    } catch (error) {
+      console.error('Error updating participation:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Group participants by status
+  const participantsByStatus = participants.reduce((acc, participant) => {
+    if (!acc[participant.status]) {
+      acc[participant.status] = [];
+    }
+    acc[participant.status].push(participant);
+    return acc;
+  }, {} as Record<ParticipationStatus, EventParticipant[]>);
+
+  return (
+    <div>
+      {/* Participation Buttons */}
+      <div className="flex items-center space-x-6 mb-6">
+        <Button
+          variant={currentUserStatus === 'going' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('going')}
+          disabled={isUpdating}
+        >
+          Going
+        </Button>
+        <Button
+          variant={currentUserStatus === 'maybe' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('maybe')}
+          disabled={isUpdating}
+        >
+          Maybe
+        </Button>
+        <Button
+          variant={currentUserStatus === 'not_going' ? 'default' : 'outline'}
+          onClick={() => handleParticipationUpdate('not_going')}
+          disabled={isUpdating}
+        >
+          Not Going
+        </Button>
+        {currentUserStatus && (
+          <Button
+            variant="ghost"
+            onClick={() => handleParticipationUpdate(null)}
+            disabled={isUpdating}
+          >
+            Clear
+          </Button>
+        )}
+      </div>
+
+      {/* Attendance Lists */}
+      <div className="space-y-6">
+        {['going', 'maybe', 'not_going'].map((status) => {
+          const participantsInStatus =
+            participantsByStatus[status as ParticipationStatus];
+          if (!participantsInStatus || participantsInStatus.length === 0) {
+            return null;
+          }
+          return (
+            <div key={status}>
+              <h4 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2 capitalize">
+                {status.replace('_', ' ')} ({participantsInStatus.length})
+              </h4>
+              <div className="flex flex-wrap gap-2">
+                {participantsInStatus.map((participant) => (
+                  <div key={participant.user_id} className="flex items-center">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {participant.user?.full_name?.[0] ||
+                          participant.user?.email[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm ml-2">
+                      {participant.user?.full_name || participant.user?.email}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+
+
+================================================================================
+// File: [id]/project-actions.tsx
+================================================================================
+
+// app/(default)/development/[id]/project-actions.tsx
+
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import {
+  DevelopmentInitiativeWithDetails,
+  DevelopmentStatus,
+  DevelopmentPriority,
+  DevelopmentCategory,
+} from '@/types/development';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Edit, Trash2 } from 'lucide-react';
+
+interface ProjectActionsProps {
+  initiative: DevelopmentInitiativeWithDetails;
+}
+
+export default function ProjectActions({ initiative }: ProjectActionsProps) {
+  const router = useRouter();
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const supabase = createClientComponentClient();
+
+  // Form state for projects
+  const [title, setTitle] = useState(initiative.title);
+  const [description, setDescription] = useState(initiative.description || '');
+  const [category, setCategory] = useState<DevelopmentCategory>(
+    initiative.category
+  );
+  const [priority, setPriority] = useState<DevelopmentPriority>(
+    initiative.priority
+  );
+  const [status, setStatus] = useState<DevelopmentStatus>(initiative.status);
+  //   const [budget, setBudget] = useState(
+  //     initiative.budget ? initiative.budget.toString() : ''
+  //   );
+
+const handleDelete = async () => {
+  if (
+    !window.confirm(
+      'Are you sure you want to delete this project? This action cannot be undone.'
+    )
+  ) {
+    return;
+  }
+
+  try {
+    setIsDeleting(true);
+
+    const { data, error } = await supabase.rpc('delete_initiative', {
+      p_initiative_id: initiative.id,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    if (data === true) {
+      router.push('/development');
+    } else {
+      throw new Error('Failed to delete initiative');
+    }
+  } catch (error) {
+    console.error('Error deleting project:', error);
+    setError(
+      error instanceof Error ? error.message : 'Failed to delete project'
+    );
+    // Show error to user
+    window.alert(
+      'Failed to delete project: ' +
+        (error instanceof Error ? error.message : 'Unknown error')
+    );
+  } finally {
+    setIsDeleting(false);
+  }
+};
+
+  const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) throw new Error('User not authenticated');
+
+      const data = {
+        title: title.trim(),
+        description: description.trim(),
+        category,
+        priority,
+        status,
+        // budget: budget ? parseFloat(budget) : null,
+      };
+
+      const { error: updateError } = await supabase
+        .from('development_initiatives')
+        .update(data)
+        .eq('id', initiative.id);
+
+      if (updateError) throw updateError;
+
+      setIsEditDialogOpen(false);
+      router.refresh();
+    } catch (error) {
+      console.error('Error updating project:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to update project'
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <Button
+        variant="default"
+        size="sm"
+        onClick={() => setIsEditDialogOpen(true)}
+        disabled={isSubmitting || isDeleting}
+      >
+        <Edit className="h-4 w-4 mr-1" />
+        Edit
+      </Button>
+
+      <Button
+        variant="destructive"
+        size="sm"
+        onClick={handleDelete}
+        disabled={isDeleting}
+      >
+        <Trash2 className="h-4 w-4 mr-1" />
+        Delete
+      </Button>
+
+      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Project</DialogTitle>
+          </DialogHeader>
+
+          {error && (
+            <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4 mb-4">
+              <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleEdit} className="space-y-4">
+            {/* Title & Category */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="col-span-2 sm:col-span-1">
+                <Label htmlFor="title">Title</Label>
+                <Input
+                  id="title"
+                  required
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  disabled={isSubmitting}
+                  className="dark:bg-slate-700"
+                />
+              </div>
+              <div className="col-span-2 sm:col-span-1">
+                <Label htmlFor="category">Category</Label>
+                <select
+                  id="category"
+                  required
+                  value={category}
+                  onChange={(e) =>
+                    setCategory(e.target.value as DevelopmentCategory)
+                  }
+                  disabled={isSubmitting}
+                  className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+                >
+                  <option value="general">General</option>
+                  <option value="development_meeting">
+                    Development Meeting
+                  </option>
+                  <option value="social">Social Event</option>
+                  <option value="outreach">Outreach</option>
+                  <option value="policy">Policy</option>
+                  <option value="training">Training</option>
+                  <option value="research">Research</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div>
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                required
+                className="resize-none dark:bg-slate-700"
+                rows={3}
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                required
+                value={status}
+                onChange={(e) => setStatus(e.target.value as DevelopmentStatus)}
+                disabled={isSubmitting}
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              >
+                <option value="active">Active</option>
+                <option value="completed">Completed</option>
+                <option value="on_hold">On Hold</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Priority */}
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <select
+                id="priority"
+                required
+                value={priority}
+                onChange={(e) =>
+                  setPriority(e.target.value as DevelopmentPriority)
+                }
+                disabled={isSubmitting}
+                className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            {/* Budget */}
+            {/* <div>
+              <Label htmlFor="budget">Budget (£)</Label>
+              <Input
+                id="budget"
+                type="number"
+                min="0"
+                step="0.01"
+                value={budget}
+                onChange={(e) => setBudget(e.target.value)}
+                disabled={isSubmitting}
+              />
+            </div> */}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setIsEditDialogOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+
+
+// app/lib/actions/calendar.ts
+
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs";
+import { CalendarEventWithDetails } from "@/types/calendar";
+
+export async function getCalendarEvents(
+  startDate: Date,
+  endDate: Date,
+): Promise<CalendarEventWithDetails[]> {
+  const supabase = createClientComponentClient();
+
+  const { data: events, error } = await supabase
+    .from("calendar_events")
+    .select(`
+      *,
+      created_by_user:created_by(email, full_name),
+      last_modified_by_user:last_modified_by(email, full_name),
+      category
+    `)
+    .gte("start_time", startDate.toISOString())
+    .lte("end_time", endDate.toISOString())
+    .order("start_time", { ascending: true });
+
+  if (error) {
+    console.error("Error fetching calendar events:", error);
+    return [];
+  }
+
+  // Assign 'Miscellaneous' to events without a category
+  return (events || []).map((event) => ({
+    ...event,
+    category: event.category || "Miscellaneous",
+  }));
+}
+
+export async function createCalendarEvent(
+  title: string,
+  description: string | null,
+  startTime: Date,
+  endTime: Date,
+  eventType: "manual" | "garden_task" | "development_event" | "maintenance_visit" = "manual",
+  userId: string,
+  fullName?: string | null,
+  referenceId?: string,
+) {
+  const supabase = createClientComponentClient();
+
+  // Delete any existing events for this reference if it's a garden task or development event
+  if ((eventType === "garden_task" || eventType === "development_event") && referenceId) {
+    await supabase
+      .from("calendar_events")
+      .delete()
+      .eq("reference_id", referenceId)
+      .eq("event_type", eventType);
+  }
+
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert({
+      title,
+      description,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      event_type: eventType,
+      created_by: userId,
+      full_name: fullName,
+      reference_id: referenceId,
+      category: 
+        eventType === "garden_task" 
+          ? "Garden" 
+          : eventType === "development_event"
+          ? "Development Event"
+          : eventType === "maintenance_visit"
+          ? "P4P Visit"
+          : "Miscellaneous",
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Calendar event creation error:", error);
+    throw new Error(`Failed to create calendar event: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function createGardenTaskEvent(
+  title: string,
+  description: string,
+  dueDate: string,
+  scheduledTime: string | null,
+  duration: string | null,
+  userId: string,
+  fullName: string | null,
+  taskId: string,
+) {
+  // Create a Date object for the due date
+  const date = new Date(dueDate);
+
+  // If there's a scheduled time, parse and set it
+  if (scheduledTime) {
+    const [hours, minutes] = scheduledTime.split(":");
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+  } else {
+    // Default to 9 AM if no time specified
+    date.setHours(9, 0);
+  }
+
+  // Calculate end time based on duration
+  const durationMs = parseDuration(duration);
+
+  // End time is start time plus duration
+  const endTime = new Date(date.getTime() + durationMs);
+
+  // Create single calendar event
+  return createCalendarEvent(
+    title,
+    description,
+    date,
+    endTime,
+    "garden_task",
+    userId,
+    fullName,
+    taskId,
+  );
+}
+
+function parseDuration(durationStr: string | null): number {
+  if (!durationStr) {
+    return 60 * 60 * 1000; // Default to 1 hour in milliseconds
+  }
+  const duration = parseFloat(durationStr);
+  if (isNaN(duration)) {
+    return 60 * 60 * 1000; // Default to 1 hour
+  }
+  if (duration === 24) {
+    return 24 * 60 * 60 * 1000; // All day
+  }
+  return duration * 60 * 60 * 1000; // Convert hours to milliseconds
+}
+
+export async function updateCalendarEvent(
+  eventId: string,
+  updates: Partial<CalendarEventWithDetails>,
+  userId: string,
+) {
+  const supabase = createClientComponentClient();
+
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .update({ ...updates, last_modified_by: userId })
+    .eq("id", eventId)
+    .select()
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to update calendar event: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function deleteCalendarEvent(eventId: string) {
+  const supabase = createClientComponentClient();
+
+  const { error } = await supabase
+    .from("calendar_events")
+    .delete()
+    .eq("id", eventId);
+
+  if (error) {
+    throw new Error(`Failed to delete calendar event: ${error.message}`);
+  }
+}
+
+export async function createMaintenanceVisitEvent(
+  visitId: string,
+  title: string,
+  description: string,
+  scheduledDate: string,
+  estimatedDuration: string,
+  userId: string,
+  fullName: string | null,
+) {
+  const supabase = createClientComponentClient();
+
+  // Delete any existing events for this visit
+  await supabase
+    .from("calendar_events")
+    .delete()
+    .eq("reference_id", visitId)
+    .eq("event_type", "maintenance_visit");
+
+  // Calculate end time based on duration
+  const startTime = new Date(scheduledDate);
+  const durationHours = parseInt(estimatedDuration.split(" ")[0]);
+  const endTime = new Date(
+    startTime.getTime() + (durationHours * 60 * 60 * 1000),
+  );
+
+  // Create the calendar event
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert({
+      title,
+      description: description,
+      start_time: startTime.toISOString(),
+      end_time: endTime.toISOString(),
+      event_type: "maintenance_visit",
+      reference_id: visitId,
+      category: "P4P Visit",
+      created_by: userId,
+      full_name: fullName,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Calendar event creation error:", error);
+    throw new Error(`Failed to create calendar event: ${error.message}`);
+  }
+
+  return data;
+}
+
+export async function createDevelopmentEvent(
+  title: string,
+  description: string,
+  eventDate: string,
+  startTime: string | null,
+  duration: string | null,
+  userId: string,
+  fullName: string | null,
+  initiativeId: string,
+) {
+  // Create a Date object for the event date
+  const date = new Date(eventDate);
+
+  // If there's a scheduled time, parse and set it
+  if (startTime) {
+    const [hours, minutes] = startTime.split(':');
+    date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+  } else {
+    // Default to 9 AM if no time specified
+    date.setHours(9, 0);
+  }
+
+  // Calculate end time based on duration
+  const durationMs = parseDuration(duration);
+
+  // End time is start time plus duration
+  const endTime = new Date(date.getTime() + durationMs);
+
+  // Create single calendar event
+  return createCalendarEvent(
+    title,
+    description,
+    date,
+    endTime,
+    'development_event',
+    userId,
+    fullName,
+    initiativeId,
+  );
+}
+
+
+
+export interface CalendarEvent {
+  id: string;
+  title: string;
+  description: string | null;
+  start_time: string;
+  end_time: string;
+  event_type: "maintenance_visit" | "garden_task" | "development_event" | "manual";
+  reference_id: string | null;
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  last_modified_by: string | null;
+  category: string;
+}
+
+export interface CalendarEventWithDetails extends CalendarEvent {
+  created_by_user: {
+    email: string;
+    full_name: string | null;
+  };
+  last_modified_by_user?: {
+    email: string;
+    full_name: string | null;
+  };
+}
+
+export interface CalendarDay {
+  date: Date;
+  events: CalendarEventWithDetails[];
+  isCurrentMonth: boolean;
+  isToday: boolean;
+}
+
+
+// types/comments.ts
+
+interface BaseUser {
+    email: string;
+    full_name: string | null;
+}
+
+export interface BaseComment {
+    id: string;
+    created_at: string;
+    user: BaseUser;
+}
+
+export interface DevelopmentCommentType extends BaseComment {
+    initiative_id: string;
+    user_id: string;
+    content: string;
+}
+
+export interface GardenCommentType extends BaseComment {
+    task_id: string;
+    user_id: string;
+    comment: string;
+}
+
+export interface MaintenanceCommentType extends BaseComment {
+    request_id: string;
+    user_id: string;
+    comment: string;
+}
+
+export interface TaskCommentType extends BaseComment {
+    task_id: string;
+    created_by: string;
+    content: string;
+    updated_at: string;
+}
+
+export type CommentResourceType =
+    | {
+        type: "development";
+        field: "initiative_id";
+        contentField: "content";
+        userField: "user_id";
+    }
+    | {
+        type: "garden";
+        field: "task_id";
+        contentField: "comment";
+        userField: "user_id";
+    }
+    | {
+        type: "maintenance";
+        field: "request_id";
+        contentField: "comment";
+        userField: "user_id";
+    }
+    | {
+        type: "task";
+        field: "task_id";
+        contentField: "content";
+        userField: "created_by";
+    }
+    | {
+        type: "todo";
+        field: "todo_id";
+        contentField: "content";
+        userField: "created_by";
+    };
+
+export interface CommentSectionProps<T extends BaseComment> {
+    comments: T[];
+    resourceId: string;
+    resourceType: CommentResourceType;
+}
+
+
+// types/development.ts
+
+export type DevelopmentStatus =
+  | 'active'
+  | 'completed'
+  | 'on_hold'
+  | 'cancelled';
+
+export type DevelopmentPriority = 'low' | 'medium' | 'high' | 'urgent';
+
+export type DevelopmentCategory =
+  | 'development_meeting'
+  | 'outreach'
+  | 'policy'
+  | 'training'
+  | 'research'
+  | 'social'
+  | 'general';
+
+export type ParticipationStatus = 'going' | 'maybe' | 'not_going';
+
+export interface Profile {
+  id: string;
+  email: string;
+  full_name: string | null;
+  house_number: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface DevelopmentComment {
+  id: string;
+  initiative_id: string;
+  user_id: string;
+  content: string;
+  created_at: string;
+  user: Pick<Profile, 'email' | 'full_name'>;
+}
+
+export interface EventParticipant {
+  event_id: string;
+  user_id: string;
+  status: ParticipationStatus;
+  created_at: string;
+  updated_at: string;
+  user: {
+    email: string;
+    full_name: string | null;
+  };
+}
+
+export type InitiativeType = 'event' | 'project';
+
+export interface DevelopmentInitiative {
+  id: string;
+  title: string;
+  description: string;
+  status: DevelopmentStatus;
+  priority: DevelopmentPriority;
+  category: DevelopmentCategory;
+  initiative_type: InitiativeType;
+  created_by: string;
+  created_at: string;
+  updated_at: string;
+  event_date: string | null;
+  start_time: string | null;
+  duration: string | null;
+  location: string | null;
+  max_participants: number | null;
+  // budget: number | null;
+  open_to_everyone: boolean; // Added field
+}
+
+export interface DevelopmentInitiativeWithDetails extends DevelopmentInitiative {
+  created_by_user: Pick<Profile, 'email' | 'full_name'>;
+  comments: DevelopmentComment[];
+  participants?: EventParticipant[];
+}
+
+export interface PartnerOrganisation {
+  id: string;
+  name: string;
+  type: string;
+  contact_email: string | null;
+  website: string | null;
+  notes: string | null;
+  last_contact_date: string | null;
+  next_meeting_date: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type PartnerType =
+  | 'housing_coop'
+  | 'network'
+  | 'federation'
+  | 'council'
+  | 'charity'
+  | 'other';
+
+export interface InitiativeListProps {
+  initiatives: DevelopmentInitiativeWithDetails[];
+}
+
+// Database types for type safety with Supabase
+export type Tables = {
+  profiles: Profile;
+  development_initiatives: DevelopmentInitiative;
+  development_comments: DevelopmentComment;
+  event_participants: EventParticipant;
+  partner_organisations: PartnerOrganisation;
+};
+
+

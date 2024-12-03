@@ -36,6 +36,12 @@ export interface TaskCommentType extends BaseComment {
     updated_at: string;
 }
 
+export interface SocialEventCommentType extends BaseComment {
+    event_id: string;
+    user_id: string;
+    content: string;
+}
+
 export type CommentResourceType =
     | {
         type: "development";
@@ -66,6 +72,12 @@ export type CommentResourceType =
         field: "todo_id";
         contentField: "content";
         userField: "created_by";
+    }
+    | {
+        type: "social_event";
+        field: "event_id";
+        contentField: "content";
+        userField: "user_id";
     };
 
 export interface CommentSectionProps<T extends BaseComment> {

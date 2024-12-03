@@ -1,3 +1,5 @@
+// app/(default)/co-op-socials/new-social-event-modal.tsx
+
 'use client';
 
 import { Fragment, useState } from 'react';
@@ -8,13 +10,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus, Check } from 'lucide-react';
-import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
+import { Plus } from 'lucide-react';
+import { SocialEventCategory, SocialEvent } from '@/types/social';
 import { Checkbox } from '@/components/ui/checkbox';
-import { createDevelopmentEvent } from '@/lib/actions/calendar';
+import { createSocialEventCalendarEvent } from '@/lib/actions/calendar';
+import { createSocialEvent } from '@/lib/actions/social-events';
 import Tooltip from '@/components/tooltip';
 
-export default function NewEventModal() {
+export default function NewSocialEventModal() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,24 +27,22 @@ export default function NewEventModal() {
   // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [category, setCategory] = useState<DevelopmentCategory>('general');
-  const [priority, setPriority] = useState<DevelopmentPriority>('medium');
+  const [category, setCategory] = useState<SocialEventCategory>('film_night');
   const [eventDate, setEventDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [duration, setDuration] = useState('');
   const [location, setLocation] = useState('');
-  const [openToEveryone, setOpenToEveryone] = useState(false);
+  const [openToEveryone, setOpenToEveryone] = useState(true);
 
   const resetForm = () => {
     setTitle('');
     setDescription('');
-    setCategory('general');
-    setPriority('medium');
+    setCategory('film_night');
     setEventDate('');
     setStartTime('');
     setDuration('');
     setLocation('');
-    setOpenToEveryone(false);
+    setOpenToEveryone(true);
     setError(null);
   };
 
@@ -81,29 +82,23 @@ export default function NewEventModal() {
         title: title.trim(),
         description: description.trim(),
         category,
-        priority,
-        initiative_type: 'event' as const,
+        status: 'upcoming' as const,
         created_by: user.id,
         event_date: eventDate ? new Date(eventDate).toISOString() : null,
         start_time: startTime || null,
         duration: durationInterval,
         location: location.trim() || null,
-        max_participants: openToEveryone ? 12 : null,
         open_to_everyone: openToEveryone,
       };
 
-      // Insert the development initiative
-      const { data: newInitiative, error: insertError } = await supabase
-        .from('development_initiatives')
-        .insert(data)
-        .select()
-        .single();
+      // Insert the social event
+      const newEvent = await createSocialEvent(data);
 
-      if (insertError) throw insertError;
+      if (!newEvent) throw new Error('Failed to create social event');
 
       // Create calendar event if date is set
-      if (eventDate && newInitiative) {
-        await createDevelopmentEvent(
+      if (eventDate && newEvent) {
+        await createSocialEventCalendarEvent(
           title,
           description,
           eventDate,
@@ -111,7 +106,7 @@ export default function NewEventModal() {
           duration,
           user.id,
           profile.full_name,
-          newInitiative.id
+          newEvent.id
         );
       }
 
@@ -119,9 +114,9 @@ export default function NewEventModal() {
       setIsOpen(false);
       router.refresh();
     } catch (error) {
-      console.error('Error creating event:', error);
+      console.error('Error creating social event:', error);
       setError(
-        error instanceof Error ? error.message : 'Failed to create event'
+        error instanceof Error ? error.message : 'Failed to create social event'
       );
     } finally {
       setIsSubmitting(false);
@@ -132,7 +127,7 @@ export default function NewEventModal() {
     <>
       <Button onClick={() => setIsOpen(true)} variant="default">
         <Plus className="h-4 w-4 mr-2" />
-        Add Event
+        Add Social Event
       </Button>
 
       <Transition show={isOpen} as={Fragment}>
@@ -164,7 +159,7 @@ export default function NewEventModal() {
               >
                 <Dialog.Panel className="w-full max-w-lg rounded-lg bg-white dark:bg-slate-800 p-6 shadow-xl">
                   <Dialog.Title className="text-lg font-semibold text-slate-800 dark:text-slate-100 mb-4">
-                    New Event
+                    New Social Event
                   </Dialog.Title>
 
                   {error && (
@@ -195,20 +190,27 @@ export default function NewEventModal() {
                           required
                           value={category}
                           onChange={(e) =>
-                            setCategory(e.target.value as DevelopmentCategory)
+                            setCategory(e.target.value as SocialEventCategory)
                           }
                           disabled={isSubmitting}
                           className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
                         >
-                          <option value="general">General</option>
-                          <option value="development_meeting">
-                            Development Meeting
+                          <option value="">Select category</option>
+                          <option value="film_night">Film Night</option>
+                          <option value="album_night">Album Night</option>
+                          <option value="meal">Meal</option>
+                          <option value="fire">Fire</option>
+                          <option value="board_games">Board Games</option>
+                          <option value="tv">TV</option>
+                          <option value="book_club">Book Club</option>
+                          <option value="christmas_dinner">
+                            Christmas Dinner
                           </option>
-                          <option value="social">Social Event</option>
-                          <option value="outreach">Outreach</option>
-                          <option value="policy">Policy</option>
-                          <option value="training">Training</option>
-                          <option value="research">Research</option>
+                          <option value="bike_ride">Bike Ride</option>
+                          <option value="party">Party</option>
+                          <option value="hang_out">Hang Out</option>
+                          <option value="beach">Beach</option>
+                          <option value="writing_club">Writing Club</option>
                         </select>
                       </div>
                     </div>
@@ -301,26 +303,6 @@ export default function NewEventModal() {
                           </Tooltip>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Priority */}
-                    <div>
-                      <Label htmlFor="priority">Priority</Label>
-                      <select
-                        id="priority"
-                        required
-                        value={priority}
-                        onChange={(e) =>
-                          setPriority(e.target.value as DevelopmentPriority)
-                        }
-                        disabled={isSubmitting}
-                        className="w-full h-10 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
-                      >
-                        <option value="low">Low</option>
-                        <option value="medium">Medium</option>
-                        <option value="high">High</option>
-                        <option value="urgent">Urgent</option>
-                      </select>
                     </div>
 
                     {/* Actions */}

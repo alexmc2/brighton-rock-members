@@ -12,9 +12,9 @@ const buttonVariants = cva(
         default:
           'bg-coop-500 text-white hover:bg-coop-600 dark:bg-coop-600 dark:text-white dark:hover:bg-coop-700',
         orange:
-          'bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:text-white dark:hover:bg-orange-700',
+          'bg-orange-500 text-white hover:bg-orange-600 dark:bg-orange-600 dark:text-white dark:hover:bg-orange-700/90',
         destructive:
-          'bg-red-500 text-slate-50 hover:bg-red-500/90 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90',
+          'bg-red-700 text-white hover:bg-red-500/90 dark:bg-red-900 dark:text-slate-50 dark:hover:bg-red-900/90',
         outline:
           'border border-slate-200 bg-white hover:bg-slate-100 hover:text-slate-900 dark:border-slate-800 dark:bg-gray-800 dark:hover:bg-slate-800 dark:hover:text-slate-50',
 

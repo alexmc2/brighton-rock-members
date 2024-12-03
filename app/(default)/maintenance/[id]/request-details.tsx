@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { format } from 'date-fns';
@@ -37,6 +37,30 @@ export default function RequestDetails({
   );
   const [status, setStatus] = useState<MaintenanceStatus>(request.status);
   const [houseId, setHouseId] = useState(request.house_id);
+  const [assignedTo, setAssignedTo] = useState<string | null>(
+    request.assigned_to
+  );
+
+  // Get list of users for assignment
+  const [users, setUsers] = useState<
+    Array<{ id: string; email: string; full_name: string | null }>
+  >([]);
+
+  // Fetch users on component mount
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const { data: users, error } = await supabase
+        .from('profiles')
+        .select('id, email, full_name')
+        .order('full_name');
+
+      if (!error && users) {
+        setUsers(users);
+      }
+    };
+
+    fetchUsers();
+  }, [supabase]);
 
   // Separate visits into upcoming and past
   const upcomingVisits = request.visits
@@ -69,6 +93,7 @@ export default function RequestDetails({
           priority,
           status,
           house_id: houseId,
+          assigned_to: assignedTo,
         })
         .eq('id', request.id);
 
@@ -237,7 +262,7 @@ export default function RequestDetails({
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               />
             </div>
 
@@ -255,7 +280,7 @@ export default function RequestDetails({
                 onChange={(e) => setDescription(e.target.value)}
                 required
                 rows={3}
-                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               />
             </div>
 
@@ -272,7 +297,7 @@ export default function RequestDetails({
                 value={houseId}
                 onChange={(e) => setHouseId(e.target.value)}
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 {houses.map((house) => (
                   <option key={house.id} value={house.id}>
@@ -297,7 +322,7 @@ export default function RequestDetails({
                   setPriority(e.target.value as MaintenancePriority)
                 }
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -319,13 +344,36 @@ export default function RequestDetails({
                 value={status}
                 onChange={(e) => setStatus(e.target.value as MaintenanceStatus)}
                 required
-                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm"
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
               >
                 <option value="pending">Pending</option>
                 <option value="scheduled">Scheduled</option>
                 <option value="in_progress">In Progress</option>
                 <option value="completed">Completed</option>
                 <option value="cancelled">Cancelled</option>
+              </select>
+            </div>
+
+            {/* Assigned To */}
+            <div>
+              <label
+                htmlFor="assigned_to"
+                className="block text-sm font-medium text-slate-700 dark:text-slate-300"
+              >
+                Assigned To
+              </label>
+              <select
+                id="assigned_to"
+                value={assignedTo || ''}
+                onChange={(e) => setAssignedTo(e.target.value || null)}
+                className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              >
+                <option value="">Not Assigned</option>
+                {users.map((user) => (
+                  <option key={user.id} value={user.id}>
+                    {user.full_name || user.email}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -383,6 +431,19 @@ export default function RequestDetails({
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {request.status.charAt(0).toUpperCase() +
                   request.status.slice(1).replace('_', ' ')}
+              </p>
+            </div>
+
+            {/* Assigned To */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-100 mb-2">
+                Assigned To
+              </h3>
+              <p className="text-sm text-slate-600 dark:text-slate-400">
+                {request.assigned_to_user
+                  ? request.assigned_to_user.full_name ||
+                    request.assigned_to_user.email
+                  : 'Not Assigned'}
               </p>
             </div>
 

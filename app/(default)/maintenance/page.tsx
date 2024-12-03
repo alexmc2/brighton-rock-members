@@ -24,6 +24,7 @@ async function getMaintenanceRequests() {
         *,
         house:houses!maintenance_requests_house_id_fkey(id, name),
         reported_by_user:profiles!maintenance_requests_reported_by_fkey(email, full_name),
+        assigned_to_user:profiles!maintenance_requests_assigned_to_fkey(email, full_name),
         visits:maintenance_visits(*),
         comments:maintenance_comments(*)
       `

@@ -9,6 +9,7 @@ export interface MaintenanceRequest {
   priority: MaintenancePriority
   house_id: string
   reported_by: string
+  assigned_to: string | null
   created_at: string
   updated_at: string
 }
@@ -45,6 +46,10 @@ export interface MaintenanceRequestWithDetails extends MaintenanceRequest {
     email: string
     full_name?: string | null
   }
+  assigned_to_user?: {
+    email: string
+    full_name?: string | null
+  } | null
   visits: MaintenanceVisit[]
   comments: MaintenanceComment[]
 } 

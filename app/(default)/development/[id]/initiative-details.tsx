@@ -259,10 +259,10 @@ export default function InitiativeDetails({
       <div className="space-y-6">
         {/* Description */}
         <div>
-          <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+          <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
             Description
           </h3>
-          <p className="text-slate-800 dark:text-slate-200 whitespace-pre-wrap break-words">
+          <p className="text-base text-slate-600 dark:text-slate-300 whitespace-pre-wrap break-words">
             {initiative.description}
           </p>
         </div>
@@ -271,10 +271,10 @@ export default function InitiativeDetails({
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {initiative.event_date && (
             <div>
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Event Date
               </h3>
-              <div className="flex items-center text-slate-800 dark:text-slate-200">
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Calendar className="w-4 h-4 mr-2" />
                 {format(new Date(initiative.event_date), 'EEEE, MMMM do yyyy')}
               </div>
@@ -283,10 +283,10 @@ export default function InitiativeDetails({
 
           {initiative.start_time && (
             <div>
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Start Time
               </h3>
-              <div className="flex items-center text-slate-800 dark:text-slate-200">
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Clock className="w-4 h-4 mr-2" />
                 {formatTime(initiative.start_time)}
               </div>
@@ -295,10 +295,10 @@ export default function InitiativeDetails({
 
           {initiative.location && (
             <div>
-              <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
                 Location
               </h3>
-              <div className="flex items-center text-slate-800 dark:text-slate-200">
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <MapPin className="w-4 h-4 mr-2" />
                 {initiative.location}
               </div>
@@ -309,7 +309,7 @@ export default function InitiativeDetails({
         {/* Status and Priority */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Status
             </h3>
             <span
@@ -323,7 +323,7 @@ export default function InitiativeDetails({
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Priority
             </h3>
             <span
@@ -342,7 +342,7 @@ export default function InitiativeDetails({
           <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
             <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-base text-slate-900 dark:text-slate-100">
+                <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100">
                   Participants ({initiative.participants?.length || 0}
                   {initiative.max_participants
                     ? ` / ${initiative.max_participants}`
@@ -364,7 +364,7 @@ export default function InitiativeDetails({
                 </Button>
                 <Button
                   variant={
-                    currentUserStatus === 'maybe' ? 'default' : 'outline'
+                    currentUserStatus === 'maybe' ? 'orange' : 'outline'
                   }
                   onClick={() => handleParticipationUpdate('maybe')}
                   disabled={isUpdating}
@@ -402,14 +402,14 @@ export default function InitiativeDetails({
 
                   return (
                     <div key={status}>
-                      <h4 className="text-sm font-medium text-slate-600 dark:text-slate-300 mb-3 capitalize">
+                      <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
                         {status.replace('_', ' ')} ({participants.length})
                       </h4>
-                      <div className="bg-white dark:bg-slate-800 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
+                      <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
                         {participants.map((participant) => (
                           <div
                             key={participant.user_id}
-                            className="flex items-center px-4 py-3"
+                            className="flex items-center px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800/70"
                           >
                             <Avatar className="h-8 w-8 bg-slate-100 dark:bg-slate-700">
                               <AvatarFallback className="text-slate-600 dark:text-slate-300 font-medium">
@@ -417,7 +417,7 @@ export default function InitiativeDetails({
                                   participant.user?.email[0]}
                               </AvatarFallback>
                             </Avatar>
-                            <span className="ml-3 text-sm font-medium text-slate-900 dark:text-slate-100">
+                            <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
                               {participant.user?.full_name ||
                                 participant.user?.email}
                             </span>
@@ -435,29 +435,29 @@ export default function InitiativeDetails({
         {/* Created By and Dates */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
           <div>
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created By
             </h3>
-            <p className="text-slate-800 dark:text-slate-200">
+            <p className="text-base text-slate-600 dark:text-slate-300">
               {initiative.created_by_user.full_name ||
                 initiative.created_by_user.email}
             </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created
             </h3>
-            <p className="text-slate-800 dark:text-slate-200">
+            <p className="text-base text-slate-600 dark:text-slate-300">
               {format(new Date(initiative.created_at), 'PPp')}
             </p>
           </div>
 
           <div>
-            <h3 className="text-sm font-medium text-slate-500 dark:text-slate-400 mb-2">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Last Updated
             </h3>
-            <p className="text-slate-800 dark:text-slate-200">
+            <p className="text-base text-slate-600 dark:text-slate-300">
               {format(new Date(initiative.updated_at), 'PPp')}
             </p>
           </div>

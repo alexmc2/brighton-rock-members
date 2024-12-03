@@ -164,6 +164,9 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
                   Reported By
                 </th>
+                <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
+                  Assigned To
+                </th>
                 <th className="px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
                   Date
                 </th>
@@ -222,6 +225,11 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
                     <td className="px-4 py-3 hidden lg:table-cell">
                       {request.reported_by_user.full_name ||
                         request.reported_by_user.email}
+                    </td>
+                    <td className="px-4 py-3 hidden lg:table-cell">
+                      {request.assigned_to_user?.full_name ||
+                        request.assigned_to_user?.email ||
+                        '-'}
                     </td>
                     <td className="px-4 py-3">
                       {format(new Date(request.created_at), 'MMM d, yyyy')}

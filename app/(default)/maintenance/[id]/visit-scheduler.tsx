@@ -117,11 +117,10 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
             </label>
             <input
               type="date"
-              name="scheduled_date"
               id="scheduled_date"
+              name="scheduled_date"
               required
-              min={new Date().toISOString().split('T')[0]}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
+              className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
             />
           </div>
 
@@ -134,10 +133,10 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
             </label>
             <input
               type="time"
-              name="scheduled_time"
               id="scheduled_time"
+              name="scheduled_time"
               required
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
+              className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
             />
           </div>
 
@@ -148,19 +147,15 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
             >
               Estimated Duration (hours)
             </label>
-            <select
-              name="estimated_duration"
+            <input
+              type="number"
               id="estimated_duration"
+              name="estimated_duration"
+              min="0.5"
+              step="0.5"
               required
-              defaultValue="1"
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
-            >
-              <option value="1">1 hour</option>
-              <option value="2">2 hours</option>
-              <option value="3">3 hours</option>
-              <option value="4">4 hours</option>
-              <option value="8">Full day (8 hours)</option>
-            </select>
+              className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+            />
           </div>
 
           <div>
@@ -171,11 +166,10 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               Notes
             </label>
             <textarea
-              name="notes"
               id="notes"
+              name="notes"
               rows={3}
-              className="mt-1 block w-full rounded-lg border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2"
-              placeholder="Any special instructions or notes for the visit"
+              className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
             />
           </div>
 

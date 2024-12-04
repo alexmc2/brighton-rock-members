@@ -1,97 +1,128 @@
-'use client'
+'use client';
 
-import Link from 'next/link'
-import Image from 'next/image'
-import { Menu, Transition } from '@headlessui/react'
-import UserAvatar from '@/public/images/user-avatar-32.png'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import Link from 'next/link';
+import Image from 'next/image';
+import UserAvatar from '@/public/images/user-avatar-32.png';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { cn } from '@/lib/utils';
 
-export default function DropdownProfile({ align }: {
-  align?: 'left' | 'right'
+export default function DropdownProfile({
+  align = 'end'
+}: {
+  align?: 'start' | 'end';
 }) {
-  const router = useRouter()
-  const supabase = createClientComponentClient()
-  const [userEmail, setUserEmail] = useState<string | null>(null)
+  const router = useRouter();
+  const supabase = createClientComponentClient();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser()
-      setUserEmail(user?.email ?? null)
-    }
-    getUser()
-  }, [supabase.auth])
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      
+      if (user?.email) {
+        setUserEmail(user.email);
+        
+        // Fetch the user's profile
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        setUserName(profile?.full_name || user.email.split('@')[0] || 'User');
+      }
+    };
+    getUser();
+  }, [supabase]);
 
   const handleSignOut = async (e: React.MouseEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     try {
-      console.log('Signing out...')
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
       if (error) {
-        console.error('Error signing out:', error)
-        return
+        console.error('Error signing out:', error);
+        return;
       }
-      console.log('Sign out successful')
-      router.refresh()
-      router.push('/login')
+      router.refresh();
+      router.push('/login');
     } catch (error) {
-      console.error('Unexpected error during sign out:', error)
+      console.error('Unexpected error during sign out:', error);
     }
-  }
+  };
 
   return (
-    <Menu as="div" className="relative inline-flex">
-      <Menu.Button className="inline-flex justify-center items-center group">
-        <Image className="w-8 h-8 rounded-full" src={UserAvatar} width={32} height={32} alt="User" />
+    <DropdownMenu>
+      <DropdownMenuTrigger className="inline-flex justify-center items-center group">
+        <Image
+          className="w-8 h-8 rounded-full"
+          src={UserAvatar}
+          width={32}
+          height={32}
+          alt="User"
+        />
         <div className="flex items-center truncate">
-          <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white">
-            {userEmail || 'Loading...'}
+          <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white transition-colors duration-150">
+            {userName || 'Loading...'}
           </span>
-          <svg className="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" viewBox="0 0 12 12">
+          <svg
+            className="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 transition-transform duration-150 group-data-[state=open]:rotate-180"
+            viewBox="0 0 12 12"
+          >
             <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
           </svg>
         </div>
-      </Menu.Button>
-      <Transition
-        as="div"
-        className={`origin-top-right z-10 absolute top-full min-w-[11rem] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${align === 'right' ? 'right-0' : 'left-0'
-          }`}
-        enter="transition ease-out duration-200 transform"
-        enterFrom="opacity-0 -translate-y-2"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-out duration-200"
-        leaveFrom="opacity-100"
-        leaveTo="opacity-0"
+      </DropdownMenuTrigger>
+      <DropdownMenuContent 
+        align={align} 
+        sideOffset={4}
+        className={cn(
+          "w-56 p-0.5",
+          "bg-white dark:bg-gray-800",
+          "border border-gray-200 dark:border-gray-700/60",
+          "data-[state=open]:animate-in data-[state=closed]:animate-out",
+          "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+          "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+          "data-[side=bottom]:slide-in-from-top-2",
+          "data-[side=left]:slide-in-from-right-2",
+          "data-[side=right]:slide-in-from-left-2",
+          "data-[side=top]:slide-in-from-bottom-2",
+        )}
       >
         <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-gray-200 dark:border-gray-700/60">
-          <div className="font-medium text-gray-800 dark:text-gray-100">{userEmail}</div>
-          <div className="text-xs text-gray-500 dark:text-gray-400 italic">Member</div>
+          <div className="font-medium text-gray-800 dark:text-gray-100">
+            {userName}
+          </div>
+          <div className="text-xs text-gray-500 dark:text-gray-400 italic">
+            {userEmail}
+          </div>
         </div>
-        <Menu.Items static className="focus:outline-none">
-          <Menu.Item>
-            {({ active }) => (
-              <Link 
-                className={`font-medium text-sm flex items-center py-1 px-3 ${active ? 'text-coop-600 dark:text-coop-400' : 'text-coop-500'}`} 
-                href="/settings"
-              >
-                Settings
-              </Link>
-            )}
-          </Menu.Item>
-          <Menu.Item>
-            {({ active }) => (
-              <a
-                href="#"
-                onClick={handleSignOut}
-                className={`font-medium text-sm flex w-full items-center py-1 px-3 ${active ? 'text-coop-600 dark:text-coop-400' : 'text-coop-500'}`}
-              >
-                Sign Out
-              </a>
-            )}
-          </Menu.Item>
-        </Menu.Items>
-      </Transition>
-    </Menu>
-  )
-} 
+        <DropdownMenuItem asChild>
+          <Link 
+            href="/settings"
+            className="font-medium text-sm flex items-center py-1.5 px-3 text-gray-600 dark:text-gray-400 hover:text-coop-500 dark:hover:text-coop-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
+          >
+            Settings
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem 
+          onClick={handleSignOut}
+          className="font-medium text-sm w-full flex items-center py-1.5 px-3 text-gray-600 dark:text-gray-400 hover:text-coop-500 dark:hover:text-coop-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-150"
+        >
+          Sign out
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}

@@ -34,6 +34,23 @@
 // }
 
 import React from 'react';
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuGroup,
+  DropdownMenuPortal,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuRadioGroup,
+} from '@/components/ui/dropdown-menu';
 
 const ColorSample = () => {
   return (
@@ -56,7 +73,31 @@ const ColorSample = () => {
           placeholder="Enter description"
         />
       </div>
-
+      <div className="space-y-2">
+        <label className="block text-slate-400">Status</label>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="w-full p-2 bg-slate-700 rounded text-white flex justify-between items-center">
+            <span>Select Status</span>
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-full min-w-[200px] bg-slate-700">
+            <DropdownMenuItem className="text-white hover:bg-slate-600 cursor-pointer">
+              Open
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-white hover:bg-slate-600 cursor-pointer">
+              In Progress
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-white hover:bg-slate-600 cursor-pointer">
+              Completed
+            </DropdownMenuItem>
+            <DropdownMenuItem className="text-white hover:bg-slate-600 cursor-pointer">
+              On Hold
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
       <div className="space-y-2">
         <label className="block text-slate-400">Priority</label>
         <select className="w-full p-2 bg-slate-800 rounded text-white">

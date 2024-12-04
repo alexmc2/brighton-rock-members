@@ -161,7 +161,12 @@ export default function NewTodoModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* **Title Field** */}
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
+              <Label
+                htmlFor="title"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Title
+              </Label>
               <Input
                 id="title"
                 name="title"
@@ -175,7 +180,12 @@ export default function NewTodoModal() {
 
             {/* **Description Field** */}
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 name="description"
@@ -189,7 +199,12 @@ export default function NewTodoModal() {
 
             {/* **Todo Type Field** */}
             <div>
-              <Label htmlFor="todo_type" className="text-slate-900 dark:text-slate-300">Todo Type</Label>
+              <Label
+                htmlFor="todo_type"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Todo Type
+              </Label>
               <select
                 id="todo_type"
                 name="todo_type"
@@ -205,7 +220,12 @@ export default function NewTodoModal() {
 
             {/* **Priority Field** */}
             <div>
-              <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
+              <Label
+                htmlFor="priority"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Priority
+              </Label>
               <select
                 id="priority"
                 name="priority"
@@ -223,7 +243,12 @@ export default function NewTodoModal() {
 
             {/* **Assign To Field** */}
             <div>
-              <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assign To</Label>
+              <Label
+                htmlFor="assigned_to"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Assign To
+              </Label>
               <select
                 id="assigned_to"
                 name="assigned_to"
@@ -259,12 +284,10 @@ export default function NewTodoModal() {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                variant="default"
-              >
-                {isSubmitting ? 'Creating...' : (
+              <Button type="submit" disabled={isSubmitting} variant="default">
+                {isSubmitting ? (
+                  'Creating...'
+                ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Todo

@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import InitiativeCard from './initiative-card';
 import {
@@ -14,8 +15,9 @@ import {
   DevelopmentInitiativeWithDetails,
   DevelopmentCategory,
   DevelopmentStatus,
-  InitiativeType, // Make sure to import this from your updated types
+  InitiativeType,
 } from '@/types/development';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface InitiativeListProps {
   initiatives?: DevelopmentInitiativeWithDetails[];
@@ -24,8 +26,10 @@ interface InitiativeListProps {
 const ITEMS_PER_PAGE = 9;
 
 export default function InitiativeList({
-  initiatives = [],
+  initiatives: initialInitiatives = [],
 }: InitiativeListProps) {
+  const supabase = createClientComponentClient();
+  const [initiatives, setInitiatives] = useState(initialInitiatives);
   const [currentPage, setCurrentPage] = useState(1);
   const [typeFilter, setTypeFilter] = useState<'all' | InitiativeType>('all');
   const [categoryFilter, setStatusFilter] = useState<
@@ -34,6 +38,66 @@ export default function InitiativeList({
   const [statusFilter, setCategoryFilter] = useState<'all' | DevelopmentStatus>(
     'all'
   );
+
+  // Set up real-time subscription for participant updates
+  useEffect(() => {
+    // Subscribe to changes in event_participants table
+    const channel = supabase
+      .channel('event_participants_changes')
+      .on('postgres_changes' as never,
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_participants',
+        },
+        async (payload: RealtimePostgresChangesPayload<{
+          event_id: string;
+          user_id: string;
+          status: string;
+        }> & {
+          new: { event_id: string } | null;
+          old: { event_id: string } | null;
+        }) => {
+          const eventId = payload.new?.event_id || payload.old?.event_id;
+          if (!eventId) return;
+
+          // Fetch updated participants for the affected initiative
+          const { data: participants } = await supabase
+            .from('event_participants')
+            .select(`
+              *,
+              user:profiles!event_participants_user_id_fkey (
+                email,
+                full_name
+              )
+            `)
+            .eq('event_id', eventId);
+
+          // Update the initiatives state with new participant data
+          setInitiatives((prevInitiatives) =>
+            prevInitiatives.map((initiative) => {
+              if (initiative.id === eventId) {
+                return {
+                  ...initiative,
+                  participants: participants || [],
+                };
+              }
+              return initiative;
+            })
+          );
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [supabase]);
+
+  // Update local state when props change
+  useEffect(() => {
+    setInitiatives(initialInitiatives);
+  }, [initialInitiatives]);
 
   // Filter initiatives
   const filteredInitiatives = initiatives.filter((initiative) => {

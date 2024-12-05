@@ -153,13 +153,13 @@ export default function MaintenanceList({ requests }: MaintenanceListProps) {
       </div>
 
       {/* Maintenance Requests Table */}
-      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
+      <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg border border-slate-200 dark:border-slate-700">
         <div className="relative w-full">
           <div className="overflow-x-auto">
             <div className="inline-block min-w-full align-middle">
               <div className="overflow-hidden">
-                <Table className="min-w-[1000px] w-full divide-y divide-slate-200 dark:divide-slate-700">
-                  <TableHeader className="bg-slate-50 dark:bg-slate-900/20">
+                <Table className="min-w-[1000px] w-full divide-y divide-slate-200 dark:divide-slate-700 rounded-lg">
+                  <TableHeader className="bg-slate-50 dark:bg-slate-900/20 rounded-lg">
                     <TableRow>
                       <TableHead className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
                         Title

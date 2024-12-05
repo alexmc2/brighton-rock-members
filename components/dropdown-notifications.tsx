@@ -40,7 +40,7 @@ export default function DropdownNotifications({ align }: {
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
           >
-            <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-4">Notifications</div>
+            <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-4">Notifications Functionality Coming Soon...</div>
             <MenuItems as="ul" className="focus:outline-none">
               <MenuItem as="li" className="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
                 {({ active }) => (

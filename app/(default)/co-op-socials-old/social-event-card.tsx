@@ -1,5 +1,4 @@
 // app/(default)/co-op-socials/social-event-card.tsx
-'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -21,7 +20,6 @@ import {
   Smile,
   Sun,
   PenTool,
-  MessageSquare,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +28,7 @@ import {
   SocialEventCategory,
   SocialEventStatus,
 } from '@/types/social';
+import { MessageSquare } from 'lucide-react';
 
 interface SocialEventCardProps {
   event: SocialEventWithDetails;
@@ -54,6 +53,7 @@ const getCategoryIcon = (category: SocialEventCategory) => {
   return icons[category] || <PartyPopper className="w-5 h-5" />;
 };
 
+// Helper object to get category colors
 const categoryColors: Record<SocialEventCategory, string> = {
   film_night:
     'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300',
@@ -78,13 +78,6 @@ const categoryColors: Record<SocialEventCategory, string> = {
     'bg-gray-100 text-gray-800 dark:bg-gray-800/30 dark:text-gray-300',
 };
 
-const statusColors: Record<SocialEventStatus, string> = {
-  upcoming:
-    'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300',
-  completed: 'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
-};
-
 const formatTime = (time: string) => {
   const [hours, minutes] = time.split(':');
   const hour = parseInt(hours);
@@ -94,14 +87,18 @@ const formatTime = (time: string) => {
 };
 
 const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
-  const getParticipantCount = (event: SocialEventWithDetails) => {
-    if (!event.participants) return 0;
-    return event.participants.filter((p) => p.status !== 'not_going').length;
+  const statusColors: Record<SocialEventStatus, string> = {
+    upcoming:
+      'bg-green-100 text-green-800 dark:bg-green-800/30 dark:text-green-300',
+    completed:
+      'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
+    cancelled: 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
   };
 
   return (
     <Card className="flex flex-col h-full bg-white dark:bg-slate-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
       <div className="p-5 flex flex-col h-full">
+        {/* Header with Category */}
         <div className="flex justify-between items-center mb-4">
           <div
             className={`flex items-center px-3 py-1.5 rounded-full ${
@@ -115,16 +112,19 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
           </div>
         </div>
 
+        {/* Title */}
         <Link href={`/co-op-socials/${event.id}`}>
           <h3 className="text-lg lg:text-xl font-semibold text-slate-800 dark:text-slate-100 mb-2 hover:text-green-600 dark:hover:text-green-400">
             {event.title}
           </h3>
         </Link>
 
+        {/* Description */}
         <p className="text-sm text-slate-600 dark:text-slate-300 mb-4 line-clamp-2">
           {event.description}
         </p>
 
+        {/* Event Details */}
         <div className="space-y-2 mb-4">
           {event.event_date && (
             <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
@@ -147,11 +147,12 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
           {event.open_to_everyone && (
             <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
               <Users className="w-4 h-4 mr-2" />
-              {getParticipantCount(event)} / 12 participants
+              {event.participants?.filter(p => p.status !== 'not_going').length || 0} / 12 participants
             </div>
           )}
         </div>
 
+        {/* Footer */}
         <div className="mt-auto pt-4 flex flex-wrap items-center justify-between gap-2">
           <div className="flex flex-wrap gap-2">
             <span
@@ -182,4 +183,3 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
 };
 
 export default SocialEventCard;
-

@@ -308,7 +308,7 @@ useEffect(() => {
               <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-6">
                   <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                    Participants ({initiative.participants?.length || 0}
+                    Participants ({initiative.participants?.filter(p => p.status !== 'not_going').length || 0}
                     {initiative.max_participants
                       ? ` / ${initiative.max_participants}`
                       : ''}

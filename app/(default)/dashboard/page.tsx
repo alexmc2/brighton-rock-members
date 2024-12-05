@@ -292,7 +292,7 @@ export default function Dashboard() {
             <Link
               key={role.name}
               href={role.href}
-              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100/50 dark:border-gray-700 hover:border-slate-100 dark:hover:border-coop-800 transition-all duration-300 ease-in-out hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
+              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-100/50 dark:border-gray-700 hover:border-slate-100 dark:hover:border-coop-800 transition-all duration-300 ease-in-out hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
             >
               <div className="flex items-center space-x-3 mb-3">
                 <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-violet-500/10 dark:bg-violet-500/15 text-violet-600 dark:text-violet-400 group-hover:bg-violet-500 group-hover:text-white transition-colors duration-300 ease-in-out">
@@ -320,7 +320,7 @@ export default function Dashboard() {
             <Link
               key={house.name}
               href={house.href}
-              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-sm rounded-xl border border-gray-100/50 dark:border-gray-700 hover:border-slate-100 dark:hover:border-coop-800 transition-all duration-300 ease-in-out hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
+              className="group flex flex-col p-6 bg-white dark:bg-gray-800 shadow-md rounded-xl border border-gray-100/50 dark:border-gray-700 hover:border-slate-100 dark:hover:border-coop-800 transition-all duration-300 ease-in-out hover:shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)]"
             >
               <div className="flex justify-between items-center mb-2">
                 <h3 className="text-xl sm:text-2xl md:text-xl lg:text-xl font-semibold text-gray-600 dark:text-gray-300 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">

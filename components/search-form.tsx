@@ -1,4 +1,4 @@
-export default function SearchForm({ placeholder = 'Search…' }: { placeholder?: string }) {
+export default function SearchForm({ placeholder = 'Search' }: { placeholder?: string }) {
   return (
     <form className="relative">
       <label htmlFor="action-search" className="sr-only">Search</label>

@@ -71,8 +71,7 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
       'bg-blue-100 text-blue-800 dark:bg-blue-800/30 dark:text-blue-300',
     on_hold:
       'bg-yellow-100 text-yellow-800 dark:bg-yellow-800/30 dark:text-yellow-300',
-    cancelled: 
-      'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
+    cancelled: 'bg-red-100 text-red-800 dark:bg-red-800/30 dark:text-red-300',
   };
 
   const priorityColors: Record<DevelopmentPriority, string> = {
@@ -83,12 +82,17 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
   };
 
   const categoryColors: Record<DevelopmentCategory, string> = {
-    development_meeting: 'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300',
+    development_meeting:
+      'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300',
     social: 'bg-pink-100 text-pink-800 dark:bg-pink-800/30 dark:text-pink-300',
-    outreach: 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/30 dark:text-cyan-300',
-    policy: 'bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300',
-    training: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300',
-    research: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-300',
+    outreach:
+      'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/30 dark:text-cyan-300',
+    policy:
+      'bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300',
+    training:
+      'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300',
+    research:
+      'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-300',
     general: 'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-300',
   };
 
@@ -97,10 +101,10 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
       <div className="p-5 flex flex-col h-full">
         {/* Header with Type Badge and Category - Updated sizing and alignment */}
         <div className="flex justify-between items-center mb-4 pl-0">
-          <Badge 
+          <Badge
             className={`mb-0 px-3 py-1.5 text-sm ${
-              isEvent 
-                ? 'bg-green-100/80 text-green-800 dark:bg-green-800/40 dark:text-green-300' 
+              isEvent
+                ? 'bg-green-100/80 text-green-800 dark:bg-green-800/40 dark:text-green-300'
                 : 'bg-blue-100/80 text-blue-800 dark:bg-blue-800/40 dark:text-blue-300'
             }`}
           >
@@ -111,7 +115,11 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
             )}
             {isEvent ? 'Event' : 'Project'}
           </Badge>
-          <div className={`flex items-center px-3 py-1.5 rounded-full ${categoryColors[initiative.category]}`}>
+          <div
+            className={`flex items-center px-3 py-1.5 rounded-full ${
+              categoryColors[initiative.category]
+            }`}
+          >
             {getCategoryIcon(initiative.category)}
             <span className="ml-1.5 text-sm capitalize">
               {initiative.category.replace('_', ' ')}
@@ -155,7 +163,10 @@ const InitiativeCard: React.FC<InitiativeCardProps> = ({
             {initiative.open_to_everyone && (
               <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
                 <Users className="w-4 h-4 mr-2" />
-                {initiative.participants?.length || 0} / 12 participants
+                {initiative.participants?.filter(
+                  (p) => p.status !== 'not_going'
+                ).length || 0}{' '}
+                / 12 participants
               </div>
             )}
           </div>

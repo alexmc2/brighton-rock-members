@@ -24,9 +24,9 @@ export default function Tooltip({
   const positionOuterClasses = (position: TooltipProps['position']) => {
     switch (position) {
       case 'right':
-        return 'left-full top-1/2 -translate-y-1/2'
+        return 'left-1/2 sm:left-full top-1/2 -translate-y-1/2 -translate-x-1/2 sm:-translate-x-0'
       case 'left':
-        return 'right-full top-1/2 -translate-y-1/2'
+        return 'right-1/2 sm:right-full top-1/2 -translate-y-1/2 translate-x-1/2 sm:translate-x-0'
       case 'bottom':
         return 'top-full left-1/2 -translate-x-1/2'
       default:
@@ -61,9 +61,9 @@ export default function Tooltip({
   const positionInnerClasses = (position: TooltipProps['position']) => {
     switch (position) {
       case 'right':
-        return 'ml-2'
+        return 'sm:ml-2 mt-2 sm:mt-0'
       case 'left':
-        return 'mr-2'
+        return 'sm:mr-2 mt-2 sm:mt-0'
       case 'bottom':
         return 'mt-2'
       default:
@@ -89,7 +89,7 @@ export default function Tooltip({
           <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V4h2v5z" />
         </svg>
       </button>
-      <div className={`z-10 absolute ${positionOuterClasses(position)}`}>
+      <div className={`z-10 absolute max-w-[calc(100vw-2rem)] ${positionOuterClasses(position)}`}>
         <Transition
           show={tooltipOpen}
           as="div"

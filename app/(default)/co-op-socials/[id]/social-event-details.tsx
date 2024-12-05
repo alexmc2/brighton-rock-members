@@ -1,20 +1,16 @@
+// app/(default)/co-op-socials/[id]/social-event-details.tsx
 'use client';
 
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
-import {
-  Calendar,
-  Clock,
-  Users,
-  MapPin
-} from 'lucide-react';
+import { Calendar, Clock, Users, MapPin, User } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
   SocialEventWithDetails,
   SocialEventParticipant,
-  ParticipationStatus
+  ParticipationStatus,
 } from '@/types/social';
 import { getUserColor } from '@/lib/utils';
 
@@ -30,7 +26,9 @@ const formatTime = (time: string) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
-export default function SocialEventDetails({ event: initialEvent }: SocialEventDetailsProps) {
+export default function SocialEventDetails({
+  event: initialEvent,
+}: SocialEventDetailsProps) {
   const supabase = createClientComponentClient();
   const [event, setEvent] = useState(initialEvent);
   const [isUpdating, setIsUpdating] = useState(false);
@@ -39,13 +37,16 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
     email: string;
     full_name: string | null;
   } | null>(null);
-  const [currentUserStatus, setCurrentUserStatus] = useState<ParticipationStatus | null>(null);
+  const [currentUserStatus, setCurrentUserStatus] =
+    useState<ParticipationStatus | null>(null);
 
   // Fetch current user and their participation status
   useEffect(() => {
     async function fetchUserAndStatus() {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) return;
 
         // Get user profile
@@ -80,8 +81,36 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
 
   // Set up real-time subscription for participant updates
   useEffect(() => {
-    const channel = supabase
-      .channel('social_event_participants')
+    // Function to fetch participants
+    const fetchParticipants = async () => {
+      const { data: participants, error } = await supabase
+        .from('social_event_participants')
+        .select(
+          `
+          *,
+          user:profiles(
+            id,
+            email,
+            full_name
+          )
+        `
+        )
+        .eq('event_id', event.id);
+
+      if (error) {
+        console.error('Error fetching participants:', error);
+        return;
+      }
+
+      setEvent((prev) => ({
+        ...prev,
+        participants: participants as SocialEventParticipant[],
+      }));
+    };
+
+    // Subscribe to participants changes
+    const participantsSubscription = supabase
+      .channel('public:social_event_participants')
       .on(
         'postgres_changes',
         {
@@ -90,35 +119,21 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
           table: 'social_event_participants',
           filter: `event_id=eq.${event.id}`,
         },
-        async () => {
-          // Fetch updated participants
-          const { data: participants } = await supabase
-            .from('social_event_participants')
-            .select(`
-              *,
-              user:profiles!social_event_participants_user_id_fkey(
-                email,
-                full_name
-              )
-            `)
-            .eq('event_id', event.id);
-
-          if (participants) {
-            setEvent(prev => ({
-              ...prev,
-              participants: participants as SocialEventParticipant[]
-            }));
-          }
+        () => {
+          fetchParticipants();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(participantsSubscription);
     };
   }, [event.id, supabase]);
 
-  const handleParticipationUpdate = async (newStatus: ParticipationStatus | null) => {
+  // Function to handle participation updates
+  const handleParticipationUpdate = async (
+    newStatus: ParticipationStatus | null
+  ) => {
     if (!currentUser || isUpdating) return;
 
     setIsUpdating(true);
@@ -161,19 +176,27 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
   // Group participants by status
   const participantsByStatus = event.participants?.reduce(
     (acc, participant) => {
-      if (!acc[participant.status]) {
-        acc[participant.status] = [];
+      const status = participant.status;
+      if (!acc[status]) {
+        acc[status] = [];
       }
-      acc[participant.status].push(participant);
+      acc[status].push(participant);
       return acc;
     },
-    {} as Record<ParticipationStatus, SocialEventParticipant[]>
-  );
+    {
+      going: [] as SocialEventParticipant[],
+      maybe: [] as SocialEventParticipant[],
+      not_going: [] as SocialEventParticipant[],
+    }
+  ) || {
+    going: [],
+    maybe: [],
+    not_going: [],
+  };
 
   // Calculate active participant count (excluding not_going)
-  const activeParticipantCount = event.participants?.filter(
-    p => p.status !== 'not_going'
-  ).length || 0;
+  const activeParticipantCount =
+    event.participants?.filter((p) => p.status !== 'not_going').length || 0;
 
   return (
     <Card className="p-6">
@@ -233,7 +256,7 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
               </h3>
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Users className="w-4 h-4 mr-2" />
-                {activeParticipantCount} / 12 participants
+                {activeParticipantCount} participants
               </div>
             </div>
           )}
@@ -246,7 +269,9 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
               {/* Participation Buttons */}
               <div className="flex flex-wrap gap-3 mb-6">
                 <Button
-                  variant={currentUserStatus === 'going' ? 'default' : 'outline'}
+                  variant={
+                    currentUserStatus === 'going' ? 'default' : 'outline'
+                  }
                   onClick={() => handleParticipationUpdate('going')}
                   disabled={isUpdating}
                 >
@@ -260,7 +285,11 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
                   Maybe
                 </Button>
                 <Button
-                  variant={currentUserStatus === 'not_going' ? 'destructive' : 'outline'}
+                  variant={
+                    currentUserStatus === 'not_going'
+                      ? 'destructive'
+                      : 'outline'
+                  }
                   onClick={() => handleParticipationUpdate('not_going')}
                   disabled={isUpdating}
                 >
@@ -280,7 +309,7 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
               {/* Participant Lists */}
               <div className="space-y-6">
                 {(['going', 'maybe', 'not_going'] as const).map((status) => {
-                  const participants = participantsByStatus?.[status as ParticipationStatus] || [];
+                  const participants = participantsByStatus[status] || [];
                   if (participants.length === 0) return null;
 
                   return (
@@ -289,24 +318,29 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
                         {status.replace('_', ' ')} ({participants.length})
                       </h4>
                       <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
-                        {participants.map((participant) => (
-                          <div
-                            key={participant.user_id}
-                            className="flex items-center px-4 py-3"
-                          >
-                            <div 
-                              className={`h-8 w-8 rounded-full ${getUserColor(participant.user_id)} flex items-center justify-center`}
+                        {participants.map(
+                          (participant: SocialEventParticipant) => (
+                            <div
+                              key={participant.user_id}
+                              className="flex items-center px-4 py-3"
                             >
-                              <span className="text-sm font-medium text-white">
-                                {participant.user?.full_name?.[0]?.toUpperCase() ||
-                                  participant.user?.email[0]?.toUpperCase()}
+                              <div
+                                className={`h-8 w-8 rounded-full ${getUserColor(
+                                  participant.user_id
+                                )} flex items-center justify-center`}
+                              >
+                                <span className="text-sm font-medium text-white">
+                                  {participant.user?.full_name?.[0]?.toUpperCase() ||
+                                    participant.user?.email[0]?.toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
+                                {participant.user?.full_name ||
+                                  participant.user?.email}
                               </span>
                             </div>
-                            <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
-                              {participant.user?.full_name || participant.user?.email}
-                            </span>
-                          </div>
-                        ))}
+                          )
+                        )}
                       </div>
                     </div>
                   );
@@ -322,9 +356,10 @@ export default function SocialEventDetails({ event: initialEvent }: SocialEventD
             <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created By
             </h3>
-            <p className="text-base text-slate-600 dark:text-slate-300">
+            <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
+              <User className="w-4 h-4 mr-2" />
               {event.created_by_user?.full_name || event.created_by_user?.email}
-            </p>
+            </div>
           </div>
 
           <div>

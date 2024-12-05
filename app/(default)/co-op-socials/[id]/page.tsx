@@ -1,10 +1,19 @@
 // app/(default)/co-op-socials/[id]/page.tsx
+import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import supabaseAdmin from '@/lib/supabaseAdmin';
 import { SocialEventWithDetails } from '@/types/social';
 import SocialEventHeader from './social-event-header';
 import SocialEventDetails from './social-event-details';
-import CommentsSection from '@/components/ui/comments-section';
+import CommentSection from '@/components/ui/comments-section';
+
+export const metadata: Metadata = {
+  title: 'Social Event Details',
+  description: 'View and manage social event details',
+};
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 interface SocialEventPageProps {
   params: { id: string };
@@ -17,14 +26,26 @@ async function getSocialEventById(id: string) {
       .select(
         `
         *,
-        created_by_user:profiles!social_events_created_by_fkey(email, full_name),
+        created_by_user:profiles!social_events_created_by_fkey(
+          id,
+          email,
+          full_name
+        ),
         comments:social_event_comments(
           *,
-          user:profiles!social_event_comments_user_id_fkey(email, full_name)
+          user:profiles!social_event_comments_user_id_fkey(
+            id,
+            email,
+            full_name
+          )
         ),
         participants:social_event_participants(
           *,
-          user:profiles!social_event_participants_user_id_fkey(email, full_name)
+          user:profiles!social_event_participants_user_id_fkey(
+            id,
+            email,
+            full_name
+          )
         )
       `
       )
@@ -60,7 +81,7 @@ export default async function SocialEventPage({
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
         <div className="xl:col-span-2 space-y-6">
           <SocialEventDetails event={event} />
-          <CommentsSection
+          <CommentSection
             comments={event.comments}
             resourceId={event.id}
             resourceType={{

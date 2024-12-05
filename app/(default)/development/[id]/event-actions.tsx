@@ -16,7 +16,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Edit, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createDevelopmentEvent } from '@/lib/actions/calendar';
+import Tooltip from '@/components/tooltip';
 
 interface EventActionsProps {
   initiative: DevelopmentInitiativeWithDetails;
@@ -66,51 +67,53 @@ export default function EventActions({ initiative }: EventActionsProps) {
     initiative.open_to_everyone
   );
 
-const handleDelete = async () => {
-  if (
-    !window.confirm(
-      'Are you sure you want to delete this event? This action cannot be undone.'
-    )
-  ) {
-    return;
-  }
-
-  try {
-    setIsDeleting(true);
-
-    // Delete associated calendar events first
-    await supabase
-      .from("calendar_events")
-      .delete()
-      .eq("reference_id", initiative.id)
-      .eq("event_type", "development_event");
-
-    // Then delete the initiative
-    const { data, error } = await supabase.rpc('delete_initiative', {
-      p_initiative_id: initiative.id,
-    });
-
-    if (error) {
-      throw error;
+  const handleDelete = async () => {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this event? This action cannot be undone.'
+      )
+    ) {
+      return;
     }
 
-    if (data === true) {
-      router.push('/development');
-    } else {
-      throw new Error('Failed to delete initiative');
+    try {
+      setIsDeleting(true);
+
+      // Delete associated calendar events first
+      await supabase
+        .from('calendar_events')
+        .delete()
+        .eq('reference_id', initiative.id)
+        .eq('event_type', 'development_event');
+
+      // Then delete the initiative
+      const { data, error } = await supabase.rpc('delete_initiative', {
+        p_initiative_id: initiative.id,
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      if (data === true) {
+        router.push('/development');
+      } else {
+        throw new Error('Failed to delete initiative');
+      }
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      setError(
+        error instanceof Error ? error.message : 'Failed to delete event'
+      );
+      // Show error to user
+      window.alert(
+        'Failed to delete event: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
+    } finally {
+      setIsDeleting(false);
     }
-  } catch (error) {
-    console.error('Error deleting event:', error);
-    setError(error instanceof Error ? error.message : 'Failed to delete event');
-    // Show error to user
-    window.alert(
-      'Failed to delete event: ' +
-        (error instanceof Error ? error.message : 'Unknown error')
-    );
-  } finally {
-    setIsDeleting(false);
-  }
-};
+  };
 
   const handleEdit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -415,6 +418,15 @@ const handleDelete = async () => {
                 onChange={setOpenToEveryone}
                 disabled={isSubmitting}
               />
+              <Tooltip
+                bg="dark"
+                size="md"
+                position="top"
+                className="ml-2"
+              >
+                Check this box to invite all co-op members and create an event
+                participant list
+              </Tooltip>
             </div>
 
             {/* Submit Button */}
@@ -427,11 +439,7 @@ const handleDelete = async () => {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                variant="default"
-              >
+              <Button type="submit" disabled={isSubmitting} variant="default">
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

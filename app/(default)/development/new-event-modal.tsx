@@ -311,7 +311,14 @@ export default function NewEventModal() {
                     onChange={setOpenToEveryone}
                     disabled={isSubmitting}
                   />
-                  <Tooltip bg="dark" size="md">
+                  <Checkbox
+                    id="openToEveryone"
+                    label="Open to everyone"
+                    checked={openToEveryone}
+                    onChange={setOpenToEveryone}
+                    disabled={isSubmitting}
+                  />
+                  <Tooltip bg="dark" size="md" position="top" className="ml-2">
                     Check this box to invite all co-op members and create an
                     event participant list
                   </Tooltip>

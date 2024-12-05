@@ -85,7 +85,33 @@ useEffect(() => {
   }
 
   async function fetchParticipants() {
-    // Existing code to fetch participants
+    const { data, error } = await supabase
+      .from('event_participants')
+      .select(`
+        event_id,
+        user_id,
+        status,
+        created_at,
+        updated_at,
+        user:profiles!event_participants_user_id_fkey (
+          email,
+          full_name
+        )
+      `)
+      .eq('event_id', initiative.id)
+      .returns<EventParticipant[]>();
+
+    if (error) {
+      console.error('Error fetching participants:', error);
+      return;
+    }
+
+    if (data) {
+      setInitiative((prev) => ({
+        ...prev,
+        participants: data,
+      }));
+    }
   }
 
   fetchParticipants();

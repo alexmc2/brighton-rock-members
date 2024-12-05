@@ -153,18 +153,6 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
 
       // Update or create calendar event
       if (eventDate) {
-        const calendarData = {
-          title,
-          description,
-          start_time: new Date(`${eventDate}T${startTime || '00:00'}`),
-          end_time: new Date(`${eventDate}T${startTime || '00:00'}`),
-          event_type: 'social_event',
-          reference_id: event.id,
-          created_by: user.id,
-          category: category,
-          full_name: profile.full_name,
-        };
-
         // First, delete any existing calendar event
         await supabase
           .from('calendar_events')
@@ -173,6 +161,19 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
           .eq('event_type', 'social_event');
 
         // Then create new calendar event
+        const calendarData = {
+          title,
+          description,
+          start_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          end_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          event_type: 'social_event',
+          reference_id: event.id,
+          created_by: user.id,
+          category: 'Co-op Social',
+          subcategory: category,
+          full_name: profile.full_name,
+        };
+
         const { error: calendarError } = await supabase
           .from('calendar_events')
           .insert(calendarData);
@@ -181,7 +182,7 @@ export default function SocialEventActions({ event }: SocialEventActionsProps) {
       }
 
       setIsEditDialogOpen(false);
-      router.refresh(); // Refresh the page to reflect changes
+      // No need to call router.refresh() as we have real-time subscription
     } catch (error) {
       console.error('Error updating event:', error);
       setError(

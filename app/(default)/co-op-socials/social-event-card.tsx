@@ -94,7 +94,7 @@ const formatTime = (time: string) => {
 };
 
 const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
-  const getParticipantCount = (event: SocialEventWithDetails) => {
+  const getParticipantCount = () => {
     if (!event.participants) return 0;
     return event.participants.filter((p) => p.status !== 'not_going').length;
   };
@@ -147,7 +147,7 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
           {event.open_to_everyone && (
             <div className="flex items-center text-sm text-slate-600 dark:text-slate-400">
               <Users className="w-4 h-4 mr-2" />
-              {getParticipantCount(event)} / 12 participants
+              {getParticipantCount()} / 12 participants
             </div>
           )}
         </div>
@@ -182,4 +182,3 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
 };
 
 export default SocialEventCard;
-

@@ -26,6 +26,11 @@ const formatTime = (time: string) => {
   return `${hour12}:${minutes} ${ampm}`;
 };
 
+const formatDuration = (duration: string) => {
+  const hours = parseInt(duration.split(' ')[0]);
+  return `${hours} ${hours === 1 ? 'hour' : 'hours'}`;
+};
+
 export default function SocialEventDetails({
   event: initialEvent,
 }: SocialEventDetailsProps) {
@@ -149,21 +154,51 @@ export default function SocialEventDetails({
 
         if (error) throw error;
 
+        // Update local state immediately
+        setEvent((prev) => ({
+          ...prev,
+          participants:
+            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
+            [],
+        }));
         setCurrentUserStatus(null);
       } else {
-        // Upsert participant data
+        // Prepare participant data
         const participantData = {
           event_id: event.id,
           user_id: currentUser.id,
           status: newStatus,
         };
 
+        // Upsert participant data
         const { error } = await supabase
           .from('social_event_participants')
           .upsert(participantData);
 
         if (error) throw error;
 
+        // Update local state immediately
+        setEvent((prev) => {
+          const otherParticipants =
+            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
+            [];
+          return {
+            ...prev,
+            participants: [
+              ...otherParticipants,
+              {
+                ...participantData,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                user: {
+                  id: currentUser.id,
+                  email: currentUser.email,
+                  full_name: currentUser.full_name,
+                },
+              } as SocialEventParticipant,
+            ],
+          };
+        });
         setCurrentUserStatus(newStatus);
       }
     } catch (error) {
@@ -197,6 +232,53 @@ export default function SocialEventDetails({
   // Calculate active participant count (excluding not_going)
   const activeParticipantCount =
     event.participants?.filter((p) => p.status !== 'not_going').length || 0;
+
+  // Subscribe to event details changes
+  useEffect(() => {
+    const eventSubscription = supabase
+      .channel('public:social_events')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'social_events',
+          filter: `id=eq.${event.id}`,
+        },
+        async (payload) => {
+          if (payload.eventType === 'UPDATE') {
+            // Fetch updated event details
+            const { data: updatedEvent } = await supabase
+              .from('social_events')
+              .select(
+                `
+                *,
+                created_by_user:profiles!social_events_created_by_fkey(email, full_name),
+                comments:social_event_comments(
+                  *,
+                  user:profiles(email, full_name)
+                ),
+                participants:social_event_participants(
+                  *,
+                  user:profiles(id, email, full_name)
+                )
+              `
+              )
+              .eq('id', event.id)
+              .single();
+
+            if (updatedEvent) {
+              setEvent(updatedEvent);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(eventSubscription);
+    };
+  }, [event.id, supabase]);
 
   return (
     <Card className="p-6">
@@ -233,6 +315,18 @@ export default function SocialEventDetails({
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
                 <Clock className="w-4 h-4 mr-2" />
                 {formatTime(event.start_time)}
+              </div>
+            </div>
+          )}
+
+          {event.duration && (
+            <div>
+              <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+                Duration
+              </h3>
+              <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
+                <Clock className="h-4 w-4 mr-2" />
+                {formatDuration(event.duration)}
               </div>
             </div>
           )}

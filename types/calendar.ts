@@ -16,6 +16,7 @@ export interface CalendarEvent {
   created_by: string;
   last_modified_by: string | null;
   category: string;
+  subcategory?: string;
 }
 
 export interface CalendarEventWithDetails extends CalendarEvent {

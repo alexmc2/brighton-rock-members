@@ -19,6 +19,7 @@ import { Plus } from 'lucide-react';
 import { SocialEventCategory } from '@/types/social';
 import { Checkbox } from '@/components/ui/checkbox';
 import Tooltip from '@/components/tooltip';
+import { createSocialEventCalendarEvent } from '@/lib/actions/calendar';
 
 export default function NewSocialEventModal() {
   const router = useRouter();
@@ -102,23 +103,17 @@ export default function NewSocialEventModal() {
 
       // Create calendar event if date is set
       if (eventDate && newEvent) {
-        const calendarData = {
+        await createSocialEventCalendarEvent(
           title,
           description,
-          start_time: new Date(`${eventDate}T${startTime}`),
-          end_time: new Date(`${eventDate}T${startTime}`),
-          event_type: 'social_event',
-          reference_id: newEvent.id,
-          created_by: user.id,
-          category: category,
-          full_name: profile.full_name,
-        };
-
-        const { error: calendarError } = await supabase
-          .from('calendar_events')
-          .insert(calendarData);
-
-        if (calendarError) throw calendarError;
+          eventDate,
+          startTime,
+          duration,
+          user.id,
+          profile.full_name,
+          newEvent.id,
+          category
+        );
       }
 
       resetForm();

@@ -47,6 +47,7 @@ export async function createCalendarEvent(
   userId: string,
   fullName?: string | null,
   referenceId?: string,
+  subcategory?: string,
 ) {
   const supabase = createClientComponentClient();
 
@@ -78,6 +79,7 @@ export async function createCalendarEvent(
         : eventType === "social_event"
         ? "Co-op Social"
         : "Miscellaneous",
+      subcategory: subcategory,
     })
     .select()
     .single();
@@ -281,6 +283,7 @@ export async function createSocialEventCalendarEvent(
   userId: string,
   fullName: string | null,
   eventId: string,
+  category: string,
 ) {
   // Create a Date object for the event date
   const date = new Date(eventDate);
@@ -300,15 +303,39 @@ export async function createSocialEventCalendarEvent(
   // End time is start time plus duration
   const endTime = new Date(date.getTime() + durationMs);
 
-  // Create single calendar event
-  return createCalendarEvent(
-    title,
-    description,
-    date,
-    endTime,
-    "social_event",
-    userId,
-    fullName,
-    eventId,
-  );
+  const supabase = createClientComponentClient();
+
+  // Delete any existing events for this social event
+  if (eventId) {
+    await supabase
+      .from("calendar_events")
+      .delete()
+      .eq("reference_id", eventId)
+      .eq("event_type", "social_event");
+  }
+
+  // Create calendar event directly to ensure correct category and subcategory
+  const { data, error } = await supabase
+    .from("calendar_events")
+    .insert({
+      title,
+      description,
+      start_time: date.toISOString(),
+      end_time: endTime.toISOString(),
+      event_type: "social_event",
+      created_by: userId,
+      full_name: fullName,
+      reference_id: eventId,
+      category: "Co-op Social",
+      subcategory: category,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Calendar event creation error:", error);
+    throw new Error(`Failed to create calendar event: ${error.message}`);
+  }
+
+  return data;
 }

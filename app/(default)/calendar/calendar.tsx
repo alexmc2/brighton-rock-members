@@ -147,15 +147,13 @@ export default function Calendar({ initialEvents }: CalendarProps) {
                       key={event.id}
                       onClick={() => setSelectedEventId(event.id)}
                       className={`w-full text-left px-2 py-1 rounded text-xs ${eventColor(
-                        event.category
+                        event.event_type === 'social_event' ? 'Co-op Social' : event.category
                       )}`}
                     >
                       {format(new Date(event.start_time), 'HH:mm')} -{' '}
-                      {`${
-                        event.category === 'Development Event'
-                          ? 'Development'
-                          : event.category
-                      }: ${event.title}`}
+                      {event.event_type === 'social_event' && event.subcategory
+                        ? `Co-op Social (${event.subcategory.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}): ${event.title}`
+                        : `${event.category}: ${event.title}`}
                     </button>
                   ))}
                 </div>

@@ -115,159 +115,220 @@ export default function TodoList({ tasks }: TodoListProps) {
   return (
     <div>
       {/* Filters */}
-      <div className="mb-6 space-y-4">
+      <div className="mb-6 space-y-3">
         {/* Status Filters */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => handleFilterChange('status', 'all')}
-            variant={statusFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-          >
-            All Status
-          </Button>
-          {['todo', 'in_progress', 'completed', 'cancelled', 'pending'].map(
-            (status) => (
-              <Button
-                key={status}
-                onClick={() => handleFilterChange('status', status)}
-                variant={statusFilter === status ? 'default' : 'outline'}
-                size="sm"
-              >
-                {status.charAt(0).toUpperCase() +
-                  status.slice(1).replace('_', ' ')}
-              </Button>
-            )
-          )}
-        </div>
-
-        {/* Type Filters */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => handleFilterChange('type', 'all')}
-            variant={todoTypeFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-          >
-            All Types
-          </Button>
-          <Button
-            onClick={() => handleFilterChange('type', 'general')}
-            variant={todoTypeFilter === 'general' ? 'default' : 'outline'}
-            size="sm"
-          >
-            General
-          </Button>
-          <Button
-            onClick={() => handleFilterChange('type', 'minuted')}
-            variant={todoTypeFilter === 'minuted' ? 'default' : 'outline'}
-            size="sm"
-          >
-            Minuted Actions
-          </Button>
-        </div>
-
-        {/* Priority Filters */}
-        <div className="flex flex-wrap gap-2">
-          <Button
-            onClick={() => handleFilterChange('priority', 'all')}
-            variant={priorityFilter === 'all' ? 'default' : 'outline'}
-            size="sm"
-          >
-            All Priorities
-          </Button>
-          {['low', 'medium', 'high', 'urgent'].map((priority) => (
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400"></div>
+          <div className="flex flex-wrap gap-2">
             <Button
-              key={priority}
-              onClick={() => handleFilterChange('priority', priority)}
-              variant={priorityFilter === priority ? 'default' : 'outline'}
+              onClick={() => handleFilterChange('status', 'all')}
+              variant={statusFilter === 'all' ? 'default' : 'outline'}
+              className={statusFilter === 'all' ? '' : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'}
               size="sm"
             >
-              {priority.charAt(0).toUpperCase() + priority.slice(1)}
+              All Status
             </Button>
-          ))}
+            {['todo', 'in_progress', 'completed', 'cancelled', 'pending'].map(
+              (status) => (
+                <Button
+                  key={status}
+                  onClick={() => handleFilterChange('status', status)}
+                  variant={statusFilter === status ? 'default' : 'outline'}
+                  className={statusFilter === status ? '' : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'}
+                  size="sm"
+                >
+                  {status.charAt(0).toUpperCase() +
+                    status.slice(1).replace('_', ' ')}
+                </Button>
+              )
+            )}
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-200 dark:bg-slate-700" />
+
+        {/* Type Filters */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400"></div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => handleFilterChange('type', 'all')}
+              variant={todoTypeFilter === 'all' ? 'default' : 'outline'}
+              className={`${
+                todoTypeFilter === 'all'
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+              } border-blue-200 dark:border-blue-800`}
+              size="sm"
+            >
+              All Types
+            </Button>
+            <Button
+              onClick={() => handleFilterChange('type', 'general')}
+              variant={todoTypeFilter === 'general' ? 'default' : 'outline'}
+              className={`${
+                todoTypeFilter === 'general'
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+              } border-blue-200 dark:border-blue-800`}
+              size="sm"
+            >
+              General
+            </Button>
+            <Button
+              onClick={() => handleFilterChange('type', 'minuted')}
+              variant={todoTypeFilter === 'minuted' ? 'default' : 'outline'}
+              className={`${
+                todoTypeFilter === 'minuted'
+                  ? 'bg-blue-600 hover:bg-blue-700'
+                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+              } border-blue-200 dark:border-blue-800`}
+              size="sm"
+            >
+              Minuted Actions
+            </Button>
+          </div>
+        </div>
+
+        <div className="h-px bg-slate-200 dark:bg-slate-700" />
+
+        {/* Priority Filters */}
+        <div className="space-y-2">
+          <div className="text-sm font-medium text-slate-600 dark:text-slate-400"></div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              onClick={() => handleFilterChange('priority', 'all')}
+              variant={priorityFilter === 'all' ? 'default' : 'outline'}
+              className={`${
+                priorityFilter === 'all'
+                  ? 'bg-purple-600 hover:bg-purple-700'
+                  : 'text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950'
+              } border-purple-200 dark:border-purple-800`}
+              size="sm"
+            >
+              All Priorities
+            </Button>
+            {['low', 'medium', 'high', 'urgent'].map((priority) => (
+              <Button
+                key={priority}
+                onClick={() => handleFilterChange('priority', priority)}
+                variant={priorityFilter === priority ? 'default' : 'outline'}
+                className={`${
+                  priorityFilter === priority
+                    ? 'bg-purple-600 hover:bg-purple-700'
+                    : 'text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950'
+                } border-purple-200 dark:border-purple-800`}
+                size="sm"
+              >
+                {priority.charAt(0).toUpperCase() + priority.slice(1)}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Tasks Table */}
-      <div className="bg-white dark:bg-slate-800 shadow-lg rounded-sm border border-slate-200 dark:border-slate-700">
-        <div className="overflow-x-auto px-8">
-          <Table className="table-fixed w-full py-2">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-1/4">Title</TableHead>
-                <TableHead className="w-1/6">Type</TableHead>
-                <TableHead className="w-1/6">Status</TableHead>
-                <TableHead className="w-1/6">Priority</TableHead>
-                <TableHead className="w-1/6">Assigned To</TableHead>
-                <TableHead className="w-1/6">Created</TableHead>
-                <TableHead className="w-1/12">Comments</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedTasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell className="w-1/4">
-                    <Link
-                      href={`/todos/${task.id}`}
-                      className="font-medium text-green-600 dark:text-green-400 hover:underline"
-                    >
-                      {task.title}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="w-1/6">
-                    {task.todo_type === 'minuted'
-                      ? 'Minuted Action'
-                      : 'General'}
-                  </TableCell>
-                  <TableCell className="w-1/6">
-                    <div
-                      className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
-                        task.status
-                      )}`}
-                    >
-                      {task.status.charAt(0).toUpperCase() +
-                        task.status.slice(1).replace('_', ' ')}
-                    </div>
-                  </TableCell>
-                  <TableCell className="w-1/6">
-                    {task.priority && (
-                      <div
-                        className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
-                          task.priority
-                        )}`}
-                      >
-                        {task.priority.charAt(0).toUpperCase() +
-                          task.priority.slice(1)}
-                      </div>
+      <div className="bg-white dark:bg-slate-800 shadow-sm rounded-lg border border-slate-200 dark:border-slate-700">
+        <div className="relative w-full">
+          <div className="overflow-x-auto">
+            <div className="inline-block min-w-full align-middle">
+              <div className="overflow-hidden">
+                <Table className="min-w-[1000px] w-full divide-y divide-slate-200 dark:divide-slate-700 rounded-lg">
+                  <TableHeader className="bg-slate-50 dark:bg-slate-900/20 rounded-lg">
+                    <TableRow>
+                      <TableHead className="w-[20%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Title
+                      </TableHead>
+                      <TableHead className="w-[15%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Type
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Status
+                      </TableHead>
+                      <TableHead className="w-[10%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Priority
+                      </TableHead>
+                      <TableHead className="w-[15%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100 hidden lg:table-cell">
+                        Assigned To
+                      </TableHead>
+                      <TableHead className="w-[15%] px-4 py-3 text-left text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Created
+                      </TableHead>
+                      <TableHead className="w-[5%] px-4 py-3 text-center text-sm font-semibold text-slate-800 dark:text-slate-100">
+                        Comments
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {paginatedTasks.map((task) => (
+                      <TableRow key={task.id}>
+                        <TableCell className="px-4 py-3">
+                          <Link
+                            href={`/todos/${task.id}`}
+                            className="font-medium text-coop-600 dark:text-coop-400 hover:underline"
+                          >
+                            {task.title}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          {task.todo_type === 'minuted'
+                            ? 'Minuted Action'
+                            : 'General'}
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          <div
+                            className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getStatusColor(
+                              task.status
+                            )}`}
+                          >
+                            {task.status.charAt(0).toUpperCase() +
+                              task.status.slice(1).replace('_', ' ')}
+                          </div>
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          {task.priority && (
+                            <div
+                              className={`inline-flex font-medium rounded-full text-center px-2.5 py-0.5 ${getPriorityColor(
+                                task.priority
+                              )}`}
+                            >
+                              {task.priority.charAt(0).toUpperCase() +
+                                task.priority.slice(1)}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell className="px-4 py-3 hidden lg:table-cell">
+                          {task.assigned_to_user?.full_name ||
+                            task.assigned_to_user?.email ||
+                            '-'}
+                        </TableCell>
+                        <TableCell className="px-4 py-3">
+                          {format(new Date(task.created_at), 'MMM d, yyyy')}
+                        </TableCell>
+                        <TableCell className="px-4 py-3 text-center">
+                          {task.comments.length}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {paginatedTasks.length === 0 && (
+                      <TableRow>
+                        <TableCell
+                          colSpan={7}
+                          className="text-center py-8 text-slate-500 dark:text-slate-400"
+                        >
+                          No to do items found
+                        </TableCell>
+                      </TableRow>
                     )}
-                  </TableCell>
-                  <TableCell className="w-1/6">
-                    {task.assigned_to_user?.full_name ||
-                      task.assigned_to_user?.email ||
-                      '-'}
-                  </TableCell>
-                  <TableCell className="w-1/6">
-                    {format(new Date(task.created_at), 'MMM d, yyyy')}
-                  </TableCell>
-                  <TableCell className="w-1/12">
-                    {task.comments.length}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {paginatedTasks.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8">
-                    <div className="text-slate-500 dark:text-slate-400">
-                      No to do items found
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Pagination */}
-        <div className="px-8 py-4 border-t border-slate-200 dark:border-slate-700">
+        {/* Pagination section - update styles */}
+        <div className="px-4 py-4 border-t border-slate-200 dark:border-slate-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <nav
               className="mb-4 sm:mb-0 sm:order-1"
@@ -276,30 +337,24 @@ export default function TodoList({ tasks }: TodoListProps) {
             >
               <ul className="flex justify-center">
                 <li className="ml-3 first:ml-0">
-                  <button
+                  <Button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 1}
-                    className={`btn ${
-                      currentPage === 1
-                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 text-gray-300 dark:text-gray-600'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300'
-                    }`}
+                    variant="outline"
+                    size="sm"
                   >
                     &lt;- Previous
-                  </button>
+                  </Button>
                 </li>
                 <li className="ml-3 first:ml-0">
-                  <button
+                  <Button
                     onClick={goToNextPage}
                     disabled={currentPage >= totalPages}
-                    className={`btn ${
-                      currentPage >= totalPages
-                        ? 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 text-gray-300 dark:text-gray-600'
-                        : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700/60 hover:border-gray-300 dark:hover:border-gray-600 text-gray-800 dark:text-gray-300'
-                    }`}
+                    variant="outline"
+                    size="sm"
                   >
                     Next -&gt;
-                  </button>
+                  </Button>
                 </li>
               </ul>
             </nav>

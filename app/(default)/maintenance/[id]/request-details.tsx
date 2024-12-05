@@ -175,7 +175,7 @@ export default function RequestDetails({
       const { error: calendarError } = await supabase
         .from('calendar_events')
         .insert({
-          title: `P4P Visit: ${request.title}`,
+          title: request.title,
           description: `Maintenance visit for: ${title}${
             notes ? `\nNotes: ${notes}` : ''
           }`,
@@ -518,7 +518,7 @@ export default function RequestDetails({
                             onClick={() => setEditingVisit(visit.id)}
                             variant="default"
                             size="sm"
-                            className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+                            className="bg-coop-500 dark:bg-coop-600 hover:bg-coop-600 dark:hover:bg-coop-700"
                           >
                             Edit
                           </Button>

@@ -1,140 +1,139 @@
-'use client'
+'use client';
 
-import { useEffect } from 'react'
-import { CalendarProperties } from './calendar-properties'
+import { useEffect, useState } from 'react';
+import {
+  startOfMonth,
+  endOfMonth,
+  eachDayOfInterval,
+  isSameMonth,
+  isToday,
+  startOfWeek,
+  endOfWeek,
+  format,
+  isSameDay,
+} from 'date-fns';
+import { useCalendarContext } from './calendar-context';
+import { useCalendarStore } from '@/lib/stores/calendar-store';
 
-export interface Event {
-  eventStart: Date
-  eventEnd: Date | null
-  eventName: string
-  eventColor: string
-}
-
-export default function CalendarTable({ events }: { events: Event[] }) {
-
-  const {
-    dayNames,
-    currentYear,
-    currentMonth,
-    daysInMonth,
-    startingBlankDays,
-    endingBlankDays,
-    eventColor,
-    isToday,
-    renderDays,
-  } = CalendarProperties()  
-
-  const getEvents = (date: number) => {
-    return events.filter(e => new Date(e.eventStart).toDateString() === new Date(currentYear, currentMonth, date).toDateString())
-  }  
+export default function CalendarTable() {
+  const { currentMonth, currentYear, events } = useCalendarContext();
+  const setSelectedEventId = useCalendarStore(
+    (state) => state.setSelectedEventId
+  );
+  const [days, setDays] = useState<Date[]>([]);
 
   useEffect(() => {
-    renderDays()
-  }, [])
+    const firstDayOfMonth = startOfMonth(new Date(currentYear, currentMonth));
+    const lastDayOfMonth = endOfMonth(new Date(currentYear, currentMonth));
+    const firstDayOfCalendar = startOfWeek(firstDayOfMonth);
+    const lastDayOfCalendar = endOfWeek(lastDayOfMonth);
+    const daysInterval = eachDayOfInterval({
+      start: firstDayOfCalendar,
+      end: lastDayOfCalendar,
+    });
+    setDays(daysInterval);
+  }, [currentMonth, currentYear]);
+
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+  const getEventsForDay = (date: Date) => {
+    return events.filter((event) =>
+      isSameDay(new Date(event.start_time), date)
+    );
+  };
+
+  const eventColor = (category: string): string => {
+    switch (category) {
+      case 'General Meeting':
+        return 'bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300';
+      case 'Sub Meeting':
+        return 'bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300';
+      case 'Allocations':
+        return 'bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300';
+      case 'Social':
+        return 'bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-300';
+      case 'P4P Visit':
+        return 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-300';
+      case 'Garden':
+        return 'bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300';
+      case 'AGM':
+        return 'bg-orange-100 dark:bg-orange-900/50 text-orange-700 dark:text-orange-300';
+      case 'EGM':
+        return 'bg-pink-100 dark:bg-pink-900/50 text-pink-700 dark:text-pink-300';
+      case 'General Maintenance':
+        return 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300';
+      case 'Training':
+        return 'bg-lime-100 dark:bg-lime-900/50 text-lime-700 dark:text-lime-300';
+      case 'Treasury Meeting':
+        return 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300';
+      case 'Development':
+        return 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300';
+      case 'Co-op Social':
+        return 'bg-violet-100 dark:bg-violet-900/50 text-violet-700 dark:text-violet-300';
+      default:
+        return 'bg-slate-100 dark:bg-slate-900/50 text-slate-700 dark:text-slate-300';
+    }
+  };
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
+    <div className="grid grid-cols-7">
+      {dayNames.map((day) => (
+        <div
+          key={day}
+          className="p-2 text-center text-sm font-semibold text-slate-600 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800"
+        >
+          {day}
+        </div>
+      ))}
 
-      {/* Days of the week */}
-      <div className="grid grid-cols-7 gap-px border-b border-gray-200 dark:border-gray-700/60">
-        {
-          dayNames.map(day => {
-            return (
-              <div className="px-1 py-3" key={day}>
-                <div className="text-gray-500 text-sm font-medium text-center lg:hidden">{day.substring(0, 3)}</div>
-                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium text-center hidden lg:block">{day}</div>
-              </div>
-            )
-          })
-        }
-      </div>
+      {days.map((day) => {
+        const dayEvents = getEventsForDay(day);
+        const isCurrentMonth = isSameMonth(
+          day,
+          new Date(currentYear, currentMonth)
+        );
+        const isCurrentDay = isToday(day);
 
-      {/* Day cells */}
-      <div className="grid grid-cols-7 gap-px bg-gray-200 dark:bg-gray-700/60">
-        {/* Diagonal stripes pattern */}
-        <svg className="sr-only">
-          <defs>
-            <pattern id="stripes" patternUnits="userSpaceOnUse" width="5" height="5" patternTransform="rotate(135)">
-              <line className="stroke-current text-gray-200 dark:text-gray-700 opacity-50" x1="0" y="0" x2="0" y2="5" strokeWidth="2" />
-            </pattern>
-          </defs>
-        </svg>
-        {/* Empty cells (previous month) */}
-        {
-          startingBlankDays.map(blankday => {
-            return (
-              <div className="bg-gray-50 dark:bg-gray-800 h-20 sm:h-28 lg:h-36" key={blankday}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                  <rect width="100%" height="100%" fill="url(#stripes)" />
-                </svg>
-              </div>
-            )
-          })
-        }
-        {/* Days of the current month */}
-        {
-          daysInMonth.map(day => {
-            return (
-              <div className="relative bg-white dark:bg-gray-800 h-20 sm:h-28 lg:h-36 overflow-hidden" key={day}>
-                <div className="h-full flex flex-col justify-between">
-                  {/* Events */}
-                  <div className="grow flex flex-col relative p-0.5 sm:p-1.5 overflow-hidden">
-                    {
-                      getEvents(day).map(event => {
-                        return (
-                          <button className="relative w-full text-left mb-1" key={event.eventName}>
-                            <div className={`px-2 py-0.5 rounded-lg overflow-hidden ${eventColor(event.eventColor)}`}>
-                              {/* Event name */}
-                              <div className="text-xs font-semibold truncate">{event.eventName}</div>
-                              {/* Event time */}
-                              <div className="text-xs uppercase truncate hidden sm:block">
-                                {/* Start date */}
-                                {event.eventStart &&
-                                  <span>{event.eventStart.toLocaleTimeString([], { hour12: true, hour: 'numeric', minute: 'numeric' })}</span>
-                                }
-                                {/* End date */}
-                                {event.eventEnd &&
-                                  <span>
-                                    - <span>{event.eventEnd.toLocaleTimeString([], { hour12: true, hour: 'numeric', minute: 'numeric' })}</span>
-                                  </span>
-                                }
-                              </div>
-                            </div>
-                          </button>
+        return (
+          <div
+            key={day.toISOString()}
+            className={`
+              min-h-[120px] p-2 border border-slate-200 dark:border-slate-700
+              ${
+                !isCurrentMonth
+                  ? 'bg-slate-100 dark:bg-slate-900/50 text-slate-400'
+                  : 'bg-white dark:bg-slate-800'
+              }
+              ${isCurrentDay ? 'bg-blue-50 dark:bg-blue-900/20' : ''}
+            `}
+          >
+            <div className="text-sm font-medium">{format(day, 'd')}</div>
+            <div className="mt-1 space-y-1">
+              {dayEvents.map((event) => (
+                <button
+                  key={event.id}
+                  onClick={() => setSelectedEventId(event.id)}
+                  className={`w-full text-left px-2 py-1 rounded text-xs ${eventColor(
+                    event.event_type === 'social_event'
+                      ? 'Co-op Social'
+                      : event.category
+                  )}`}
+                >
+                  {format(new Date(event.start_time), 'HH:mm')} -{' '}
+                  {event.event_type === 'social_event' && event.subcategory
+                    ? `Co-op Social (${event.subcategory
+                        .split('_')
+                        .map(
+                          (word) => word.charAt(0).toUpperCase() + word.slice(1)
                         )
-                      })
-                    }
-                    <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-white dark:from-gray-800 to-transparent pointer-events-none" aria-hidden="true"></div>
-                  </div>
-                  {/* Cell footer */}
-                  <div className="flex justify-between items-center p-0.5 sm:p-1.5">
-                    {/* More button (if more than 2 events) */}
-                    {getEvents(day).length > 2 &&
-                      <button className="text-xs text-gray-500 dark:text-gray-300 font-medium whitespace-nowrap text-center sm:py-0.5 px-0.5 sm:px-2 border border-gray-200 dark:border-gray-700/60 rounded-lg">
-                        <span className="md:hidden">+</span><span>{getEvents(day).length - 2}</span> <span className="hidden md:inline">more</span>
-                      </button>
-                    }
-                    {/* Day number */}
-                    <button className={`inline-flex ml-auto w-6 h-6 items-center justify-center text-xs sm:text-sm dark:text-gray-300 font-medium text-center rounded-full hover:bg-violet-100 dark:hover:bg-gray-600 ${isToday(day) && 'text-violet-500'}`}>{day}</button>
-                  </div>
-                </div>
-              </div>
-            )
-          })
-        }
-        {/* Empty cells (next month) */}
-        {
-          endingBlankDays.map(blankday => {
-            return (
-              <div className="bg-gray-50 dark:bg-gray-800 h-20 sm:h-28 lg:h-36" key={blankday}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%">
-                  <rect width="100%" height="100%" fill="url(#stripes)" />
-                </svg>
-              </div>
-            )
-          })
-        }
-      </div>
+                        .join(' ')}): ${event.title}`
+                    : `${event.category}: ${event.title}`}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+      })}
     </div>
-  )
+  );
 }

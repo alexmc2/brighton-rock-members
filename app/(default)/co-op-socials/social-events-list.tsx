@@ -23,7 +23,7 @@ interface SocialEventsListProps {
   events?: SocialEventWithDetails[];
 }
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 6;
 
 type SortField = 'created_at' | 'event_date';
 type SortOrder = 'asc' | 'desc';

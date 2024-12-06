@@ -3,6 +3,9 @@
 'use client';
 
 import { createContext, useContext, useState } from 'react';
+import { CalendarEventWithDetails } from '@/types/calendar';
+
+type CalendarView = 'month' | 'week' | 'day';
 
 interface CalendarContextProps {
   today: Date;
@@ -10,6 +13,12 @@ interface CalendarContextProps {
   setCurrentMonth: (currentMonth: number) => void;
   currentYear: number;
   setCurrentYear: (currentYear: number) => void;
+  view: CalendarView;
+  setView: (view: CalendarView) => void;
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
+  events: CalendarEventWithDetails[];
+  setEvents: (events: CalendarEventWithDetails[]) => void;
 }
 
 const CalendarContext = createContext<CalendarContextProps | undefined>(
@@ -18,12 +27,18 @@ const CalendarContext = createContext<CalendarContextProps | undefined>(
 
 export const CalendarProvider = ({
   children,
+  initialEvents,
 }: {
   children: React.ReactNode;
+  initialEvents: CalendarEventWithDetails[];
 }) => {
   const today = new Date();
   const [currentMonth, setCurrentMonth] = useState<number>(today.getMonth());
   const [currentYear, setCurrentYear] = useState<number>(today.getFullYear());
+  const [view, setView] = useState<CalendarView>('month');
+  const [selectedDate, setSelectedDate] = useState<Date>(today);
+  const [events, setEvents] =
+    useState<CalendarEventWithDetails[]>(initialEvents);
 
   return (
     <CalendarContext.Provider
@@ -33,6 +48,12 @@ export const CalendarProvider = ({
         setCurrentMonth,
         currentYear,
         setCurrentYear,
+        view,
+        setView,
+        selectedDate,
+        setSelectedDate,
+        events,
+        setEvents,
       }}
     >
       {children}

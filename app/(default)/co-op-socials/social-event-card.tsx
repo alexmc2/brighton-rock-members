@@ -100,7 +100,7 @@ const SocialEventCard: React.FC<SocialEventCardProps> = ({ event }) => {
   };
 
   return (
-    <Card className="flex flex-col h-full bg-white dark:bg-slate-800 shadow-lg rounded-lg overflow-hidden hover:shadow-xl transition-shadow duration-200">
+    <Card className="flex flex-col h-full bg-white dark:bg-slate-800 shadow-xs rounded-lg overflow-hidden hover:shadow-md transition-shadow duration-200">
       <div className="p-5 flex flex-col h-full">
         <div className="flex justify-between items-center mb-4">
           <div

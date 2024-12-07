@@ -170,6 +170,7 @@ export default function VisitScheduler({ request }: VisitSchedulerProps) {
               name="notes"
               rows={3}
               className="mt-1 block w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-700 px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:border-coop-500 focus:outline-none focus:ring-1 focus:ring-coop-500"
+              placeholder="Enter P4P job reference, etc."
             />
           </div>
 

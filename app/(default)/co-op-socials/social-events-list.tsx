@@ -1,7 +1,6 @@
-// app/(default)/co-op-socials/social-events-list.tsx
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +16,7 @@ import {
   SocialEventStatus,
 } from '@/types/social';
 import SocialEventCard from './social-event-card';
+import { useCallback, useEffect } from 'react';
 import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface SocialEventsListProps {
@@ -32,18 +32,84 @@ export default function SocialEventsList({
   events: initialEvents = [],
 }: SocialEventsListProps) {
   const supabase = createClientComponentClient();
-  const [events, setEvents] = useState(initialEvents);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [categoryFilter, setCategoryFilter] = useState<
-    'all' | SocialEventCategory
-  >('all');
-  const [statusFilter, setStatusFilter] = useState<'all' | SocialEventStatus>(
-    'all'
-  );
-  const [sortField, setSortField] = useState<SortField>('event_date');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
-  // Set up real-time subscription for participant updates
+  // State management
+  const [events, setEvents] = useState(initialEvents);
+  const [filters, setFilters] = useState({
+    category: 'all' as 'all' | SocialEventCategory,
+    status: 'all' as 'all' | SocialEventStatus,
+    sortField: 'event_date' as SortField,
+    sortOrder: 'asc' as SortOrder,
+    currentPage: 1,
+  });
+
+  // Memoized filter and sort function
+  const getFilteredAndSortedEvents = useCallback(
+    (eventsList: SocialEventWithDetails[]) => {
+      return eventsList
+        .filter((event) => {
+          if (filters.category !== 'all' && event.category !== filters.category)
+            return false;
+          if (filters.status !== 'all' && event.status !== filters.status)
+            return false;
+          return true;
+        })
+        .sort((a, b) => {
+          const aValue = a[filters.sortField];
+          const bValue = b[filters.sortField];
+
+          if (!aValue && !bValue) return 0;
+          if (!aValue) return filters.sortOrder === 'asc' ? 1 : -1;
+          if (!bValue) return filters.sortOrder === 'asc' ? -1 : 1;
+
+          const comparison = aValue > bValue ? 1 : -1;
+          return filters.sortOrder === 'asc' ? comparison : -comparison;
+        });
+    },
+    [filters]
+  );
+
+  // Real-time subscription handler
+  const handleRealtimeUpdate = useCallback(
+    async (
+      payload: RealtimePostgresChangesPayload<{
+        event_id: string;
+        user_id: string;
+        status: string;
+      }> & {
+        new: { event_id: string; user_id: string; status: string } | null;
+        old: { event_id: string; user_id: string; status: string } | null;
+      }
+    ) => {
+      const eventId = (payload.new || payload.old)?.event_id;
+      if (!eventId) return;
+
+      const { data: participants } = await supabase
+        .from('social_event_participants')
+        .select(
+          `
+        *,
+        user:profiles(
+          id,
+          email,
+          full_name
+        )
+      `
+        )
+        .eq('event_id', eventId);
+
+      setEvents((prevEvents) =>
+        prevEvents.map((event) =>
+          event.id === eventId
+            ? { ...event, participants: participants || [] }
+            : event
+        )
+      );
+    },
+    [supabase]
+  );
+
+  // Set up real-time subscription
   useEffect(() => {
     const channel = supabase
       .channel('social_event_participants_changes')
@@ -54,98 +120,41 @@ export default function SocialEventsList({
           schema: 'public',
           table: 'social_event_participants',
         },
-        async (payload: RealtimePostgresChangesPayload<{
-          event_id: string;
-          user_id: string;
-          status: string;
-        }> & {
-          new: { event_id: string } | null;
-          old: { event_id: string } | null;
-        }) => {
-          const eventId = payload.new?.event_id || payload.old?.event_id;
-          if (!eventId) return;
-
-          // Fetch updated participants for the affected event
-          const { data: participants } = await supabase
-            .from('social_event_participants')
-            .select(`
-              *,
-              user:profiles(
-                id,
-                email,
-                full_name
-              )
-            `)
-            .eq('event_id', eventId);
-
-          // Update the events state with new participant data
-          setEvents((prevEvents) =>
-            prevEvents.map((event) => {
-              if (event.id === eventId) {
-                return {
-                  ...event,
-                  participants: participants || [],
-                };
-              }
-              return event;
-            })
-          );
-        }
+        handleRealtimeUpdate
       )
       .subscribe();
 
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [supabase]);
+  }, [supabase, handleRealtimeUpdate]);
 
-  // Update local state when props change
+  // Update events when initialEvents prop changes
   useEffect(() => {
-    setEvents(initialEvents);
+    if (JSON.stringify(events) !== JSON.stringify(initialEvents)) {
+      setEvents(initialEvents);
+    }
   }, [initialEvents]);
 
-  // Filter events
-  const filteredEvents = events.filter((event) => {
-    if (categoryFilter !== 'all' && event.category !== categoryFilter)
-      return false;
-    if (statusFilter !== 'all' && event.status !== statusFilter) return false;
-    return true;
-  });
+  // Compute pagination
+  const filteredAndSortedEvents = getFilteredAndSortedEvents(events);
+  const totalPages = Math.ceil(filteredAndSortedEvents.length / ITEMS_PER_PAGE);
+  const startIndex = (filters.currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(
+    startIndex + ITEMS_PER_PAGE,
+    filteredAndSortedEvents.length
+  );
+  const paginatedEvents = filteredAndSortedEvents.slice(startIndex, endIndex);
 
-  // Sort events
-  const sortedAndFilteredEvents = [...filteredEvents].sort((a, b) => {
-    const aValue = a[sortField];
-    const bValue = b[sortField];
-
-    if (!aValue && !bValue) return 0;
-    if (!aValue) return sortOrder === 'asc' ? 1 : -1;
-    if (!bValue) return sortOrder === 'asc' ? -1 : 1;
-
-    const comparison = aValue > bValue ? 1 : -1;
-    return sortOrder === 'asc' ? comparison : -comparison;
-  });
-
-  // Update pagination to use sorted events
-  const totalItems = sortedAndFilteredEvents.length;
-  const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalItems);
-  const paginatedEvents = sortedAndFilteredEvents.slice(startIndex, endIndex);
-
-  // Get unique categories and statuses
-  const categories: Array<'all' | SocialEventCategory> = [
+  // Compute unique categories and statuses
+  const categories = [
     'all',
-    ...(Array.from(
-      new Set(events.map((e) => e.category))
-    ) as SocialEventCategory[]),
-  ];
-
-  const statuses: Array<'all' | SocialEventStatus> = [
+    ...Array.from(new Set(events.map((e) => e.category))),
+  ] as Array<'all' | SocialEventCategory>;
+  const statuses = [
     'all',
-    ...(Array.from(
-      new Set(events.map((e) => e.status))
-    ) as SocialEventStatus[]),
-  ];
+    ...Array.from(new Set(events.map((e) => e.status))),
+  ] as Array<'all' | SocialEventStatus>;
 
   const formatFilterLabel = (value: string): string => {
     if (value === 'all') return 'All';
@@ -159,10 +168,13 @@ export default function SocialEventsList({
     <div className="space-y-6">
       <div className="flex flex-wrap gap-4">
         <Select
-          value={categoryFilter}
+          value={filters.category}
           onValueChange={(value: 'all' | SocialEventCategory) => {
-            setCategoryFilter(value);
-            setCurrentPage(1);
+            setFilters((prev) => ({
+              ...prev,
+              category: value,
+              currentPage: 1,
+            }));
           }}
         >
           <SelectTrigger className="w-[180px]">
@@ -178,10 +190,9 @@ export default function SocialEventsList({
         </Select>
 
         <Select
-          value={statusFilter}
+          value={filters.status}
           onValueChange={(value: 'all' | SocialEventStatus) => {
-            setStatusFilter(value);
-            setCurrentPage(1);
+            setFilters((prev) => ({ ...prev, status: value, currentPage: 1 }));
           }}
         >
           <SelectTrigger className="w-[180px]">
@@ -197,10 +208,13 @@ export default function SocialEventsList({
         </Select>
 
         <Select
-          value={sortField}
+          value={filters.sortField}
           onValueChange={(value: SortField) => {
-            setSortField(value);
-            setCurrentPage(1);
+            setFilters((prev) => ({
+              ...prev,
+              sortField: value,
+              currentPage: 1,
+            }));
           }}
         >
           <SelectTrigger className="w-[180px]">
@@ -213,10 +227,13 @@ export default function SocialEventsList({
         </Select>
 
         <Select
-          value={sortOrder}
+          value={filters.sortOrder}
           onValueChange={(value: SortOrder) => {
-            setSortOrder(value);
-            setCurrentPage(1);
+            setFilters((prev) => ({
+              ...prev,
+              sortOrder: value,
+              currentPage: 1,
+            }));
           }}
         >
           <SelectTrigger className="w-[180px]">
@@ -246,18 +263,28 @@ export default function SocialEventsList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <Button
-            onClick={() => setCurrentPage(currentPage - 1)}
-            disabled={currentPage === 1}
+            onClick={() =>
+              setFilters((prev) => ({
+                ...prev,
+                currentPage: prev.currentPage - 1,
+              }))
+            }
+            disabled={filters.currentPage === 1}
             variant="outline"
           >
             Previous
           </Button>
           <span className="text-sm text-slate-600 dark:text-slate-400">
-            Page {currentPage} of {totalPages}
+            Page {filters.currentPage} of {totalPages}
           </span>
           <Button
-            onClick={() => setCurrentPage(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            onClick={() =>
+              setFilters((prev) => ({
+                ...prev,
+                currentPage: prev.currentPage + 1,
+              }))
+            }
+            disabled={filters.currentPage === totalPages}
             variant="outline"
           >
             Next

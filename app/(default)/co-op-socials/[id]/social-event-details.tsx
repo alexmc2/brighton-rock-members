@@ -1,6 +1,4 @@
-// app/(default)/co-op-socials/[id]/social-event-details.tsx
 'use client';
-
 import { format } from 'date-fns';
 import { useState, useEffect } from 'react';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
@@ -45,7 +43,7 @@ export default function SocialEventDetails({
   const [currentUserStatus, setCurrentUserStatus] =
     useState<ParticipationStatus | null>(null);
 
-  // Fetch current user and their participation status
+  // Fetch current user and their participation status once on mount
   useEffect(() => {
     async function fetchUserAndStatus() {
       try {
@@ -54,7 +52,6 @@ export default function SocialEventDetails({
         } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Get user profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('id, email, full_name')
@@ -64,7 +61,7 @@ export default function SocialEventDetails({
         if (profile) {
           setCurrentUser(profile);
 
-          // Get participation status
+          // Get user's participation status for this event
           const { data: participation } = await supabase
             .from('social_event_participants')
             .select('status')
@@ -84,58 +81,7 @@ export default function SocialEventDetails({
     fetchUserAndStatus();
   }, [event.id, supabase]);
 
-  // Set up real-time subscription for participant updates
-  useEffect(() => {
-    // Function to fetch participants
-    const fetchParticipants = async () => {
-      const { data: participants, error } = await supabase
-        .from('social_event_participants')
-        .select(
-          `
-          *,
-          user:profiles(
-            id,
-            email,
-            full_name
-          )
-        `
-        )
-        .eq('event_id', event.id);
-
-      if (error) {
-        console.error('Error fetching participants:', error);
-        return;
-      }
-
-      setEvent((prev) => ({
-        ...prev,
-        participants: participants as SocialEventParticipant[],
-      }));
-    };
-
-    // Subscribe to participants changes
-    const participantsSubscription = supabase
-      .channel('public:social_event_participants')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'social_event_participants',
-          filter: `event_id=eq.${event.id}`,
-        },
-        () => {
-          fetchParticipants();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(participantsSubscription);
-    };
-  }, [event.id, supabase]);
-
-  // Function to handle participation updates
+  // Handle participation updates with optimistic UI updates
   const handleParticipationUpdate = async (
     newStatus: ParticipationStatus | null
   ) => {
@@ -143,66 +89,68 @@ export default function SocialEventDetails({
 
     setIsUpdating(true);
 
+    // Optimistically update the UI
+    const previousStatus = currentUserStatus;
+    setCurrentUserStatus(newStatus);
+
+    // Update the participants list optimistically
+    const updatedParticipants = [...(event.participants || [])];
+    const userIndex = updatedParticipants.findIndex(
+      (p) => p.user_id === currentUser.id
+    );
+
+    if (newStatus === null) {
+      // Remove participation
+      if (userIndex > -1) {
+        updatedParticipants.splice(userIndex, 1);
+      }
+    } else {
+      // Add or update participation
+      const updatedParticipant: SocialEventParticipant = {
+        event_id: event.id,
+        user_id: currentUser.id,
+        status: newStatus,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        user: currentUser,
+      };
+
+      if (userIndex > -1) {
+        updatedParticipants[userIndex] = updatedParticipant;
+      } else {
+        updatedParticipants.push(updatedParticipant);
+      }
+    }
+
+    setEvent((prev) => ({
+      ...prev,
+      participants: updatedParticipants,
+    }));
+
     try {
       if (newStatus === null) {
         // Remove participation
-        const { error } = await supabase
+        await supabase
           .from('social_event_participants')
           .delete()
           .eq('event_id', event.id)
           .eq('user_id', currentUser.id);
-
-        if (error) throw error;
-
-        // Update local state immediately
-        setEvent((prev) => ({
-          ...prev,
-          participants:
-            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
-            [],
-        }));
-        setCurrentUserStatus(null);
       } else {
-        // Prepare participant data
-        const participantData = {
+        // Add or update participation
+        await supabase.from('social_event_participants').upsert({
           event_id: event.id,
           user_id: currentUser.id,
           status: newStatus,
-        };
-
-        // Upsert participant data
-        const { error } = await supabase
-          .from('social_event_participants')
-          .upsert(participantData);
-
-        if (error) throw error;
-
-        // Update local state immediately
-        setEvent((prev) => {
-          const otherParticipants =
-            prev.participants?.filter((p) => p.user_id !== currentUser.id) ||
-            [];
-          return {
-            ...prev,
-            participants: [
-              ...otherParticipants,
-              {
-                ...participantData,
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString(),
-                user: {
-                  id: currentUser.id,
-                  email: currentUser.email,
-                  full_name: currentUser.full_name,
-                },
-              } as SocialEventParticipant,
-            ],
-          };
         });
-        setCurrentUserStatus(newStatus);
       }
     } catch (error) {
       console.error('Error updating participation:', error);
+      // Revert optimistic updates on error
+      setCurrentUserStatus(previousStatus);
+      setEvent((prev) => ({
+        ...prev,
+        participants: event.participants,
+      }));
     } finally {
       setIsUpdating(false);
     }
@@ -212,9 +160,7 @@ export default function SocialEventDetails({
   const participantsByStatus = event.participants?.reduce(
     (acc, participant) => {
       const status = participant.status;
-      if (!acc[status]) {
-        acc[status] = [];
-      }
+      if (!acc[status]) acc[status] = [];
       acc[status].push(participant);
       return acc;
     },
@@ -223,62 +169,10 @@ export default function SocialEventDetails({
       maybe: [] as SocialEventParticipant[],
       not_going: [] as SocialEventParticipant[],
     }
-  ) || {
-    going: [],
-    maybe: [],
-    not_going: [],
-  };
+  ) || { going: [], maybe: [], not_going: [] };
 
-  // Calculate active participant count (excluding not_going)
   const activeParticipantCount =
     event.participants?.filter((p) => p.status !== 'not_going').length || 0;
-
-  // Subscribe to event details changes
-  useEffect(() => {
-    const eventSubscription = supabase
-      .channel('public:social_events')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'social_events',
-          filter: `id=eq.${event.id}`,
-        },
-        async (payload) => {
-          if (payload.eventType === 'UPDATE') {
-            // Fetch updated event details
-            const { data: updatedEvent } = await supabase
-              .from('social_events')
-              .select(
-                `
-                *,
-                created_by_user:profiles!social_events_created_by_fkey(email, full_name),
-                comments:social_event_comments(
-                  *,
-                  user:profiles(email, full_name)
-                ),
-                participants:social_event_participants(
-                  *,
-                  user:profiles(id, email, full_name)
-                )
-              `
-              )
-              .eq('id', event.id)
-              .single();
-
-            if (updatedEvent) {
-              setEvent(updatedEvent);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(eventSubscription);
-    };
-  }, [event.id, supabase]);
 
   return (
     <Card className="p-6">
@@ -325,7 +219,7 @@ export default function SocialEventDetails({
                 Duration
               </h3>
               <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
-                <Clock className="h-4 w-4 mr-2" />
+                <Clock className="w-4 h-4 mr-2" />
                 {formatDuration(event.duration)}
               </div>
             </div>
@@ -403,8 +297,8 @@ export default function SocialEventDetails({
               {/* Participant Lists */}
               <div className="space-y-6">
                 {(['going', 'maybe', 'not_going'] as const).map((status) => {
-                  const participants = participantsByStatus[status] || [];
-                  if (participants.length === 0) return null;
+                  const participants = participantsByStatus[status];
+                  if (!participants?.length) return null;
 
                   return (
                     <div key={status}>
@@ -412,29 +306,27 @@ export default function SocialEventDetails({
                         {status.replace('_', ' ')} ({participants.length})
                       </h4>
                       <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
-                        {participants.map(
-                          (participant: SocialEventParticipant) => (
+                        {participants.map((participant) => (
+                          <div
+                            key={participant.user_id}
+                            className="flex items-center px-4 py-3"
+                          >
                             <div
-                              key={participant.user_id}
-                              className="flex items-center px-4 py-3"
+                              className={`h-8 w-8 rounded-full ${getUserColor(
+                                participant.user_id
+                              )} flex items-center justify-center`}
                             >
-                              <div
-                                className={`h-8 w-8 rounded-full ${getUserColor(
-                                  participant.user_id
-                                )} flex items-center justify-center`}
-                              >
-                                <span className="text-sm font-medium text-white">
-                                  {participant.user?.full_name?.[0]?.toUpperCase() ||
-                                    participant.user?.email[0]?.toUpperCase()}
-                                </span>
-                              </div>
-                              <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
-                                {participant.user?.full_name ||
-                                  participant.user?.email}
+                              <span className="text-sm font-medium text-white">
+                                {participant.user?.full_name?.[0]?.toUpperCase() ||
+                                  participant.user?.email[0]?.toUpperCase()}
                               </span>
                             </div>
-                          )
-                        )}
+                            <span className="ml-3 text-base font-medium text-slate-700 dark:text-slate-200">
+                              {participant.user?.full_name ||
+                                participant.user?.email}
+                            </span>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   );
@@ -447,28 +339,27 @@ export default function SocialEventDetails({
         {/* Created By and Dates */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 border-t border-slate-200 dark:border-slate-700">
           <div>
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created By
-            </h3>
-            <div className="flex items-center text-base text-slate-600 dark:text-slate-300">
-              <User className="w-4 h-4 mr-2" />
-              {event.created_by_user?.full_name || event.created_by_user?.email}
             </div>
+            <p className="text-base text-slate-600 dark:text-slate-300">
+              {event.created_by_user.full_name || event.created_by_user.email}
+            </p>
           </div>
 
           <div>
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Created
-            </h3>
+            </div>
             <p className="text-base text-slate-600 dark:text-slate-300">
               {format(new Date(event.created_at), 'PPp')}
             </p>
           </div>
 
           <div>
-            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
+            <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
               Last Updated
-            </h3>
+            </div>
             <p className="text-base text-slate-600 dark:text-slate-300">
               {format(new Date(event.updated_at), 'PPp')}
             </p>

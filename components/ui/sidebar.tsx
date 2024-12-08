@@ -245,6 +245,34 @@ export default function Sidebar({
                   </div>
                 </SidebarLink>
               </li>
+              {/* Doodle Polls */}
+              <li
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('doodle-polls')
+                    ? 'bg-violet-500/[0.12]'
+                    : ''
+                }`}
+              >
+                <SidebarLink href="/doodle-polls">
+                  <div className="flex items-center">
+                    <svg
+                      className={`shrink-0 fill-current ${
+                        segments.includes('doodle-polls')
+                          ? 'text-violet-500'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                      width="16"
+                      height="16"
+                      viewBox="0 0 16 16"
+                    >
+                      <path d="M14.682 2.318A4.485 4.485 0 0 0 11.5 1 4.377 4.377 0 0 0 8 2.707 4.383 4.383 0 0 0 4.5 1a4.5 4.5 0 0 0-3.182 7.682L8 15l6.682-6.318a4.5 4.5 0 0 0 0-6.364Zm-1.4 4.933L8 12.247l-5.285-5A2.5 2.5 0 0 1 4.5 3c1.437 0 2.312.681 3.5 2.625C9.187 3.681 10.062 3 11.5 3a2.5 2.5 0 0 1 1.785 4.251h-.003Z" />
+                    </svg>
+                    <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      Doodle Polls
+                    </span>
+                  </div>
+                </SidebarLink>
+              </li>
               {/* Community */}
               <SidebarLinkGroup open={segments.includes('community')}>
                 {(handleClick, open) => {

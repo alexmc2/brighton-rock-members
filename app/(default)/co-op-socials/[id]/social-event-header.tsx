@@ -21,22 +21,19 @@ export default function SocialEventHeader({ event }: SocialEventHeaderProps) {
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
+      <div className="flex flex-col gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
             {event.title}
           </h1>
-          <div className="text-sm">
-            <span className="text-slate-500 dark:text-slate-400">
+          <div className="flex flex-col gap-2">
+            <span className="text-sm text-slate-500 dark:text-slate-400">
               Category:{' '}
               {event.category.charAt(0).toUpperCase() +
                 event.category.slice(1).replace('_', ' ')}
             </span>
+            <SocialEventActions event={event} />
           </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <SocialEventActions event={event} />
         </div>
       </div>
     </div>

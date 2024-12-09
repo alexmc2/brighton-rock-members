@@ -31,7 +31,7 @@ import {
   SocialEventCategory,
   SocialEventStatus,
 } from '@/types/social';
-import { Tooltip } from '@/components/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface SocialEventActionsProps {
   event: SocialEventWithDetails;
@@ -212,7 +212,7 @@ export default function SocialEventActions({
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 mt-4">
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
         <Button
           variant="default"
@@ -224,12 +224,9 @@ export default function SocialEventActions({
           Edit
         </Button>
 
-        <DialogContent className="w-full max-w-lg">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
-            <DialogTitle>Edit Event</DialogTitle>
-            <DialogDescription>
-              Make changes to your event here. Click save when you're done.
-            </DialogDescription>
+            <DialogTitle className="text-slate-900 dark:text-slate-100">Edit Event</DialogTitle>
           </DialogHeader>
 
           {error && (
@@ -249,18 +246,20 @@ export default function SocialEventActions({
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   disabled={isSubmitting}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
               <div className="col-span-2 sm:col-span-1">
                 <Label htmlFor="category">Category</Label>
                 <select
                   id="category"
+                  required
                   value={category}
                   onChange={(e) =>
                     setCategory(e.target.value as SocialEventCategory)
                   }
                   disabled={isSubmitting}
-                  className="w-full rounded-md border border-input bg-background px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
                 >
                   <option value="film_night">Film Night</option>
                   <option value="album_night">Album Night</option>
@@ -284,11 +283,33 @@ export default function SocialEventActions({
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
+                required
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 disabled={isSubmitting}
                 rows={4}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
+            </div>
+
+            {/* Status */}
+            <div>
+              <Label htmlFor="status">Status</Label>
+              <select
+                id="status"
+                required
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as SocialEventStatus)
+                }
+                disabled={isSubmitting}
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
+              >
+                <option value="upcoming">Upcoming</option>
+                <option value="in_progress">In Progress</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+              </select>
             </div>
 
             {/* Date & Time */}
@@ -298,9 +319,11 @@ export default function SocialEventActions({
                 <Input
                   id="event_date"
                   type="date"
+                  required
                   value={eventDate}
                   onChange={(e) => setEventDate(e.target.value)}
                   disabled={isSubmitting}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
               <div>
@@ -308,9 +331,11 @@ export default function SocialEventActions({
                 <Input
                   id="start_time"
                   type="time"
+                  required
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
                   disabled={isSubmitting}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
             </div>
@@ -324,9 +349,11 @@ export default function SocialEventActions({
                   type="number"
                   min="0"
                   step="0.5"
+                  required
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
               <div>
@@ -336,11 +363,11 @@ export default function SocialEventActions({
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                   disabled={isSubmitting}
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
             </div>
 
-            {/* Open to Everyone - Keeping original implementation */}
             <div className="flex items-center">
               <div className="flex items-center gap-2">
                 <Checkbox
@@ -362,33 +389,21 @@ export default function SocialEventActions({
               </div>
             </div>
 
-            {/* Status */}
-            <div>
-              <Label htmlFor="status">Status</Label>
-              <select
-                id="status"
-                value={status}
-                onChange={(e) => setStatus(e.target.value as SocialEventStatus)}
-                disabled={isSubmitting}
-                className="w-full rounded-md border border-input bg-background px-3 py-2"
-              >
-                <option value="upcoming">Upcoming</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
-              </select>
-            </div>
-
-            {/* Form Actions */}
             <div className="flex justify-end space-x-3">
               <Button
                 type="button"
                 variant="ghost"
                 onClick={() => setIsEditDialogOpen(false)}
                 disabled={isSubmitting}
+                className="hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                variant="default"
+              >
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

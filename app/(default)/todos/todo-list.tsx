@@ -123,7 +123,11 @@ export default function TodoList({ tasks }: TodoListProps) {
             <Button
               onClick={() => handleFilterChange('status', 'all')}
               variant={statusFilter === 'all' ? 'default' : 'outline'}
-              className={statusFilter === 'all' ? '' : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'}
+              className={
+                statusFilter === 'all'
+                  ? ''
+                  : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'
+              }
               size="sm"
             >
               All Status
@@ -134,7 +138,11 @@ export default function TodoList({ tasks }: TodoListProps) {
                   key={status}
                   onClick={() => handleFilterChange('status', status)}
                   variant={statusFilter === status ? 'default' : 'outline'}
-                  className={statusFilter === status ? '' : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'}
+                  className={
+                    statusFilter === status
+                      ? ''
+                      : 'text-coop-600 hover:bg-coop-50 dark:hover:bg-coop-950 dark:text-coop-400'
+                  }
                   size="sm"
                 >
                   {status.charAt(0).toUpperCase() +
@@ -156,8 +164,8 @@ export default function TodoList({ tasks }: TodoListProps) {
               variant={todoTypeFilter === 'all' ? 'default' : 'outline'}
               className={`${
                 todoTypeFilter === 'all'
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+                  ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  : 'text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950'
               } border-blue-200 dark:border-blue-800`}
               size="sm"
             >
@@ -168,8 +176,8 @@ export default function TodoList({ tasks }: TodoListProps) {
               variant={todoTypeFilter === 'general' ? 'default' : 'outline'}
               className={`${
                 todoTypeFilter === 'general'
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+                  ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  : 'text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950'
               } border-blue-200 dark:border-blue-800`}
               size="sm"
             >
@@ -180,8 +188,8 @@ export default function TodoList({ tasks }: TodoListProps) {
               variant={todoTypeFilter === 'minuted' ? 'default' : 'outline'}
               className={`${
                 todoTypeFilter === 'minuted'
-                  ? 'bg-blue-600 hover:bg-blue-700'
-                  : 'text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-950'
+                  ? 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600'
+                  : 'text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-950'
               } border-blue-200 dark:border-blue-800`}
               size="sm"
             >
@@ -201,9 +209,9 @@ export default function TodoList({ tasks }: TodoListProps) {
               variant={priorityFilter === 'all' ? 'default' : 'outline'}
               className={`${
                 priorityFilter === 'all'
-                  ? 'bg-purple-600 hover:bg-purple-700'
-                  : 'text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950'
-              } border-purple-200 dark:border-purple-800`}
+                  ? 'bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                  : 'text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950'
+              } border-purple-100 dark:border-purple-900/50`}
               size="sm"
             >
               All Priorities
@@ -215,9 +223,9 @@ export default function TodoList({ tasks }: TodoListProps) {
                 variant={priorityFilter === priority ? 'default' : 'outline'}
                 className={`${
                   priorityFilter === priority
-                    ? 'bg-purple-600 hover:bg-purple-700'
-                    : 'text-purple-600 hover:bg-purple-50 dark:hover:bg-purple-950'
-                } border-purple-200 dark:border-purple-800`}
+                    ? 'bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                    : 'text-purple-600 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-950'
+                } border-purple-100 dark:border-purple-900/50`}
                 size="sm"
               >
                 {priority.charAt(0).toUpperCase() + priority.slice(1)}

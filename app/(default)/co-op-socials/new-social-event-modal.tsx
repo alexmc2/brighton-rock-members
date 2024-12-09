@@ -18,7 +18,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Info, Plus } from 'lucide-react';
 import { SocialEventCategory } from '@/types/social';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip } from '@/components/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 import { createSocialEventCalendarEvent } from '@/lib/actions/calendar';
 
 export default function NewSocialEventModal() {
@@ -139,12 +139,9 @@ export default function NewSocialEventModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-lg">
+      <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
         <DialogHeader>
-          <DialogTitle>New Social Event</DialogTitle>
-          <DialogDescription>
-            Create a new social event here. Click create when you're done.
-          </DialogDescription>
+          <DialogTitle className="text-slate-900 dark:text-slate-100">New Social Event</DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -164,6 +161,7 @@ export default function NewSocialEventModal() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
             <div className="col-span-2 sm:col-span-1">
@@ -176,7 +174,7 @@ export default function NewSocialEventModal() {
                   setCategory(e.target.value as SocialEventCategory)
                 }
                 disabled={isSubmitting}
-                className="w-full rounded-md border border-input bg-background px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
               >
                 <option value="film_night">Film Night</option>
                 <option value="album_night">Album Night</option>
@@ -205,6 +203,7 @@ export default function NewSocialEventModal() {
               onChange={(e) => setDescription(e.target.value)}
               disabled={isSubmitting}
               rows={4}
+              className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
             />
           </div>
 
@@ -220,6 +219,7 @@ export default function NewSocialEventModal() {
                 value={eventDate}
                 onChange={(e) => setEventDate(e.target.value)}
                 disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
             <div>
@@ -231,6 +231,7 @@ export default function NewSocialEventModal() {
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
                 disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
           </div>
@@ -248,6 +249,7 @@ export default function NewSocialEventModal() {
                 value={duration}
                 onChange={(e) => setDuration(e.target.value)}
                 disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
             <div>
@@ -257,11 +259,11 @@ export default function NewSocialEventModal() {
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
                 disabled={isSubmitting}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
           </div>
 
-          {/* Open to Everyone - Keeping original implementation */}
           <div className="flex items-center">
             <div className="flex items-center gap-2">
               <Checkbox
@@ -271,11 +273,11 @@ export default function NewSocialEventModal() {
                 onChange={setOpenToEveryone}
                 disabled={isSubmitting}
               />
-              <Tooltip 
+              <Tooltip
                 content="Check this box to invite all co-op members and create an event participant list"
-                bg="dark" 
-                size="md" 
-                position="top" 
+                bg="dark"
+                size="md"
+                position="top"
                 className="ml-2"
               >
                 <Info className="h-4 w-4 text-slate-500" />
@@ -289,18 +291,16 @@ export default function NewSocialEventModal() {
               variant="ghost"
               onClick={() => setIsOpen(false)}
               disabled={isSubmitting}
+              className="hover:bg-slate-100 dark:hover:bg-slate-800"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
-                'Creating...'
-              ) : (
-                <>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Create Event
-                </>
-              )}
+            <Button
+              type="submit"
+              disabled={isSubmitting}
+              variant="default"
+            >
+              {isSubmitting ? 'Creating...' : 'Create Event'}
             </Button>
           </div>
         </form>

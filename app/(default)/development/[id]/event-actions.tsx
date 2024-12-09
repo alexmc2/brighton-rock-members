@@ -25,7 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Edit, Info, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createDevelopmentEvent } from '@/lib/actions/calendar';
-import { Tooltip } from '@/components/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface EventActionsProps {
   initiative: DevelopmentInitiativeWithDetails;

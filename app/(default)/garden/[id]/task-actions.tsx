@@ -15,7 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -192,13 +192,13 @@ export default function TaskActions({ task }: TaskActionsProps) {
             disabled={isUpdating || isDeleting}
           >
             <Edit className="h-4 w-4 mr-1" />
-            Edit Job
+            Edit
           </Button>
         </DialogTrigger>
 
-        <DialogContent className="w-full max-w-lg">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
-            <DialogTitle>Edit Job</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-slate-100">Edit Job</DialogTitle>
           </DialogHeader>
 
           {error && (
@@ -209,7 +209,7 @@ export default function TaskActions({ task }: TaskActionsProps) {
 
           <form onSubmit={handleEdit} className="space-y-4">
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
+              <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 name="title"
@@ -220,25 +220,26 @@ export default function TaskActions({ task }: TaskActionsProps) {
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
                 name="description"
                 required
                 defaultValue={task.description}
-                className="resize-none bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+                rows={4}
+                className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
               />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="area_id" className="text-slate-900 dark:text-slate-300">Area</Label>
+                <Label htmlFor="area_id">Area</Label>
                 <select
                   id="area_id"
                   name="area_id"
                   required
                   defaultValue={task.area_id}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
                 >
                   <option value="">Select an area</option>
                   {areas.map((area) => (
@@ -250,13 +251,13 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
+                <Label htmlFor="priority">Priority</Label>
                 <select
                   id="priority"
                   name="priority"
                   required
                   defaultValue={task.priority}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -266,13 +267,13 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="status" className="text-slate-900 dark:text-slate-300">Status</Label>
+                <Label htmlFor="status">Status</Label>
                 <select
                   id="status"
                   name="status"
                   required
                   defaultValue={task.status}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
                 >
                   <option value="pending">Pending</option>
                   <option value="in_progress">In Progress</option>
@@ -282,7 +283,7 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
 
               <div>
-                <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assigned To</Label>
+                <Label htmlFor="assigned_to">Assigned To</Label>
                 <Input
                   id="assigned_to"
                   name="assigned_to"
@@ -294,34 +295,38 @@ export default function TaskActions({ task }: TaskActionsProps) {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="due_date" className="text-slate-900 dark:text-slate-300">Due Date</Label>
+                <Label htmlFor="due_date">Due Date</Label>
                 <Input
                   type="date"
                   id="due_date"
                   name="due_date"
-                  defaultValue={task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : ''}
-                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  defaultValue={
+                    task.due_date
+                      ? new Date(task.due_date).toISOString().split('T')[0]
+                      : ''
+                  }
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <Label htmlFor="scheduled_time" className="text-slate-900 dark:text-slate-300">Time</Label>
+                <Label htmlFor="scheduled_time">Time</Label>
                 <Input
                   type="time"
                   id="scheduled_time"
                   name="scheduled_time"
                   defaultValue={task.scheduled_time || ''}
-                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [&::-webkit-calendar-picker-indicator]:dark:invert"
+                  className="bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
                 />
               </div>
 
               <div>
-                <Label htmlFor="duration" className="text-slate-900 dark:text-slate-300">Duration</Label>
+                <Label htmlFor="duration">Duration</Label>
                 <select
                   id="duration"
                   name="duration"
                   defaultValue={parseDurationToValue(task.duration)}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
                 >
                   <option value="">Select duration</option>
                   <option value="0.5">Half an hour</option>
@@ -334,7 +339,6 @@ export default function TaskActions({ task }: TaskActionsProps) {
               </div>
             </div>
 
-            {/* Submit Button */}
             <div className="flex justify-end space-x-3">
               <Button
                 type="button"
@@ -344,10 +348,10 @@ export default function TaskActions({ task }: TaskActionsProps) {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isUpdating}
-                className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+                variant="default"
               >
                 {isUpdating ? 'Saving...' : 'Save Changes'}
               </Button>
@@ -363,7 +367,7 @@ export default function TaskActions({ task }: TaskActionsProps) {
         disabled={isDeleting}
       >
         <Trash2 className="h-4 w-4 mr-1" />
-        Delete Task
+        Delete
       </Button>
     </div>
   );

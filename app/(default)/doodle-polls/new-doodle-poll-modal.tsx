@@ -19,7 +19,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, X, CalendarDays, Info } from 'lucide-react';
 import { DoodlePollOption, DoodleEventType } from '@/types/doodle';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Tooltip } from '@/components/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 
 interface EventTypeOption {
   value: DoodleEventType;

@@ -4,7 +4,24 @@
 import React from 'react';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Calendar, Users, Clock, MessageSquare, PartyPopper, Code, Users2, Home, Sprout, GraduationCap, Wrench, PoundSterling, Boxes, Presentation, ScrollText, Vote } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  Clock,
+  MessageSquare,
+  PartyPopper,
+  Code,
+  Users2,
+  Home,
+  Sprout,
+  GraduationCap,
+  Wrench,
+  PoundSterling,
+  Boxes,
+  Presentation,
+  ScrollText,
+  Vote,
+} from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DoodlePoll, DoodleEventType } from '@/types/doodle';
@@ -27,36 +44,45 @@ const getCategoryIcon = (eventType: DoodleEventType) => {
   const icons: Record<DoodleEventType, JSX.Element> = {
     social_event: <PartyPopper className="w-5 h-5" />,
     development_event: <Code className="w-5 h-5" />,
-    "General Meeting": <Users2 className="w-5 h-5" />,
-    "Sub Meeting": <Presentation className="w-5 h-5" />,
-    "Allocations": <Home className="w-5 h-5" />,
-    "P4P Visit": <Users2 className="w-5 h-5" />,
-    "Garden": <Sprout className="w-5 h-5" />,
-    "AGM": <Vote className="w-5 h-5" />,
-    "EGM": <Vote className="w-5 h-5" />,
-    "General Maintenance": <Wrench className="w-5 h-5" />,
-    "Training": <GraduationCap className="w-5 h-5" />,
-    "Treasury": <PoundSterling className="w-5 h-5" />,
-    "Miscellaneous": <Boxes className="w-5 h-5" />,
+    'General Meeting': <Users2 className="w-5 h-5" />,
+    'Sub Meeting': <Presentation className="w-5 h-5" />,
+    Allocations: <Home className="w-5 h-5" />,
+    'P4P Visit': <Users2 className="w-5 h-5" />,
+    Garden: <Sprout className="w-5 h-5" />,
+    AGM: <Vote className="w-5 h-5" />,
+    EGM: <Vote className="w-5 h-5" />,
+    'General Maintenance': <Wrench className="w-5 h-5" />,
+    Training: <GraduationCap className="w-5 h-5" />,
+    Treasury: <PoundSterling className="w-5 h-5" />,
+    Miscellaneous: <Boxes className="w-5 h-5" />,
   };
   return icons[eventType] || <Boxes className="w-5 h-5" />;
 };
 
 // Category colors mapping
 const categoryColors: Record<DoodleEventType, string> = {
-  "General Meeting": 'bg-blue-100 text-blue-800 dark:bg-blue-500/30 dark:text-blue-300',
-  "Sub Meeting": 'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/30 dark:text-indigo-300',
-  "Allocations": 'bg-teal-100 text-teal-800 dark:bg-teal-500/30 dark:text-teal-300',
-  social_event: 'bg-green-100 text-green-800 dark:bg-green-500/30 dark:text-green-300',
-  "P4P Visit": 'bg-red-100 text-red-800 dark:bg-red-500/30 dark:text-red-300',
-  "Garden": 'bg-purple-100 text-purple-800 dark:bg-purple-500/30 dark:text-purple-300',
-  "AGM": 'bg-orange-100 text-orange-800 dark:bg-orange-500/30 dark:text-orange-300',
-  "EGM": 'bg-pink-100 text-pink-800 dark:bg-pink-500/30 dark:text-pink-300',
-  "General Maintenance": 'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/30 dark:text-yellow-300',
-  "Training": 'bg-lime-100 text-lime-800 dark:bg-lime-500/30 dark:text-lime-300',
-  "Treasury": 'bg-amber-100 text-amber-800 dark:bg-amber-500/30 dark:text-amber-300',
-  development_event: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/30 dark:text-emerald-300',
-  "Miscellaneous": 'bg-gray-100 text-gray-800 dark:bg-gray-500/30 dark:text-gray-300',
+  'General Meeting':
+    'bg-blue-100 text-blue-800 dark:bg-blue-500/30 dark:text-blue-300',
+  'Sub Meeting':
+    'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/30 dark:text-indigo-300',
+  Allocations:
+    'bg-teal-100 text-teal-800 dark:bg-teal-500/30 dark:text-teal-300',
+  social_event:
+    'bg-green-100 text-green-800 dark:bg-green-500/30 dark:text-green-300',
+  'P4P Visit': 'bg-red-100 text-red-800 dark:bg-red-500/30 dark:text-red-300',
+  Garden:
+    'bg-purple-100 text-purple-800 dark:bg-purple-500/30 dark:text-purple-300',
+  AGM: 'bg-orange-100 text-orange-800 dark:bg-orange-500/30 dark:text-orange-300',
+  EGM: 'bg-pink-100 text-pink-800 dark:bg-pink-500/30 dark:text-pink-300',
+  'General Maintenance':
+    'bg-yellow-100 text-yellow-800 dark:bg-yellow-500/30 dark:text-yellow-300',
+  Training: 'bg-lime-100 text-lime-800 dark:bg-lime-500/30 dark:text-lime-300',
+  Treasury:
+    'bg-amber-100 text-amber-800 dark:bg-amber-500/30 dark:text-amber-300',
+  development_event:
+    'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/30 dark:text-emerald-300',
+  Miscellaneous:
+    'bg-gray-100 text-gray-800 dark:bg-gray-500/30 dark:text-gray-300',
 };
 
 const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
@@ -64,7 +90,9 @@ const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
   const participantCount = new Set(
     poll.participants
       .filter((p) =>
-        Object.values(p.responses).some((r) => r === 'yes' || r === 'maybe' || r === 'no')
+        Object.values(p.responses).some(
+          (r) => r === 'yes' || r === 'maybe' || r === 'no'
+        )
       )
       .map((p) => p.user_id)
   ).size;
@@ -72,7 +100,8 @@ const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
   // Get most popular option (only counting yes responses)
   const optionCounts = poll.options.map((option) => ({
     option,
-    count: poll.participants.filter((p) => p.responses[option.id] === 'yes').length,
+    count: poll.participants.filter((p) => p.responses[option.id] === 'yes')
+      .length,
   }));
 
   const mostPopular = optionCounts.reduce(
@@ -90,9 +119,7 @@ const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
           )}
         >
           {getCategoryIcon(poll.event_type)}
-          <span className="ml-1.5">
-            {poll.event_type}
-          </span>
+          <span className="ml-1.5">{poll.event_type}</span>
         </div>
 
         <Link href={`/doodle-polls/${poll.id}`}>
@@ -138,7 +165,10 @@ const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
               Closed
             </Badge>
           ) : (
-            <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200/30 dark:bg-green-950 dark:text-green-300 dark:border-green-800/30">
+            <Badge
+              variant="outline"
+              className="bg-green-50 text-green-700 border-green-200/30 dark:bg-green-950 dark:text-green-300 dark:border-green-800/30"
+            >
               Open
             </Badge>
           )}

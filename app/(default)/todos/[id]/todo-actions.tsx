@@ -15,6 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -35,7 +45,7 @@ interface TodoActionsProps {
 export default function TodoActions({ todo }: TodoActionsProps) {
   const router = useRouter();
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const supabase = createClientComponentClient();
@@ -134,16 +144,8 @@ export default function TodoActions({ todo }: TodoActionsProps) {
 
   // Handle Todo Deletion
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        'Are you sure you want to delete this to do item? This action cannot be undone.'
-      )
-    ) {
-      return;
-    }
-
     try {
-      setIsDeleting(true);
+      setIsSubmitting(true);
 
       // Delete todo (comments will be cascade deleted)
       const { error: deleteError } = await supabase
@@ -160,7 +162,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
         error instanceof Error ? error.message : 'Failed to delete to do item'
       );
     } finally {
-      setIsDeleting(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -174,7 +176,7 @@ export default function TodoActions({ todo }: TodoActionsProps) {
           setIsEditDialogOpen(true);
           fetchProfiles();
         }}
-        disabled={isSubmitting || isDeleting}
+        disabled={isSubmitting}
       >
         <Edit className="h-4 w-4 mr-1" />
         Edit
@@ -184,13 +186,35 @@ export default function TodoActions({ todo }: TodoActionsProps) {
       <Button
         variant="destructive"
         size="sm"
-        onClick={handleDelete}
-        disabled={isDeleting}
-        className="hover:bg-red-50 dark:hover:bg-red-900/50"
+        onClick={() => setShowDeleteDialog(true)}
+        disabled={isSubmitting}
       >
         <Trash2 className="h-4 w-4 mr-1" />
         Delete
       </Button>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this
+              to do item and remove all associated data including comments.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isSubmitting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isSubmitting}
+              className="bg-red-600 text-white hover:bg-red-700 dark:hover:bg-red-700 dark:bg-red-600"
+            >
+              {isSubmitting ? 'Deleting...' : 'Delete To do'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Edit Dialog */}
       <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>

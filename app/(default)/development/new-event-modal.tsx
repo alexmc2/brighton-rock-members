@@ -14,11 +14,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus, Check } from 'lucide-react';
+import { Plus, Check, Info } from 'lucide-react';
 import { DevelopmentCategory, DevelopmentPriority } from '@/types/development';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createDevelopmentEvent } from '@/lib/actions/calendar';
-import Tooltip from '@/components/tooltip';
+import { Tooltip } from '@/components/ui/tooltip';
 
 export default function NewEventModal() {
   const router = useRouter();
@@ -314,9 +314,14 @@ export default function NewEventModal() {
                     onChange={setOpenToEveryone}
                     disabled={isSubmitting}
                   />
-                  <Tooltip bg="dark" size="md" position="top" className="ml-2">
-                    Check this box to invite all co-op members and create an
-                    event participant list
+                  <Tooltip
+                    content="Check this box to invite all co-op members and create an event participant list"
+                    bg="dark"
+                    size="md"
+                    position="top"
+                    className="ml-2"
+                  >
+                    <Info className="h-4 w-4 text-slate-500" />
                   </Tooltip>
                 </div>
               </div>

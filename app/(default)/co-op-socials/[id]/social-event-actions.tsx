@@ -24,14 +24,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Info, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   SocialEventWithDetails,
   SocialEventCategory,
   SocialEventStatus,
 } from '@/types/social';
-import Tooltip from '@/components/tooltip';
+import { Tooltip } from '@/components/tooltip';
 
 interface SocialEventActionsProps {
   event: SocialEventWithDetails;
@@ -350,9 +350,14 @@ export default function SocialEventActions({
                   onChange={setOpenToEveryone}
                   disabled={isSubmitting}
                 />
-                <Tooltip bg="dark" size="md" position="top" className="ml-2">
-                  Check this box to invite all co-op members and create an event
-                  participant list
+                <Tooltip
+                  content="Check this box to invite all co-op members and create an event participant list"
+                  bg="dark"
+                  size="md"
+                  position="top"
+                  className="ml-2"
+                >
+                  <Info className="h-4 w-4 text-slate-500" />
                 </Tooltip>
               </div>
             </div>

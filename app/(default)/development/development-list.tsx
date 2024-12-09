@@ -23,7 +23,10 @@ interface InitiativeListProps {
   initiatives?: DevelopmentInitiativeWithDetails[];
 }
 
-const ITEMS_PER_PAGE = 9;
+const ITEMS_PER_PAGE = 6;
+
+type SortField = 'created_at' | 'event_date';
+type SortOrder = 'asc' | 'desc';
 
 export default function InitiativeList({
   initiatives: initialInitiatives = [],
@@ -38,6 +41,8 @@ export default function InitiativeList({
   const [statusFilter, setCategoryFilter] = useState<'all' | DevelopmentStatus>(
     'all'
   );
+  const [sortField, setSortField] = useState<SortField>('event_date');
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
 
   // Set up real-time subscription for participant updates
   useEffect(() => {
@@ -99,16 +104,28 @@ export default function InitiativeList({
     setInitiatives(initialInitiatives);
   }, [initialInitiatives]);
 
-  // Filter initiatives
-  const filteredInitiatives = initiatives.filter((initiative) => {
-    if (typeFilter !== 'all' && initiative.initiative_type !== typeFilter)
-      return false;
-    if (categoryFilter !== 'all' && initiative.category !== categoryFilter)
-      return false;
-    if (statusFilter !== 'all' && initiative.status !== statusFilter)
-      return false;
-    return true;
-  });
+  // Filter and sort initiatives
+  const filteredInitiatives = initiatives
+    .filter((initiative) => {
+      if (typeFilter !== 'all' && initiative.initiative_type !== typeFilter)
+        return false;
+      if (categoryFilter !== 'all' && initiative.category !== categoryFilter)
+        return false;
+      if (statusFilter !== 'all' && initiative.status !== statusFilter)
+        return false;
+      return true;
+    })
+    .sort((a, b) => {
+      const aValue = a[sortField];
+      const bValue = b[sortField];
+
+      if (!aValue && !bValue) return 0;
+      if (!aValue) return sortOrder === 'asc' ? 1 : -1;
+      if (!bValue) return sortOrder === 'asc' ? -1 : 1;
+
+      const comparison = aValue > bValue ? 1 : -1;
+      return sortOrder === 'asc' ? comparison : -comparison;
+    });
 
   // Pagination logic
   const totalItems = filteredInitiatives.length;
@@ -196,6 +213,38 @@ export default function InitiativeList({
                 {formatFilterLabel(status)}
               </SelectItem>
             ))}
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortField}
+          onValueChange={(value: SortField) => {
+            setSortField(value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort by" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="event_date">Event Date</SelectItem>
+            <SelectItem value="created_at">Created Date</SelectItem>
+          </SelectContent>
+        </Select>
+
+        <Select
+          value={sortOrder}
+          onValueChange={(value: SortOrder) => {
+            setSortOrder(value);
+            setCurrentPage(1);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Sort order" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="asc">Ascending</SelectItem>
+            <SelectItem value="desc">Descending</SelectItem>
           </SelectContent>
         </Select>
       </div>

@@ -109,16 +109,24 @@ export default function NewEventModal() {
 
       // Create calendar event if date is set
       if (eventDate && newInitiative) {
-        await createDevelopmentEvent(
+        const calendarData = {
           title,
           description,
-          eventDate,
-          startTime,
-          duration,
-          user.id,
-          profile.full_name,
-          newInitiative.id
-        );
+          start_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          end_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          event_type: 'development_event' as const,
+          reference_id: newInitiative.id,
+          created_by: user.id,
+          category: 'Development',
+          subcategory: category,
+          full_name: profile?.full_name,
+        };
+
+        const { error: calendarError } = await supabase
+          .from('calendar_events')
+          .insert(calendarData);
+
+        if (calendarError) throw calendarError;
       }
 
       resetForm();
@@ -264,24 +272,19 @@ export default function NewEventModal() {
                   htmlFor="duration"
                   className="text-slate-900 dark:text-slate-300"
                 >
-                  Duration
+                  Duration (hours)
                 </Label>
-                <select
+                <Input
                   id="duration"
+                  type="number"
+                  min="0"
+                  step="0.5"
                   required
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
                   className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
-                >
-                  <option value="">Select duration</option>
-                  <option value="0.5">Half an hour</option>
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
-                  <option value="3">3 hours</option>
-                  <option value="4">4 hours</option>
-                  <option value="24">All day</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -304,13 +307,6 @@ export default function NewEventModal() {
               </div>
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    id="openToEveryone"
-                    label="Open to everyone"
-                    checked={openToEveryone}
-                    onChange={setOpenToEveryone}
-                    disabled={isSubmitting}
-                  />
                   <Checkbox
                     id="openToEveryone"
                     label="Open to everyone"

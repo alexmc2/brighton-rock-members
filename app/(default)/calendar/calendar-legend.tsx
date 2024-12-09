@@ -14,7 +14,7 @@ export default function CalendarLegend() {
     { name: 'EGM', colorClass: 'bg-pink-500' },
     { name: 'General Maintenance', colorClass: 'bg-yellow-500' },
     { name: 'Training', colorClass: 'bg-lime-500' },
-    { name: 'Treasury Meeting', colorClass: 'bg-amber-500' },
+    { name: 'Treasury', colorClass: 'bg-amber-500' },
     { name: 'Development', colorClass: 'bg-emerald-500' },
     { name: 'Miscellaneous', colorClass: 'bg-gray-500' },
   ];

@@ -2,7 +2,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -19,13 +19,29 @@ interface DoodlePollsListProps {
   currentUserId?: string;
 }
 
+const ITEMS_PER_PAGE = 6;
+
 export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePollsListProps) {
   const [filters, setFilters] = useState({
     type: 'all' as 'all' | DoodleEventType,
     sortBy: 'Event Date',
     sortOrder: 'Ascending',
+    currentPage: 1,
   });
   const [showClosed, setShowClosed] = useState(false);
+
+  // Load the saved preference when component mounts
+  useEffect(() => {
+    const savedShowClosed = localStorage.getItem('showClosedPolls');
+    if (savedShowClosed !== null) {
+      setShowClosed(JSON.parse(savedShowClosed));
+    }
+  }, []);
+
+  // Save preference whenever it changes
+  useEffect(() => {
+    localStorage.setItem('showClosedPolls', JSON.stringify(showClosed));
+  }, [showClosed]);
 
   // Filter and sort polls
   const filteredPolls = polls
@@ -39,6 +55,12 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
       const bDate = Math.min(...b.options.map(opt => new Date(opt.date).getTime()));
       return filters.sortOrder === 'Ascending' ? aDate - bDate : bDate - aDate;
     });
+
+  // Compute pagination
+  const totalPages = Math.ceil(filteredPolls.length / ITEMS_PER_PAGE);
+  const startIndex = (filters.currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, filteredPolls.length);
+  const paginatedPolls = filteredPolls.slice(startIndex, endIndex);
 
   // Get unique event types
   const eventTypes = ['all', ...Array.from(new Set(polls.map(p => p.event_type)))] as const;
@@ -110,7 +132,7 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPolls.map((poll) => (
+        {paginatedPolls.map((poll) => (
           <DoodlePollCard key={poll.id} poll={poll} />
         ))}
       </div>
@@ -120,6 +142,38 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
           <p className="text-slate-500 dark:text-slate-400">
             No polls found matching your filters
           </p>
+        </div>
+      )}
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <Button
+            onClick={() =>
+              setFilters((prev) => ({
+                ...prev,
+                currentPage: prev.currentPage - 1,
+              }))
+            }
+            disabled={filters.currentPage === 1}
+            variant="outline"
+          >
+            Previous
+          </Button>
+          <span className="text-sm text-slate-600 dark:text-slate-400">
+            Page {filters.currentPage} of {totalPages}
+          </span>
+          <Button
+            onClick={() =>
+              setFilters((prev) => ({
+                ...prev,
+                currentPage: prev.currentPage + 1,
+              }))
+            }
+            disabled={filters.currentPage === totalPages}
+            variant="outline"
+          >
+            Next
+          </Button>
         </div>
       )}
     </div>

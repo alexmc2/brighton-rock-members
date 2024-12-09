@@ -1,110 +1,125 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { Transition } from '@headlessui/react'
+import * as React from 'react';
+import * as TooltipPrimitive from '@radix-ui/react-tooltip';
+
+import { cn } from '@/lib/utils';
+
+const TooltipProvider = TooltipPrimitive.Provider;
+
+const TooltipRoot = TooltipPrimitive.Root;
+
+const TooltipTrigger = TooltipPrimitive.Trigger;
+
+interface TooltipContentProps
+  extends React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content> {
+  bg?: 'dark' | 'light' | 'none';
+  size?: 'sm' | 'md' | 'lg' | 'none';
+  position?: 'top' | 'bottom' | 'left' | 'right';
+}
+
+const TooltipContent = React.forwardRef<
+  React.ElementRef<typeof TooltipPrimitive.Content>,
+  TooltipContentProps
+>(
+  (
+    {
+      className,
+      bg = 'none',
+      size = 'none',
+      position = 'top',
+      sideOffset = 4,
+      ...props
+    },
+    ref
+  ) => {
+    const positionClasses = {
+      top: 'data-[side=bottom]:slide-in-from-top-2',
+      bottom: 'data-[side=top]:slide-in-from-bottom-2',
+      left: 'data-[side=right]:slide-in-from-left-2',
+      right: 'data-[side=left]:slide-in-from-right-2',
+    };
+
+    const sizeClasses = {
+      lg: 'min-w-[18rem] px-3 py-2',
+      md: 'min-w-[14rem] px-3 py-2',
+      sm: 'min-w-[11rem] px-3 py-2',
+      none: 'px-3 py-2',
+    };
+
+    const colorClasses = {
+      light: 'bg-white text-slate-950 border-slate-200',
+      dark: 'bg-slate-950 text-slate-50 border-slate-800',
+      none: 'bg-white text-slate-950 border-slate-200 dark:bg-slate-950 dark:text-slate-50 dark:border-slate-800'
+    };
+
+    return (
+      <TooltipPrimitive.Content
+        ref={ref}
+        sideOffset={sideOffset}
+        className={cn(
+          'z-50 overflow-hidden rounded-md border shadow-md animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95',
+          positionClasses[position],
+          sizeClasses[size],
+          colorClasses[bg],
+          className
+        )}
+        {...props}
+      />
+    );
+  }
+);
+TooltipContent.displayName = TooltipPrimitive.Content.displayName;
 
 interface TooltipProps {
-  children: React.ReactNode
-  className?: string
-  bg?: 'dark' | 'light' | null
-  size?: 'sm' | 'md' | 'lg' | 'none'
-  position?: 'top' | 'bottom' | 'left' | 'right'
+  children: React.ReactNode;
+  content: React.ReactNode;
+  className?: string;
+  bg?: 'dark' | 'light' | 'none';
+  size?: 'sm' | 'md' | 'lg' | 'none';
+  position?: 'top' | 'bottom' | 'left' | 'right';
 }
 
-export default function Tooltip({
+const Tooltip = ({
   children,
+  content,
   className = '',
-  bg = null,
+  bg = 'none',
   size = 'none',
   position = 'top',
-}: TooltipProps) {
-  const [tooltipOpen, setTooltipOpen] = useState<boolean>(false)
-
-
-  const positionOuterClasses = (position: TooltipProps['position']) => {
-    switch (position) {
-      case 'right':
-        return 'left-1/2 sm:left-full top-1/2 -translate-y-1/2 -translate-x-1/2 sm:-translate-x-0'
-      case 'left':
-        return 'right-1/2 sm:right-full top-1/2 -translate-y-1/2 translate-x-1/2 sm:translate-x-0'
-      case 'bottom':
-        return 'top-full left-1/2 -translate-x-1/2'
-      default:
-        return 'bottom-full left-1/2 -translate-x-1/2'
-    }
-  }
-
-  const sizeClasses = (size: TooltipProps['size']) => {
-    switch (size) {
-      case 'lg':
-        return 'min-w-[18rem] px-3 py-2'
-      case 'md':
-        return 'min-w-[14rem] px-3 py-2'
-      case 'sm':
-        return 'min-w-[11rem] px-3 py-2'
-      default:
-        return 'px-3 py-2'
-    }
-  }
-
-  const colorClasses = (bg: TooltipProps['bg']) => {
-    switch (bg) {
-      case 'light':
-        return 'bg-white text-gray-600 border-gray-200'
-      case 'dark':
-        return 'bg-gray-800 text-gray-100 border-gray-700/60'
-      default:
-        return 'text-gray-600 bg-white dark:bg-gray-800 dark:text-gray-100 border-gray-200 dark:border-gray-700/60'
-    }
-  }  
-
-  const positionInnerClasses = (position: TooltipProps['position']) => {
-    switch (position) {
-      case 'right':
-        return 'sm:ml-2 mt-2 sm:mt-0'
-      case 'left':
-        return 'sm:mr-2 mt-2 sm:mt-0'
-      case 'bottom':
-        return 'mt-2'
-      default:
-        return 'mb-2'
-    }
-  }
-
+}: TooltipProps) => {
   return (
-    <div
-      className={`relative ${className}`}
-      onMouseEnter={() => setTooltipOpen(true)}
-      onMouseLeave={() => setTooltipOpen(false)}
-      onFocus={() => setTooltipOpen(true)}
-      onBlur={() => setTooltipOpen(false)}
-    >
-      <button
-        className="block"
-        aria-haspopup="true"
-        aria-expanded={tooltipOpen}
-        onClick={(e) => e.preventDefault()}
-      >
-        <svg className="fill-current text-gray-400 dark:text-gray-500" width="16" height="16" viewBox="0 0 16 16">
-          <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V4h2v5z" />
-        </svg>
-      </button>
-      <div className={`z-10 absolute max-w-[calc(100vw-2rem)] ${positionOuterClasses(position)}`}>
-        <Transition
-          show={tooltipOpen}
-          as="div"
-          className={`rounded-lg border overflow-hidden shadow-lg ${sizeClasses(size)} ${colorClasses(bg)} ${positionInnerClasses(position)}`}
-          enter="transition ease-out duration-200 transform"
-          enterFrom="opacity-0 -translate-y-2"
-          enterTo="opacity-100 translate-y-0"
-          leave="transition ease-out duration-200"
-          leaveFrom="opacity-100"
-          leaveTo="opacity-0"
-          unmount={false}
-        >
-          {children}
-        </Transition>
-      </div>
-    </div>
-  )
-}
+    <TooltipProvider>
+      <TooltipRoot>
+        <TooltipTrigger asChild>
+          <button
+            className={cn('block', className)}
+            onClick={(e) => e.preventDefault()}
+          >
+            {children || (
+              <svg
+                className="fill-current text-slate-400 dark:text-slate-500"
+                width="16"
+                height="16"
+                viewBox="0 0 16 16"
+              >
+                <path d="M8 0C3.6 0 0 3.6 0 8s3.6 8 8 8 8-3.6 8-8-3.6-8-8-8zm0 12c-.6 0-1-.4-1-1s.4-1 1-1 1 .4 1 1-.4 1-1 1zm1-3H7V4h2v5z" />
+              </svg>
+            )}
+          </button>
+        </TooltipTrigger>
+        <TooltipContent bg={bg} size={size} position={position}>
+          {content}
+        </TooltipContent>
+      </TooltipRoot>
+    </TooltipProvider>
+  );
+};
+
+export {
+  Tooltip,
+  TooltipProvider,
+  TooltipRoot,
+  TooltipTrigger,
+  TooltipContent,
+};

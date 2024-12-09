@@ -76,6 +76,12 @@ export default function EventModal() {
         `${formData.get('date')}T${formData.get('end_time')}:00`
       );
 
+      // Get the current user for last_modified_by
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
       const { error } = await supabase
         .from('calendar_events')
         .update({
@@ -83,11 +89,15 @@ export default function EventModal() {
           description: formData.get('description'),
           start_time: startTime.toISOString(),
           end_time: endTime.toISOString(),
+          created_by: user.id,
+          last_modified_by: user.id,
+          updated_at: new Date().toISOString(),
         })
         .eq('id', event.id);
 
       if (error) throw error;
 
+      setIsEditing(false);
       setSelectedEventId(null);
       router.refresh();
     } catch (error) {
@@ -107,6 +117,25 @@ export default function EventModal() {
 
     try {
       setIsSubmitting(true);
+
+      // If this is a doodle poll event, update the poll to remove the event_id
+      if (event.reference_id) {
+        const { error: pollError } = await supabase
+          .from('doodle_polls')
+          .update({
+            event_id: null,
+            closed: true, // Keep it closed even if event is deleted
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', event.reference_id);
+
+        if (pollError) {
+          console.error('Error updating poll:', pollError);
+          throw pollError;
+        }
+      }
+
+      // Delete the event
       const { error } = await supabase
         .from('calendar_events')
         .delete()
@@ -125,6 +154,11 @@ export default function EventModal() {
 
   if (!event) return null;
 
+  // Determine if the event can be edited/deleted
+  const canModify = event.event_type === 'manual' || 
+    ['General Meeting', 'Sub Meeting', 'Allocations', 'P4P Visit', 'Garden', 
+     'AGM', 'EGM', 'General Maintenance', 'Training', 'Treasury', 'Miscellaneous'].includes(event.event_type);
+
   return (
     <Dialog
       open={!!selectedEventId}
@@ -134,7 +168,7 @@ export default function EventModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between">
             <span>{isEditing ? 'Edit Event' : event.title}</span>
-            {!isEditing && event.event_type === 'manual' && (
+            {!isEditing && canModify && (
               <div className="flex items-center gap-2">
                 <Button
                   variant="ghost"

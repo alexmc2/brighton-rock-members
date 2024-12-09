@@ -22,10 +22,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Info, Trash2 } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { createDevelopmentEvent } from '@/lib/actions/calendar';
-import Tooltip from '@/components/tooltip';
+import { Tooltip } from '@/components/tooltip';
 
 interface EventActionsProps {
   initiative: DevelopmentInitiativeWithDetails;
@@ -55,13 +55,12 @@ export default function EventActions({ initiative }: EventActionsProps) {
       : ''
   );
   const [startTime, setStartTime] = useState(initiative.start_time || '');
-  const [duration, setDuration] = useState(
-    initiative.duration
-      ? initiative.duration.split(' ')[0] === '24'
-        ? '8'
-        : initiative.duration.split(' ')[0]
-      : ''
-  );
+  const [duration, setDuration] = useState(() => {
+    if (initiative.duration) {
+      return initiative.duration.split(' ')[0];
+    }
+    return '';
+  });
   const [location, setLocation] = useState(initiative.location || '');
   const [openToEveryone, setOpenToEveryone] = useState(
     initiative.open_to_everyone
@@ -166,16 +165,32 @@ export default function EventActions({ initiative }: EventActionsProps) {
 
       // Update calendar event if date is set
       if (eventDate) {
-        await createDevelopmentEvent(
+        // Delete existing calendar event
+        await supabase
+          .from('calendar_events')
+          .delete()
+          .eq('reference_id', initiative.id)
+          .eq('event_type', 'development_event');
+
+        // Create new calendar event with correct category structure
+        const calendarData = {
           title,
           description,
-          eventDate,
-          startTime,
-          duration,
-          user.id,
-          profile.full_name,
-          initiative.id
-        );
+          start_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          end_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          event_type: 'development_event' as const,
+          reference_id: initiative.id,
+          created_by: user.id,
+          category: 'Development',
+          subcategory: category,
+          full_name: profile?.full_name,
+        };
+
+        const { error: calendarError } = await supabase
+          .from('calendar_events')
+          .insert(calendarData);
+
+        if (calendarError) throw calendarError;
       }
 
       setIsEditDialogOpen(false);
@@ -375,21 +390,16 @@ export default function EventActions({ initiative }: EventActionsProps) {
                 >
                   Duration
                 </Label>
-                <select
+                <Input
                   id="duration"
+                  type="number"
+                  min="0"
+                  step="0.5"
+                  required
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   disabled={isSubmitting}
-                  className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
-                >
-                  <option value="">Select duration</option>
-                  <option value="0.5">Half an hour</option>
-                  <option value="1">1 hour</option>
-                  <option value="2">2 hours</option>
-                  <option value="3">3 hours</option>
-                  <option value="4">4 hours</option>
-                  <option value="8">All day</option>
-                </select>
+                />
               </div>
             </div>
 
@@ -419,13 +429,13 @@ export default function EventActions({ initiative }: EventActionsProps) {
                 disabled={isSubmitting}
               />
               <Tooltip
+                content="Check this box to invite all co-op members and create an event participant list"
                 bg="dark"
                 size="md"
                 position="top"
                 className="ml-2"
               >
-                Check this box to invite all co-op members and create an event
-                participant list
+                <Info className="h-4 w-4 text-slate-500" />
               </Tooltip>
             </div>
 

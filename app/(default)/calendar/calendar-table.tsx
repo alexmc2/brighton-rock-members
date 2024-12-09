@@ -64,7 +64,7 @@ export default function CalendarTable() {
         return 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-700 dark:text-yellow-300';
       case 'Training':
         return 'bg-lime-100 dark:bg-lime-900/50 text-lime-700 dark:text-lime-300';
-      case 'Treasury Meeting':
+      case 'Treasury':
         return 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300';
       case 'Development':
         return 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300';

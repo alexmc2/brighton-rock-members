@@ -203,11 +203,13 @@ export default function NewEventModal() {
                 <option value="Sub Meeting">Sub Meeting</option>
                 <option value="Allocations">Allocations</option>
                 <option value="Social">Social</option>
+                <option value="P4P Visit">P4P Visit</option>
+                <option value="Garden">Garden</option>
                 <option value="AGM">AGM</option>
                 <option value="EGM">EGM</option>
                 <option value="General Maintenance">General Maintenance</option>
                 <option value="Training">Training</option>
-                <option value="Treasury Meeting">Treasury Meeting</option>
+                <option value="Treasury">Treasury</option>
                 <option value="Development">Development</option>
                 <option value="Miscellaneous">Miscellaneous</option>
               </select>

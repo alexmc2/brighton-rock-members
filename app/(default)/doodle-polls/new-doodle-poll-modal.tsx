@@ -16,8 +16,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus, X, CalendarDays } from 'lucide-react';
+import { Plus, X, CalendarDays, Info } from 'lucide-react';
 import { DoodlePollOption, DoodleEventType } from '@/types/doodle';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Tooltip } from '@/components/tooltip';
 
 interface EventTypeOption {
   value: DoodleEventType;
@@ -28,7 +30,7 @@ interface EventTypeOption {
 const eventTypeOptions: EventTypeOption[] = [
   {
     value: 'social_event',
-    label: 'Social Event',
+    label: 'Co-op Social',
     categories: [
       { value: 'film_night', label: 'Film Night' },
       { value: 'album_night', label: 'Album Night' },
@@ -46,16 +48,6 @@ const eventTypeOptions: EventTypeOption[] = [
     ],
   },
   {
-    value: 'garden_task',
-    label: 'Garden Task',
-    categories: [
-      { value: 'planting', label: 'Planting' },
-      { value: 'maintenance', label: 'Maintenance' },
-      { value: 'clean_up', label: 'Clean Up' },
-      { value: 'harvesting', label: 'Harvesting' },
-    ],
-  },
-  {
     value: 'development_event',
     label: 'Development Event',
     categories: [
@@ -66,6 +58,63 @@ const eventTypeOptions: EventTypeOption[] = [
       { value: 'research', label: 'Research' },
       { value: 'general', label: 'General' },
     ],
+  },
+  {
+    value: 'General Meeting',
+    label: 'General Meeting',
+    categories: [{ value: 'General Meeting', label: 'General Meeting' }],
+  },
+  {
+    value: 'Sub Meeting',
+    label: 'Sub Meeting',
+    categories: [{ value: 'Sub Meeting', label: 'Sub Meeting' }],
+  },
+  {
+    value: 'Allocations',
+    label: 'Allocations',
+    categories: [{ value: 'Allocations', label: 'Allocations' }],
+  },
+  {
+    value: 'P4P Visit',
+    label: 'P4P Visit',
+    categories: [{ value: 'P4P Visit', label: 'P4P Visit' }],
+  },
+  {
+    value: 'Garden',
+    label: 'Garden',
+    categories: [{ value: 'Garden', label: 'Garden' }],
+  },
+  {
+    value: 'AGM',
+    label: 'AGM',
+    categories: [{ value: 'AGM', label: 'AGM' }],
+  },
+  {
+    value: 'EGM',
+    label: 'EGM',
+    categories: [{ value: 'EGM', label: 'EGM' }],
+  },
+  {
+    value: 'General Maintenance',
+    label: 'General Maintenance',
+    categories: [
+      { value: 'General Maintenance', label: 'General Maintenance' },
+    ],
+  },
+  {
+    value: 'Training',
+    label: 'Training',
+    categories: [{ value: 'Training', label: 'Training' }],
+  },
+  {
+    value: 'Treasury',
+    label: 'Treasury',
+    categories: [{ value: 'Treasury', label: 'Treasury' }],
+  },
+  {
+    value: 'Miscellaneous',
+    label: 'Miscellaneous',
+    categories: [{ value: 'Miscellaneous', label: 'Miscellaneous' }],
   },
 ];
 
@@ -85,6 +134,9 @@ export default function NewDoodlePollModal() {
   const [options, setOptions] = useState<
     Array<Omit<DoodlePollOption, 'id' | 'poll_id' | 'created_at'>>
   >([]);
+  const [hasDeadline, setHasDeadline] = useState(false);
+  const [deadlineDate, setDeadlineDate] = useState('');
+  const [deadlineTime, setDeadlineTime] = useState('');
 
   // Get categories based on selected event type
   const currentEventType = eventTypeOptions.find(
@@ -140,6 +192,14 @@ export default function NewDoodlePollModal() {
       } = await supabase.auth.getUser();
       if (!user) throw new Error('Not authenticated');
 
+      // Calculate response deadline if set
+      let response_deadline = null;
+      if (hasDeadline && deadlineDate && deadlineTime) {
+        response_deadline = new Date(
+          `${deadlineDate}T${deadlineTime}`
+        ).toISOString();
+      }
+
       // First create the poll
       const { data: poll, error: pollError } = await supabase
         .from('doodle_polls')
@@ -152,6 +212,7 @@ export default function NewDoodlePollModal() {
           created_by: user.id,
           closed: false,
           event_id: null,
+          response_deadline,
           created_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         })
@@ -214,9 +275,7 @@ export default function NewDoodlePollModal() {
           {/* Type & Category */}
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 sm:col-span-1">
-              <Label htmlFor="event_type" className="text-slate-900 dark:text-slate-300">
-                Event Type
-              </Label>
+              <Label htmlFor="event_type">Event Type</Label>
               <select
                 id="event_type"
                 required
@@ -226,7 +285,7 @@ export default function NewDoodlePollModal() {
                   setCategory('');
                 }}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
               >
                 {eventTypeOptions.map((type) => (
                   <option key={type.value} value={type.value}>
@@ -236,16 +295,14 @@ export default function NewDoodlePollModal() {
               </select>
             </div>
             <div className="col-span-2 sm:col-span-1">
-              <Label htmlFor="category" className="text-slate-900 dark:text-slate-300">
-                Category
-              </Label>
+              <Label htmlFor="category">Category</Label>
               <select
                 id="category"
                 required
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
                 disabled={isSubmitting}
-                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 px-3 py-2"
+                className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
               >
                 <option value="">Select category</option>
                 {categories.map((cat) => (
@@ -259,9 +316,7 @@ export default function NewDoodlePollModal() {
 
           {/* Title */}
           <div>
-            <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">
-              Title
-            </Label>
+            <Label htmlFor="title">Title</Label>
             <Input
               id="title"
               required
@@ -274,9 +329,7 @@ export default function NewDoodlePollModal() {
 
           {/* Description */}
           <div>
-            <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">
-              Description
-            </Label>
+            <Label htmlFor="description">Description</Label>
             <Textarea
               id="description"
               required
@@ -290,9 +343,7 @@ export default function NewDoodlePollModal() {
 
           {/* Location */}
           <div>
-            <Label htmlFor="location" className="text-slate-900 dark:text-slate-300">
-              Location
-            </Label>
+            <Label htmlFor="location">Location</Label>
             <Input
               id="location"
               value={location}
@@ -305,7 +356,7 @@ export default function NewDoodlePollModal() {
           {/* Date Options */}
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <Label className="text-slate-900 dark:text-slate-300">Date Options</Label>
+              <Label>Date Options</Label>
               <Button
                 type="button"
                 variant="outline"
@@ -315,7 +366,7 @@ export default function NewDoodlePollModal() {
                 className="border-slate-200 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800"
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Option
+                Add Date Option
               </Button>
             </div>
 
@@ -328,7 +379,9 @@ export default function NewDoodlePollModal() {
                   <Input
                     type="date"
                     value={option.date}
-                    onChange={(e) => updateOption(index, 'date', e.target.value)}
+                    onChange={(e) =>
+                      updateOption(index, 'date', e.target.value)
+                    }
                     required
                     disabled={isSubmitting}
                     className="w-full bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
@@ -336,7 +389,9 @@ export default function NewDoodlePollModal() {
                   <Input
                     type="time"
                     value={option.start_time || ''}
-                    onChange={(e) => updateOption(index, 'start_time', e.target.value)}
+                    onChange={(e) =>
+                      updateOption(index, 'start_time', e.target.value)
+                    }
                     required
                     disabled={isSubmitting}
                     className="w-full bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
@@ -346,7 +401,9 @@ export default function NewDoodlePollModal() {
                       type="number"
                       placeholder="Duration (h)"
                       value={option.duration || ''}
-                      onChange={(e) => updateOption(index, 'duration', e.target.value)}
+                      onChange={(e) =>
+                        updateOption(index, 'duration', e.target.value)
+                      }
                       min="0.5"
                       step="0.5"
                       disabled={isSubmitting}
@@ -368,6 +425,59 @@ export default function NewDoodlePollModal() {
             </div>
           </div>
 
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="hasDeadline"
+                label="Set response deadline"
+                checked={hasDeadline}
+                onChange={(checked) => setHasDeadline(checked as boolean)}
+                disabled={isSubmitting}
+              />
+
+              <Tooltip
+                content={
+                  <p className="w-[200px] p-2">
+                    Set an optional deadline for poll responses. After this date
+                    and time, no new responses will be accepted. If no deadline
+                    is set, the poll will remain open indefinitely until
+                    manually closed.
+                  </p>
+                }
+                bg="dark"
+              >
+                <Info className="h-4 w-4 text-slate-500" />
+              </Tooltip>
+            </div>
+          </div>
+
+          {hasDeadline && (
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="deadlineDate">Deadline Date</Label>
+                <Input
+                  id="deadlineDate"
+                  type="date"
+                  value={deadlineDate}
+                  onChange={(e) => setDeadlineDate(e.target.value)}
+                  disabled={isSubmitting}
+                  required={hasDeadline}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="deadlineTime">Deadline Time</Label>
+                <Input
+                  id="deadlineTime"
+                  type="time"
+                  value={deadlineTime}
+                  onChange={(e) => setDeadlineTime(e.target.value)}
+                  disabled={isSubmitting}
+                  required={hasDeadline}
+                />
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-end space-x-3">
             <Button
               type="button"
@@ -381,7 +491,7 @@ export default function NewDoodlePollModal() {
             <Button
               type="submit"
               disabled={isSubmitting || options.length === 0}
-              className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
+              variant="default"
             >
               {isSubmitting ? 'Creating...' : 'Create Poll'}
             </Button>

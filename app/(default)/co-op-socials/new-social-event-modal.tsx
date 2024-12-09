@@ -15,10 +15,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Plus } from 'lucide-react';
+import { Info, Plus } from 'lucide-react';
 import { SocialEventCategory } from '@/types/social';
 import { Checkbox } from '@/components/ui/checkbox';
-import Tooltip from '@/components/tooltip';
+import { Tooltip } from '@/components/tooltip';
 import { createSocialEventCalendarEvent } from '@/lib/actions/calendar';
 
 export default function NewSocialEventModal() {
@@ -97,17 +97,24 @@ export default function NewSocialEventModal() {
       if (insertError) throw insertError;
 
       if (eventDate && newEvent) {
-        await createSocialEventCalendarEvent(
+        const calendarData = {
           title,
           description,
-          eventDate,
-          startTime,
-          duration,
-          user.id,
-          profile.full_name,
-          newEvent.id,
-          category
-        );
+          start_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          end_time: new Date(`${eventDate}T${startTime || '00:00'}`),
+          event_type: 'social_event' as const,
+          reference_id: newEvent.id,
+          created_by: user.id,
+          category: 'Co-op Social',
+          subcategory: category,
+          full_name: profile?.full_name,
+        };
+
+        const { error: calendarError } = await supabase
+          .from('calendar_events')
+          .insert(calendarData);
+
+        if (calendarError) throw calendarError;
       }
 
       resetForm();
@@ -264,9 +271,14 @@ export default function NewSocialEventModal() {
                 onChange={setOpenToEveryone}
                 disabled={isSubmitting}
               />
-              <Tooltip bg="dark" size="md" position="top" className="ml-2">
-                Check this box to invite all co-op members and create an event
-                participant list
+              <Tooltip 
+                content="Check this box to invite all co-op members and create an event participant list"
+                bg="dark" 
+                size="md" 
+                position="top" 
+                className="ml-2"
+              >
+                <Info className="h-4 w-4 text-slate-500" />
               </Tooltip>
             </div>
           </div>

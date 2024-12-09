@@ -135,13 +135,10 @@ export default function NewProjectModal() {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                variant="default"
-                className="bg-slate-900 dark:bg-slate-700 hover:bg-slate-800 dark:hover:bg-slate-600"
-              >
-                {isSubmitting ? 'Creating...' : (
+              <Button type="submit" disabled={isSubmitting} variant="default">
+                {isSubmitting ? (
+                  'Creating...'
+                ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Project

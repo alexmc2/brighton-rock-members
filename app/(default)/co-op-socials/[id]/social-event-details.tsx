@@ -253,7 +253,7 @@ export default function SocialEventDetails({
         {/* Participants Section */}
         {event.open_to_everyone && (
           <div className="border-t border-slate-200 dark:border-slate-700 pt-6">
-            <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-4">
+            <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
               {/* Participation Buttons */}
               <div className="flex flex-wrap gap-3 mb-6">
                 <Button
@@ -305,7 +305,7 @@ export default function SocialEventDetails({
                       <h4 className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-3 capitalize">
                         {status.replace('_', ' ')} ({participants.length})
                       </h4>
-                      <div className="bg-white dark:bg-slate-900 rounded-md shadow-sm divide-y divide-slate-200 dark:divide-slate-700">
+                      <div className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                         {participants.map((participant) => (
                           <div
                             key={participant.user_id}

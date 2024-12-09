@@ -56,12 +56,14 @@ export default function DoodlePollDetails({
     const newResponses = { ...userResponses };
     const current = newResponses[optionId];
 
-    if (!current || current === 'no') {
+    if (!current) {
       newResponses[optionId] = 'yes';
     } else if (current === 'yes') {
       newResponses[optionId] = 'maybe';
-    } else {
+    } else if (current === 'maybe') {
       newResponses[optionId] = 'no';
+    } else if (current === 'no') {
+      delete newResponses[optionId]; // Remove the response to go back to no response
     }
 
     try {
@@ -93,28 +95,31 @@ export default function DoodlePollDetails({
     }
   };
 
-  // Calculate participants count excluding those with no responses
+  // Calculate participants count including those with no responses
   const participantsCount = new Set(
     poll.participants
       .filter((p) =>
-        Object.values(p.responses).some((r) => r === 'yes' || r === 'maybe')
+        Object.values(p.responses).some((r) => r === 'yes' || r === 'maybe' || r === 'no')
       )
       .map((p) => p.user_id)
   ).size;
 
   // Get available count for an option
   const getAvailableCount = (optionId: string) => {
-    const uniqueYesResponders = new Set(
-      poll.participants
-        .filter((p) => p.responses[optionId] === 'yes')
-        .map((p) => p.user_id)
-    );
-    return uniqueYesResponders.size;
+    return poll.participants.filter((p) => p.responses[optionId] === 'yes').length;
+  };
+
+  // Get counts for an option
+  const getCounts = (optionId: string) => {
+    const yesCount = poll.participants.filter((p) => p.responses[optionId] === 'yes').length;
+    const maybeCount = poll.participants.filter((p) => p.responses[optionId] === 'maybe').length;
+    const noCount = poll.participants.filter((p) => p.responses[optionId] === 'no').length;
+    return { yesCount, maybeCount, noCount };
   };
 
   return (
     <div className="space-y-6">
-      <Card className="p-6 bg-white dark:bg-[#1B2028] border-slate-200 dark:border-none">
+      <Card className="p-6 bg-white dark:bg-slate-800 border-slate-200 dark:border-none">
         {/* Event Details Header */}
         <div className="mb-6 space-y-2">
           <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">
@@ -123,11 +128,7 @@ export default function DoodlePollDetails({
           <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
             <p>
               <span className="font-medium">Type:</span>{' '}
-              {poll.event_type === 'social_event'
-                ? 'Co-op Social'
-                : poll.event_type === 'garden_task'
-                ? 'Garden'
-                : 'Development Event'}
+              {poll.event_type}
             </p>
             <p>
               <span className="font-medium">Created by:</span>{' '}
@@ -139,24 +140,40 @@ export default function DoodlePollDetails({
                 {poll.description}
               </p>
             )}
+            {poll.response_deadline && (
+              <p>
+                <span className="font-medium">Response Deadline:</span>{' '}
+                {format(new Date(poll.response_deadline), 'PPP p')}
+              </p>
+            )}
           </div>
         </div>
 
-        <div className="border rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-[#1B2028] overflow-hidden">
+        <div className="border rounded-lg border-slate-200 dark:border-slate-700 bg-white dark:bg-gray-900 overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[800px]">
               {/* Header */}
               <div className="grid grid-cols-[250px_repeat(4,minmax(150px,1fr))] border-b border-slate-200 dark:border-slate-700">
                 <div className="p-4" />
                 {timeSlots.map((slot) => (
-                  <div key={slot.id} className="p-4 text-center border-l border-r border-slate-200 dark:border-slate-700">
-                    <div className="text-slate-600 dark:text-slate-400">{slot.month}</div>
+                  <div
+                    key={slot.id}
+                    className="p-4 text-center border-l border-r border-slate-200 dark:border-slate-700"
+                  >
+                    <div className="text-slate-600 dark:text-slate-400">
+                      {slot.month}
+                    </div>
                     <div className="text-2xl font-bold text-slate-900 dark:text-white">
                       {slot.dayOfMonth}
                     </div>
-                    <div className="text-slate-600 dark:text-slate-400">{slot.day}</div>
+                    <div className="text-slate-600 dark:text-slate-400">
+                      {slot.day}
+                    </div>
                     {slot.times.map((time) => (
-                      <div key={time} className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                      <div
+                        key={time}
+                        className="text-sm text-slate-600 dark:text-slate-400 mt-1"
+                      >
                         {time}
                       </div>
                     ))}
@@ -174,8 +191,11 @@ export default function DoodlePollDetails({
                       }`}
                 </div>
                 {timeSlots.map((slot) => (
-                  <div key={slot.id} className="p-4 text-center border-r border-l border-slate-200 dark:border-slate-700">
-                    <div className="text-blue-600 dark:text-blue-400 flex items-center justify-center gap-1">
+                  <div
+                    key={slot.id}
+                    className="p-4 text-center border-r border-l border-slate-200 dark:border-slate-700"
+                  >
+                    <div className="text-green-600 dark:text-green-400 flex items-center justify-center gap-1">
                       <CheckCircle2 className="w-4 h-4" />
                       {getAvailableCount(slot.id)}
                     </div>
@@ -200,8 +220,12 @@ export default function DoodlePollDetails({
                       variant="ghost"
                       className={cn(
                         'h-full rounded-none border border-slate-200 dark:border-slate-700',
-                        userResponses[slot.id] === 'yes' && 'bg-green-50 dark:bg-green-900/20',
-                        userResponses[slot.id] === 'maybe' && 'bg-yellow-50 dark:bg-yellow-900/20'
+                        userResponses[slot.id] === 'yes' &&
+                          'bg-green-50 dark:bg-green-900/20',
+                        userResponses[slot.id] === 'maybe' &&
+                          'bg-yellow-50 dark:bg-yellow-900/20',
+                        userResponses[slot.id] === 'no' &&
+                          'bg-red-50 dark:bg-red-900/20'
                       )}
                       onClick={() => toggleResponse(slot.id)}
                     >
@@ -224,7 +248,10 @@ export default function DoodlePollDetails({
                           <line x1="8" y1="12" x2="16" y2="12" />
                         </svg>
                       )}
-                      {(!userResponses[slot.id] || userResponses[slot.id] === 'no') && (
+                      {userResponses[slot.id] === 'no' && (
+                        <CircleSlash className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      )}
+                      {!userResponses[slot.id] && (
                         <CircleSlash className="w-5 h-5 text-slate-300 dark:text-slate-600" />
                       )}
                     </Button>
@@ -236,7 +263,7 @@ export default function DoodlePollDetails({
               {poll.participants
                 .filter((participant) =>
                   Object.values(participant.responses).some(
-                    (r) => r === 'yes' || r === 'maybe'
+                    (r) => r === 'yes' || r === 'maybe' || r === 'no'
                   )
                 )
                 .map((participant) => (
@@ -265,8 +292,12 @@ export default function DoodlePollDetails({
                         key={slot.id}
                         className={cn(
                           'border-l border-r border-slate-200 dark:border-slate-700 p-4 flex items-center justify-center',
-                          participant.responses[slot.id] === 'yes' && 'bg-green-50 dark:bg-green-900/20',
-                          participant.responses[slot.id] === 'maybe' && 'bg-yellow-50 dark:bg-yellow-900/20'
+                          participant.responses[slot.id] === 'yes' &&
+                            'bg-green-50 dark:bg-green-900/20',
+                          participant.responses[slot.id] === 'maybe' &&
+                            'bg-yellow-50 dark:bg-yellow-900/20',
+                          participant.responses[slot.id] === 'no' &&
+                            'bg-red-50 dark:bg-red-900/20'
                         )}
                       >
                         {participant.responses[slot.id] === 'yes' && (
@@ -287,6 +318,9 @@ export default function DoodlePollDetails({
                             <circle cx="12" cy="12" r="10" />
                             <line x1="8" y1="12" x2="16" y2="12" />
                           </svg>
+                        )}
+                        {participant.responses[slot.id] === 'no' && (
+                          <CircleSlash className="w-5 h-5 text-red-600 dark:text-red-400" />
                         )}
                       </div>
                     ))}

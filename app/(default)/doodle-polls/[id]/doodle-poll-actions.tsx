@@ -1,3 +1,5 @@
+// app/(default)/doodle-polls/[id]/doodle-poll-actions.tsx
+
 'use client';
 
 import { useState } from 'react';
@@ -329,7 +331,7 @@ export default function DoodlePollActions({
           Edit
         </Button>
 
-        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
+        <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800 max-h-[90vh] flex flex-col">
           <DialogHeader>
             <DialogTitle className="text-slate-900 dark:text-slate-100">
               Edit Doodle Poll
@@ -341,8 +343,10 @@ export default function DoodlePollActions({
               <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
             </div>
           )}
-
-          <form onSubmit={handleEdit} className="space-y-4">
+          <form
+            onSubmit={handleEdit}
+            className="space-y-4 overflow-y-auto flex-1 pr-2"
+          >
             {/* Event Type & Category */}
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 sm:col-span-1">
@@ -528,7 +532,7 @@ export default function DoodlePollActions({
                     <div className="flex items-center gap-2">
                       <Input
                         type="number"
-                        placeholder="Duration (h)"
+                        placeholder="Duration in hours (e.g., 1.5)"
                         value={option.duration || ''}
                         onChange={(e) =>
                           handleUpdateDateOption(
@@ -540,7 +544,7 @@ export default function DoodlePollActions({
                         min="0.5"
                         step="0.5"
                         disabled={isSubmitting}
-                        className="w-24 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+                        className="w-full sm:w-24 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [appearance:auto]"
                       />
                       <Button
                         type="button"
@@ -550,7 +554,7 @@ export default function DoodlePollActions({
                         disabled={isSubmitting}
                         className="shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
                       >
-                        <X className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />{' '}
                       </Button>
                     </div>
                   </div>

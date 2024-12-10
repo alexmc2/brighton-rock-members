@@ -32,18 +32,11 @@ export default function DoodlePollHeader({ poll }: DoodlePollHeaderProps) {
 
       <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
         <div>
-          <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
-            {currentPoll.title}
-          </h1>
-          <div className="text-sm text-slate-500 dark:text-slate-400">
-            Event Type: {currentPoll.event_type}
-          </div>
+          <DoodlePollActions
+            poll={currentPoll}
+            onPollUpdate={(updatedPoll) => setCurrentPoll(updatedPoll)}
+          />
         </div>
-
-        <DoodlePollActions
-          poll={currentPoll}
-          onPollUpdate={(updatedPoll) => setCurrentPoll(updatedPoll)}
-        />
       </div>
     </div>
   );

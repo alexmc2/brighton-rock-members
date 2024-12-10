@@ -1,5 +1,3 @@
-// app/(default)/doodle-polls/new-doodle-poll-modal.tsx
-
 'use client';
 
 import { useState } from 'react';
@@ -16,7 +14,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Plus, X, CalendarDays, Info } from 'lucide-react';
+import { Plus, X, CalendarDays, Info, Trash2 } from 'lucide-react';
 import { DoodlePollOption, DoodleEventType } from '@/types/doodle';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tooltip } from '@/components/ui/tooltip';
@@ -258,7 +256,7 @@ export default function NewDoodlePollModal() {
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
+      <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800 max-h-[90vh] flex flex-col">
         <DialogHeader>
           <DialogTitle className="text-slate-900 dark:text-slate-100">
             New Doodle poll
@@ -271,7 +269,10 @@ export default function NewDoodlePollModal() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 overflow-y-auto flex-1 pr-2"
+        >
           {/* Type & Category */}
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2 sm:col-span-1">
@@ -399,7 +400,7 @@ export default function NewDoodlePollModal() {
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
-                      placeholder="Duration (h)"
+                      placeholder="Duration in hours (e.g., 1.5)"
                       value={option.duration || ''}
                       onChange={(e) =>
                         updateOption(index, 'duration', e.target.value)
@@ -407,7 +408,7 @@ export default function NewDoodlePollModal() {
                       min="0.5"
                       step="0.5"
                       disabled={isSubmitting}
-                      className="w-24 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700"
+                      className="w-full sm:w-24 bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-700 [appearance:auto]" // Made full width on mobile
                     />
                     <Button
                       type="button"
@@ -415,9 +416,9 @@ export default function NewDoodlePollModal() {
                       size="icon"
                       onClick={() => removeOption(index)}
                       disabled={isSubmitting}
-                      className="shrink-0 hover:bg-slate-100 dark:hover:bg-slate-800"
+                      className="shrink-0 hover:bg-red-100 dark:hover:bg-red-900/50" // Added red hover state
                     >
-                      <X className="h-4 w-4" />
+                      <Trash2 className="h-4 w-4 text-red-600 dark:text-red-400" />{' '}
                     </Button>
                   </div>
                 </div>
@@ -478,7 +479,7 @@ export default function NewDoodlePollModal() {
             </div>
           )}
 
-          <div className="flex justify-end space-x-3">
+          <div className="flex justify-end space-x-3 pt-4 mt-4 border-t border-slate-200 dark:border-slate-700">
             <Button
               type="button"
               variant="ghost"

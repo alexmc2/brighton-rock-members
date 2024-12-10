@@ -26,6 +26,7 @@ import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import type { DoodlePoll, DoodleEventType } from '@/types/doodle';
 import { Badge } from '@/components/ui/badge';
+import { eventTypeToCalendarCategory } from '@/types/doodle';
 
 interface DoodlePollCardProps {
   poll: DoodlePoll;
@@ -119,7 +120,9 @@ const DoodlePollCard: React.FC<DoodlePollCardProps> = ({ poll }) => {
           )}
         >
           {getCategoryIcon(poll.event_type)}
-          <span className="ml-1.5">{poll.event_type}</span>
+          <span className="ml-1.5">
+            {eventTypeToCalendarCategory(poll.event_type)}
+          </span>
         </div>
 
         <Link href={`/doodle-polls/${poll.id}`}>

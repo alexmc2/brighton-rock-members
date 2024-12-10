@@ -10,7 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -149,7 +149,12 @@ export default function NewGardenTaskModal() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
+              <Label
+                htmlFor="title"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Title
+              </Label>
               <Input
                 id="title"
                 name="title"
@@ -160,7 +165,12 @@ export default function NewGardenTaskModal() {
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 name="description"
@@ -172,7 +182,12 @@ export default function NewGardenTaskModal() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="area_id" className="text-slate-900 dark:text-slate-300">Area</Label>
+                <Label
+                  htmlFor="area_id"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Area
+                </Label>
                 <select
                   id="area_id"
                   name="area_id"
@@ -189,7 +204,12 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">Priority</Label>
+                <Label
+                  htmlFor="priority"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Priority
+                </Label>
                 <select
                   id="priority"
                   name="priority"
@@ -205,7 +225,12 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="assigned_to" className="text-slate-900 dark:text-slate-300">Assigned To</Label>
+                <Label
+                  htmlFor="assigned_to"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Assigned To
+                </Label>
                 <Input
                   id="assigned_to"
                   name="assigned_to"
@@ -216,7 +241,12 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="due_date" className="text-slate-900 dark:text-slate-300">Date</Label>
+                <Label
+                  htmlFor="due_date"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Date
+                </Label>
                 <Input
                   type="date"
                   id="due_date"
@@ -226,7 +256,12 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="scheduled_time" className="text-slate-900 dark:text-slate-300">Time</Label>
+                <Label
+                  htmlFor="scheduled_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Time
+                </Label>
                 <Input
                   type="time"
                   id="scheduled_time"
@@ -236,7 +271,12 @@ export default function NewGardenTaskModal() {
               </div>
 
               <div>
-                <Label htmlFor="duration" className="text-slate-900 dark:text-slate-300">Duration</Label>
+                <Label
+                  htmlFor="duration"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Duration
+                </Label>
                 <select
                   id="duration"
                   name="duration"
@@ -262,12 +302,10 @@ export default function NewGardenTaskModal() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                variant="default"
-              >
-                {isSubmitting ? 'Creating...' : (
+              <Button type="submit" disabled={isSubmitting} variant="default">
+                {isSubmitting ? (
+                  'Creating...'
+                ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Job

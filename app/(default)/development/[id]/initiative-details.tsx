@@ -13,10 +13,24 @@ import {
   EventParticipant,
 } from '@/types/development';
 import { Card } from '@/components/ui/card';
-import { Calendar, Clock, Users, PoundSterling, MapPin } from 'lucide-react';
+import {
+  Calendar,
+  Clock,
+  Users,
+  PoundSterling,
+  MapPin,
+  LayoutPanelLeft,
+  Globe2,
+  BookOpen,
+  GraduationCap,
+  Code,
+  Rocket,
+} from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { getUserColor } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import { Users2 } from 'lucide-react';
 
 interface InitiativeDetailsProps {
   initiative: DevelopmentInitiativeWithDetails;
@@ -79,15 +93,16 @@ export default function InitiativeDetails({
   }, [initiative.id, supabase]);
 
   // Fetch participants and handle realtime updates
-useEffect(() => {
-  if (initiative.initiative_type !== 'event') {
-    return; // Exit early if not an event
-  }
+  useEffect(() => {
+    if (initiative.initiative_type !== 'event') {
+      return; // Exit early if not an event
+    }
 
-  async function fetchParticipants() {
-    const { data, error } = await supabase
-      .from('event_participants')
-      .select(`
+    async function fetchParticipants() {
+      const { data, error } = await supabase
+        .from('event_participants')
+        .select(
+          `
         event_id,
         user_id,
         status,
@@ -97,45 +112,45 @@ useEffect(() => {
           email,
           full_name
         )
-      `)
-      .eq('event_id', initiative.id)
-      .returns<EventParticipant[]>();
+      `
+        )
+        .eq('event_id', initiative.id)
+        .returns<EventParticipant[]>();
 
-    if (error) {
-      console.error('Error fetching participants:', error);
-      return;
+      if (error) {
+        console.error('Error fetching participants:', error);
+        return;
+      }
+
+      if (data) {
+        setInitiative((prev) => ({
+          ...prev,
+          participants: data,
+        }));
+      }
     }
 
-    if (data) {
-      setInitiative((prev) => ({
-        ...prev,
-        participants: data,
-      }));
-    }
-  }
+    fetchParticipants();
 
-  fetchParticipants();
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('event_participants_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'event_participants',
+          filter: `event_id=eq.${initiative.id}`,
+        },
+        fetchParticipants
+      )
+      .subscribe();
 
-  // Set up real-time subscription
-  const channel = supabase
-    .channel('event_participants_changes')
-    .on(
-      'postgres_changes',
-      {
-        event: '*',
-        schema: 'public',
-        table: 'event_participants',
-        filter: `event_id=eq.${initiative.id}`,
-      },
-      fetchParticipants
-    )
-    .subscribe();
-
-  return () => {
-    supabase.removeChannel(channel);
-  };
-}, [initiative.id, initiative.initiative_type, supabase]);
-
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [initiative.id, initiative.initiative_type, supabase]);
 
   const handleParticipationUpdate = async (
     newStatus: ParticipationStatus | null
@@ -249,6 +264,63 @@ useEffect(() => {
       <div className="space-y-6">
         {/* Description */}
         <div>
+          <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-3">
+            {initiative.title}
+          </h1>
+
+          <div className="flex items-center gap-2 mb-6">
+            <Badge
+              className={`inline-flex px-3 py-1.5 text-sm ${
+                initiative.initiative_type === 'event'
+                  ? 'bg-green-100/80 text-green-800 dark:bg-green-800/40 dark:text-green-300'
+                  : 'bg-blue-100/80 text-blue-800 dark:bg-blue-800/40 dark:text-blue-300'
+              }`}
+            >
+              {initiative.initiative_type === 'event' ? (
+                <Calendar className="w-4 h-4 mr-1.5" />
+              ) : (
+                <LayoutPanelLeft className="w-4 h-4 mr-1.5" />
+              )}
+              {initiative.initiative_type === 'event' ? 'Event' : 'Project'}
+            </Badge>
+            <div
+              className={`flex items-center px-3 py-1.5 rounded-full ${
+                initiative.category === 'development_meeting'
+                  ? 'bg-purple-100 text-purple-800 dark:bg-purple-800/30 dark:text-purple-300'
+                  : initiative.category === 'social'
+                  ? 'bg-pink-100 text-pink-800 dark:bg-pink-800/30 dark:text-pink-300'
+                  : initiative.category === 'outreach'
+                  ? 'bg-cyan-100 text-cyan-800 dark:bg-cyan-800/30 dark:text-cyan-300'
+                  : initiative.category === 'policy'
+                  ? 'bg-amber-100 text-amber-800 dark:bg-amber-800/30 dark:text-amber-300'
+                  : initiative.category === 'training'
+                  ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-800/30 dark:text-emerald-300'
+                  : initiative.category === 'research'
+                  ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-800/30 dark:text-indigo-300'
+                  : 'bg-rose-100 text-rose-800 dark:bg-rose-800/30 dark:text-rose-300'
+              }`}
+            >
+              {initiative.category === 'development_meeting' ? (
+                <Users2 className="w-4 h-4 mr-1.5" />
+              ) : initiative.category === 'social' ? (
+                <Users className="w-4 h-4 mr-1.5" />
+              ) : initiative.category === 'outreach' ? (
+                <Globe2 className="w-4 h-4 mr-1.5" />
+              ) : initiative.category === 'policy' ? (
+                <BookOpen className="w-4 h-4 mr-1.5" />
+              ) : initiative.category === 'training' ? (
+                <GraduationCap className="w-4 h-4 mr-1.5" />
+              ) : initiative.category === 'research' ? (
+                <Code className="w-4 h-4 mr-1.5" />
+              ) : (
+                <Rocket className="w-4 h-4 mr-1.5" />
+              )}
+              <span className="text-sm capitalize">
+                {initiative.category.replace('_', ' ')}
+              </span>
+            </div>
+          </div>
+
           <div className="text-base font-semibold text-slate-800 dark:text-slate-100 mb-2">
             Description
           </div>
@@ -334,7 +406,10 @@ useEffect(() => {
               <div className="bg-slate-50 dark:bg-slate-900/90 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-6">
                   <div className="text-base font-semibold text-slate-800 dark:text-slate-100">
-                    Participants ({initiative.participants?.filter(p => p.status !== 'not_going').length || 0}
+                    Participants (
+                    {initiative.participants?.filter(
+                      (p) => p.status !== 'not_going'
+                    ).length || 0}
                     {initiative.max_participants
                       ? ` / ${initiative.max_participants}`
                       : ''}

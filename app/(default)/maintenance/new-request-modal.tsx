@@ -15,7 +15,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 
 interface NewRequestModalProps {
@@ -90,13 +90,18 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
-                <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-200">
+                  {error}
+                </p>
               </div>
             )}
 
             {/* Title */}
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">
+              <Label
+                htmlFor="title"
+                className="text-slate-900 dark:text-slate-300"
+              >
                 Title
               </Label>
               <Input
@@ -111,7 +116,10 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
 
             {/* Description */}
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
                 Description
               </Label>
               <Textarea
@@ -125,7 +133,10 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
 
             {/* House */}
             <div>
-              <Label htmlFor="house_id" className="text-slate-900 dark:text-slate-300">
+              <Label
+                htmlFor="house_id"
+                className="text-slate-900 dark:text-slate-300"
+              >
                 House
               </Label>
               <select
@@ -146,7 +157,10 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
 
             {/* Priority */}
             <div>
-              <Label htmlFor="priority" className="text-slate-900 dark:text-slate-300">
+              <Label
+                htmlFor="priority"
+                className="text-slate-900 dark:text-slate-300"
+              >
                 Priority
               </Label>
               <select
@@ -175,12 +189,10 @@ export default function NewRequestModal({ houses }: NewRequestModalProps) {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                variant="default"
-              >
-                {isSubmitting ? 'Creating...' : (
+              <Button type="submit" disabled={isSubmitting} variant="default">
+                {isSubmitting ? (
+                  'Creating...'
+                ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Job

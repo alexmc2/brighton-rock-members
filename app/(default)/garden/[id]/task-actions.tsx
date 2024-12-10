@@ -198,7 +198,9 @@ export default function TaskActions({ task }: TaskActionsProps) {
 
         <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-slate-100">Edit Job</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-slate-100">
+              Edit Job
+            </DialogTitle>
           </DialogHeader>
 
           {error && (
@@ -348,11 +350,7 @@ export default function TaskActions({ task }: TaskActionsProps) {
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isUpdating}
-                variant="default"
-              >
+              <Button type="submit" disabled={isUpdating} variant="default">
                 {isUpdating ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

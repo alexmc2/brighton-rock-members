@@ -3,12 +3,12 @@
 'use client';
 
 import { useState } from 'react';
-import { 
+import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger
+  DialogTrigger,
 } from '@/components/ui/dialog';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
@@ -106,13 +106,20 @@ export default function NewEventModal() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="rounded-md bg-red-50 dark:bg-red-900/50 p-4">
-                <p className="text-sm text-red-700 dark:text-red-200">{error}</p>
+                <p className="text-sm text-red-700 dark:text-red-200">
+                  {error}
+                </p>
               </div>
             )}
 
             {/* Title Field */}
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
+              <Label
+                htmlFor="title"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Title
+              </Label>
               <Input
                 id="title"
                 name="title"
@@ -126,7 +133,12 @@ export default function NewEventModal() {
 
             {/* Description Field */}
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 name="description"
@@ -140,7 +152,12 @@ export default function NewEventModal() {
             {/* Date and Time Fields */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="date" className="text-slate-900 dark:text-slate-300">Date</Label>
+                <Label
+                  htmlFor="date"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Date
+                </Label>
                 <Input
                   type="date"
                   id="date"
@@ -154,7 +171,12 @@ export default function NewEventModal() {
               </div>
 
               <div>
-                <Label htmlFor="start_time" className="text-slate-900 dark:text-slate-300">Start Time</Label>
+                <Label
+                  htmlFor="start_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Start Time
+                </Label>
                 <Input
                   type="time"
                   id="start_time"
@@ -167,7 +189,12 @@ export default function NewEventModal() {
               </div>
 
               <div>
-                <Label htmlFor="duration" className="text-slate-900 dark:text-slate-300">Duration</Label>
+                <Label
+                  htmlFor="duration"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Duration
+                </Label>
                 <select
                   id="duration"
                   name="duration"
@@ -189,7 +216,12 @@ export default function NewEventModal() {
 
             {/* Category Field */}
             <div>
-              <Label htmlFor="category" className="text-slate-900 dark:text-slate-300">Category</Label>
+              <Label
+                htmlFor="category"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Category
+              </Label>
               <select
                 id="category"
                 name="category"
@@ -225,12 +257,10 @@ export default function NewEventModal() {
               >
                 Cancel
               </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting}
-                variant="default"
-              >
-                {isSubmitting ? 'Creating...' : (
+              <Button type="submit" disabled={isSubmitting} variant="default">
+                {isSubmitting ? (
+                  'Creating...'
+                ) : (
                   <>
                     <Plus className="h-4 w-4 mr-2" />
                     Create Event

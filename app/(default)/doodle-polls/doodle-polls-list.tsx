@@ -21,7 +21,10 @@ interface DoodlePollsListProps {
 
 const ITEMS_PER_PAGE = 6;
 
-export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePollsListProps) {
+export default function DoodlePollsList({
+  polls = [],
+  currentUserId,
+}: DoodlePollsListProps) {
   const [filters, setFilters] = useState({
     type: 'all' as 'all' | DoodleEventType,
     sortBy: 'Event Date',
@@ -47,12 +50,17 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
   const filteredPolls = polls
     .filter((poll) => {
       if (!showClosed && poll.closed) return false;
-      if (filters.type !== 'all' && poll.event_type !== filters.type) return false;
+      if (filters.type !== 'all' && poll.event_type !== filters.type)
+        return false;
       return true;
     })
     .sort((a, b) => {
-      const aDate = Math.min(...a.options.map(opt => new Date(opt.date).getTime()));
-      const bDate = Math.min(...b.options.map(opt => new Date(opt.date).getTime()));
+      const aDate = Math.min(
+        ...a.options.map((opt) => new Date(opt.date).getTime())
+      );
+      const bDate = Math.min(
+        ...b.options.map((opt) => new Date(opt.date).getTime())
+      );
       return filters.sortOrder === 'Ascending' ? aDate - bDate : bDate - aDate;
     });
 
@@ -63,7 +71,10 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
   const paginatedPolls = filteredPolls.slice(startIndex, endIndex);
 
   // Get unique event types
-  const eventTypes = ['all', ...Array.from(new Set(polls.map(p => p.event_type)))] as const;
+  const eventTypes = [
+    'all',
+    ...Array.from(new Set(polls.map((p) => p.event_type))),
+  ] as const;
 
   return (
     <div className="space-y-6">
@@ -71,8 +82,8 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
         <div className="grid grid-cols-2 sm:flex items-center gap-3 w-full sm:w-auto">
           <Select
             value={filters.type}
-            onValueChange={(value: typeof filters.type) => 
-              setFilters(prev => ({ ...prev, type: value }))
+            onValueChange={(value: typeof filters.type) =>
+              setFilters((prev) => ({ ...prev, type: value }))
             }
           >
             <SelectTrigger className="w-full sm:w-[180px]">
@@ -81,9 +92,13 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
             <SelectContent>
               {eventTypes.map((type) => (
                 <SelectItem key={type} value={type}>
-                  {type === 'all' ? 'All' :
-                   type === 'social_event' ? 'Co-op Social' :
-                   type.replace('_', ' ')}
+                  {type === 'all'
+                    ? 'All'
+                    : type === 'social_event'
+                    ? 'Co-op Social'
+                    : type === 'development_event'
+                    ? 'Development'
+                    : type.replace('_', ' ')}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -91,8 +106,8 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
 
           <Select
             value={filters.sortBy}
-            onValueChange={(value) => 
-              setFilters(prev => ({ ...prev, sortBy: value }))
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, sortBy: value }))
             }
           >
             <SelectTrigger className="w-full sm:w-[180px]">
@@ -108,8 +123,8 @@ export default function DoodlePollsList({ polls = [], currentUserId }: DoodlePol
         <div className="grid grid-cols-2 sm:flex items-center gap-3 w-full sm:w-auto">
           <Select
             value={filters.sortOrder}
-            onValueChange={(value) => 
-              setFilters(prev => ({ ...prev, sortOrder: value }))
+            onValueChange={(value) =>
+              setFilters((prev) => ({ ...prev, sortOrder: value }))
             }
           >
             <SelectTrigger className="w-full sm:w-[180px]">

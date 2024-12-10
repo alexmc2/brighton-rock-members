@@ -49,33 +49,38 @@ export default function InitiativeList({
     // Subscribe to changes in event_participants table
     const channel = supabase
       .channel('event_participants_changes')
-      .on('postgres_changes' as never,
+      .on(
+        'postgres_changes' as never,
         {
           event: '*',
           schema: 'public',
           table: 'event_participants',
         },
-        async (payload: RealtimePostgresChangesPayload<{
-          event_id: string;
-          user_id: string;
-          status: string;
-        }> & {
-          new: { event_id: string } | null;
-          old: { event_id: string } | null;
-        }) => {
+        async (
+          payload: RealtimePostgresChangesPayload<{
+            event_id: string;
+            user_id: string;
+            status: string;
+          }> & {
+            new: { event_id: string } | null;
+            old: { event_id: string } | null;
+          }
+        ) => {
           const eventId = payload.new?.event_id || payload.old?.event_id;
           if (!eventId) return;
 
           // Fetch updated participants for the affected initiative
           const { data: participants } = await supabase
             .from('event_participants')
-            .select(`
+            .select(
+              `
               *,
               user:profiles!event_participants_user_id_fkey (
                 email,
                 full_name
               )
-            `)
+            `
+            )
             .eq('event_id', eventId);
 
           // Update the initiatives state with new participant data

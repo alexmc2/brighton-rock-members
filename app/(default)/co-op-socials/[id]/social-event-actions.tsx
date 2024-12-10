@@ -226,7 +226,9 @@ export default function SocialEventActions({
 
         <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
           <DialogHeader>
-            <DialogTitle className="text-slate-900 dark:text-slate-100">Edit Event</DialogTitle>
+            <DialogTitle className="text-slate-900 dark:text-slate-100">
+              Edit Event
+            </DialogTitle>
           </DialogHeader>
 
           {error && (
@@ -299,9 +301,7 @@ export default function SocialEventActions({
                 id="status"
                 required
                 value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as SocialEventStatus)
-                }
+                onChange={(e) => setStatus(e.target.value as SocialEventStatus)}
                 disabled={isSubmitting}
                 className="w-full h-10 rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-300 px-3 py-2"
               >
@@ -399,11 +399,7 @@ export default function SocialEventActions({
               >
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting}
-                variant="default"
-              >
+              <Button type="submit" disabled={isSubmitting} variant="default">
                 {isSubmitting ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>

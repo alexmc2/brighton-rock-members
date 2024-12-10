@@ -504,82 +504,6 @@ export default function Sidebar({
               </span>
             </h3>
             <ul className="mt-3">
-              {/* Authentication */}
-              <SidebarLinkGroup>
-                {(handleClick, open) => {
-                  return (
-                    <>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition ${
-                          open
-                            ? ''
-                            : 'hover:text-gray-900 dark:hover:text-white'
-                        }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          expandOnly ? setSidebarExpanded(true) : handleClick();
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className={`shrink-0 fill-current text-gray-400 dark:text-gray-500`}
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="16"
-                              height="16"
-                              viewBox="0 0 16 16"
-                            >
-                              <path d="M11.442 4.576a1 1 0 0 0-1.506-1.317L2.451 4.537l-.744-.744A1 1 0 1 0 .293 5.207l1.5 1.5a1 1 0 0 0 1.46-.048l3.5-4ZM15.817 4.576a1 1 0 1 0-1.506-1.317l-5.609 7.957a1 1 0 0 0-1.347 1.453l.656.8a1 1 0 0 0 1.59-.058l6.344-9Z" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Authentication
-                            </span>
-                          </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg
-                              className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${
-                                open && 'rotate-180'
-                              }`}
-                              viewBox="0 0 12 12"
-                            >
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && 'hidden'}`}>
-                          <li className="mb-1 last:mb-0">
-                            <SidebarLink href="/signin">
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Sign in
-                              </span>
-                            </SidebarLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <SidebarLink href="/signup">
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Sign up
-                              </span>
-                            </SidebarLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <SidebarLink href="/reset-password">
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Reset Password
-                              </span>
-                            </SidebarLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </>
-                  );
-                }}
-              </SidebarLinkGroup>
-
-              {/* Components */}
               <SidebarLinkGroup open={segments.includes('components-library')}>
                 {(handleClick, open) => {
                   return (
@@ -727,6 +651,88 @@ export default function Sidebar({
                   );
                 }}
               </SidebarLinkGroup>
+              {/* Feature Requests */}
+              <li
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('feature-requests')
+                    ? 'bg-violet-500/[0.12]'
+                    : ''
+                }`}
+              >
+                <SidebarLink href="/feature-requests">
+                  <div className="flex items-center">
+                    <svg
+                      className={`shrink-0 ${
+                        segments.includes('feature-requests')
+                          ? 'text-violet-500'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+                      <path d="M9 18h6" />
+                      <path d="M10 22h4" />
+                    </svg>
+                    <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      Feature Requests
+                    </span>
+                  </div>
+                </SidebarLink>
+              </li>
+
+              {/* Bug Report */}
+              <li
+                className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 ${
+                  segments.includes('bug-report') ? 'bg-violet-500/[0.12]' : ''
+                }`}
+              >
+                <SidebarLink href="/bug-report">
+                  <div className="flex items-center">
+                    <svg
+                      className={`shrink-0 ${
+                        segments.includes('bug-report')
+                          ? 'text-violet-500'
+                          : 'text-gray-400 dark:text-gray-500'
+                      }`}
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="m8 2 1.88 1.88" />
+                      <path d="M14.12 3.88 16 2" />
+                      <path d="M9 7.13v-1a3.003 3.003 0 1 1 6 0v1" />
+                      <path d="M12 20c-3.3 0-6-2.7-6-6v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3c0 3.3-2.7 6-6 6" />
+                      <path d="M12 20v-9" />
+                      <path d="M6.53 9C4.6 8.8 3 7.1 3 5" />
+                      <path d="M6 13H2" />
+                      <path d="M3 21c0-2.1 1.7-3.9 3.8-4" />
+                      <path d="M20.97 5c0 2.1-1.6 3.8-3.5 4" />
+                      <path d="M22 13h-4" />
+                      <path d="M17.2 17c2.1.1 3.8 1.9 3.8 4" />
+                    </svg>
+
+                    <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      Bug Reports
+                    </span>
+                  </div>
+                </SidebarLink>
+              </li>
+
+              {/* Components */}
             </ul>
           </div>
         </div>

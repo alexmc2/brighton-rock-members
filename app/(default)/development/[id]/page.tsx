@@ -9,7 +9,7 @@ import {
 } from '@/types/development';
 import InitiativeHeader from './initiative-header';
 import InitiativeDetails from './initiative-details';
-import  CommentSection  from '@/components/ui/comments-section';
+import CommentSection from '@/components/ui/comments-section';
 
 export const metadata: Metadata = {
   title: 'Development Initiative Details',

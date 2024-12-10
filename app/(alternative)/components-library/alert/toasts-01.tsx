@@ -1,23 +1,29 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import Toast from '@/components/toast'
+import { useState } from 'react';
+import Toast from '@/components/toast';
 
 export default function Toasts01() {
-
-  const [toastWarningOpen, setToastWarningOpen] = useState<boolean>(true)
-  const [toastErrorOpen, setToastErrorOpen] = useState<boolean>(true)
-  const [toastSuccessOpen, setToastSuccessOpen] = useState<boolean>(true)
-  const [toastInfoOpen, setToastInfoOpen] = useState<boolean>(true)
+  const [toastWarningOpen, setToastWarningOpen] = useState<boolean>(true);
+  const [toastErrorOpen, setToastErrorOpen] = useState<boolean>(true);
+  const [toastSuccessOpen, setToastSuccessOpen] = useState<boolean>(true);
+  const [toastInfoOpen, setToastInfoOpen] = useState<boolean>(true);
 
   return (
     <div className="space-y-3">
-
-      <Toast type="warning" open={toastWarningOpen} setOpen={setToastWarningOpen}>
+      <Toast
+        type="warning"
+        open={toastWarningOpen}
+        setOpen={setToastWarningOpen}
+      >
         A warning toast.
       </Toast>
 
-      <Toast type="success" open={toastSuccessOpen} setOpen={setToastSuccessOpen}>
+      <Toast
+        type="success"
+        open={toastSuccessOpen}
+        setOpen={setToastSuccessOpen}
+      >
         A successful toast.
       </Toast>
 
@@ -27,8 +33,7 @@ export default function Toasts01() {
 
       <Toast open={toastInfoOpen} setOpen={setToastInfoOpen}>
         An informational toast.
-      </Toast> 
-
+      </Toast>
     </div>
-  )
+  );
 }

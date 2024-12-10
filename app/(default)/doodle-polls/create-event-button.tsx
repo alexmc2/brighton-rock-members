@@ -26,7 +26,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog';
 import { Button } from '@/components/ui/button';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
@@ -162,8 +162,12 @@ export default function CreateEventButton({
 
       const endDateTime = new Date(eventDateTime);
       if (durationInHours) {
-        endDateTime.setHours(endDateTime.getHours() + Math.floor(durationInHours));
-        endDateTime.setMinutes(endDateTime.getMinutes() + (durationInHours % 1) * 60);
+        endDateTime.setHours(
+          endDateTime.getHours() + Math.floor(durationInHours)
+        );
+        endDateTime.setMinutes(
+          endDateTime.getMinutes() + (durationInHours % 1) * 60
+        );
       }
 
       let createdEventId: string;
@@ -356,8 +360,8 @@ export default function CreateEventButton({
     } catch (error) {
       console.error('Error creating event:', error);
       setError(
-        error instanceof Error 
-          ? error.message 
+        error instanceof Error
+          ? error.message
           : 'An unexpected error occurred while creating the event'
       );
     } finally {
@@ -467,12 +471,16 @@ export default function CreateEventButton({
           <AlertDialogHeader>
             <AlertDialogTitle>Create Event</AlertDialogTitle>
             <AlertDialogDescription>
-              This will close the poll and add the event to the calendar. Do you wish to proceed?
+              This will close the poll and add the event to the calendar. Do you
+              wish to proceed?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleCreateEvent} disabled={isSubmitting}>
+            <AlertDialogAction
+              onClick={handleCreateEvent}
+              disabled={isSubmitting}
+            >
               {isSubmitting ? 'Creating...' : 'Yes, create event'}
             </AlertDialogAction>
           </AlertDialogFooter>

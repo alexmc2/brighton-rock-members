@@ -77,10 +77,10 @@ export default async function TodoDetailPage({ params }: TodoDetailPageProps) {
             comments={todo.comments}
             resourceId={todo.id}
             resourceType={{
-              type: "todo",
-              field: "todo_id",
-              contentField: "content",
-              userField: "created_by"
+              type: 'todo',
+              field: 'todo_id',
+              contentField: 'content',
+              userField: 'created_by',
             }}
           />
         </div>

@@ -1,5 +1,7 @@
 import { Metadata } from 'next';
 import Link from 'next/link';
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 
 export const metadata: Metadata = {
   title: 'Dashboard - Brighton Rock Housing Co-op',
@@ -33,17 +35,21 @@ const roles = [
     description: 'Handle co-op finances and budgeting',
     icon: (
       <svg
-        className="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="lucide lucide-pound-sterling"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-        />
+        <path d="M18 7c0-5.333-8-5.333-8 0" />
+        <path d="M10 7v14" />
+        <path d="M6 21h12" />
+        <path d="M6 13h10" />
       </svg>
     ),
   },
@@ -73,17 +79,19 @@ const roles = [
     description: 'Coordinate garden maintenance and projects',
     icon: (
       <svg
-        className="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="lucide lucide-leaf"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-        />
+        <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+        <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
       </svg>
     ),
   },
@@ -93,17 +101,21 @@ const roles = [
     description: 'Handle co-op development and outreach',
     icon: (
       <svg
-        className="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="lucide lucide-rocket"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-        />
+        <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
+        <path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z" />
+        <path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0" />
+        <path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5" />
       </svg>
     ),
   },
@@ -133,17 +145,20 @@ const roles = [
     description: 'Coordinate repairs and maintenance',
     icon: (
       <svg
-        className="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="lucide lucide-hammer"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"
-        />
+        <path d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9" />
+        <path d="m18 15 4-4" />
+        <path d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5" />
       </svg>
     ),
   },
@@ -153,17 +168,19 @@ const roles = [
     description: 'Manage allocations ',
     icon: (
       <svg
-        className="w-6 h-6"
+        xmlns="http://www.w3.org/2000/svg"
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
         fill="none"
         stroke="currentColor"
-        viewBox="0 0 24 24"
+        stroke-width="2.4"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        className="lucide lucide-house"
       >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          strokeWidth="2"
-          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-        />
+        <path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8" />
+        <path d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
       </svg>
     ),
   },
@@ -193,13 +210,28 @@ const houses = [
   },
 ];
 
-export default function Dashboard() {
+export default async function Dashboard() {
+  const supabase = createServerComponentClient({ cookies });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  // Get user's name from user metadata, full name, or email and capitalize first letter
+  let name =
+    session?.user?.user_metadata?.full_name ||
+    session?.user?.user_metadata?.name ||
+    session?.user?.email?.split('@')[0] ||
+    'Member';
+
+  // Capitalize the first letter
+  name = name.charAt(0).toUpperCase() + name.slice(1);
+
   return (
-    <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    <div className="px-6 sm:px-6 lg:px-10 py-10 w-full max-w-9xl mx-auto">
       {/* Welcome Banner */}
-      <div className="relative bg-gradient-to-tr  from-violet-500 to-violet-400 dark:from-violet-600 dark:to-violet-500 p-4 sm:p-6 rounded-lg overflow-hidden mb-8">
+      <div className="relative bg-gradient-to-tr  from-violet-500 to-violet-400 dark:from-violet-600/70 dark:to-violet-500/70 p-4 sm:p-6 rounded-lg overflow-hidden mb-8">
         {/* Background illustration */}
-        <div
+        {/* <div
           className="absolute right-0 top-0 -mt-4 mr-16 pointer-events-none hidden xl:block"
           aria-hidden="true"
         >
@@ -269,15 +301,15 @@ export default function Dashboard() {
               </g>
             </g>
           </svg>
-        </div>
+        </div> */}
 
         {/* Content */}
         <div className="relative ">
           <h1 className="text-2xl md:text-3xl text-white font-bold mb-1 py-2">
-            Welcome to Brighton Rock Housing Co-op 👋
+            Welcome to the Brighton Rock Co-op Management Hub, {name} 👋
           </h1>
-          <p className="text-white opacity-90">
-            Here's what's happening in our co-op today:
+          <p className="text-white opacity-90 text-md md:text-xl">
+            Here's what's happening in the co-op today:
           </p>
         </div>
       </div>

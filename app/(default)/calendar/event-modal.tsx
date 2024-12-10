@@ -155,9 +155,21 @@ export default function EventModal() {
   if (!event) return null;
 
   // Determine if the event can be edited/deleted
-  const canModify = event.event_type === 'manual' || 
-    ['General Meeting', 'Sub Meeting', 'Allocations', 'P4P Visit', 'Garden', 
-     'AGM', 'EGM', 'General Maintenance', 'Training', 'Treasury', 'Miscellaneous'].includes(event.event_type);
+  const canModify =
+    event.event_type === 'manual' ||
+    [
+      'General Meeting',
+      'Sub Meeting',
+      'Allocations',
+      'P4P Visit',
+      'Garden',
+      'AGM',
+      'EGM',
+      'General Maintenance',
+      'Training',
+      'Treasury',
+      'Miscellaneous',
+    ].includes(event.event_type);
 
   return (
     <Dialog
@@ -194,7 +206,12 @@ export default function EventModal() {
         {isEditing ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <Label htmlFor="title" className="text-slate-900 dark:text-slate-300">Title</Label>
+              <Label
+                htmlFor="title"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Title
+              </Label>
               <Input
                 id="title"
                 name="title"
@@ -205,7 +222,12 @@ export default function EventModal() {
             </div>
 
             <div>
-              <Label htmlFor="description" className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label
+                htmlFor="description"
+                className="text-slate-900 dark:text-slate-300"
+              >
+                Description
+              </Label>
               <Textarea
                 id="description"
                 name="description"
@@ -216,7 +238,12 @@ export default function EventModal() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <Label htmlFor="date" className="text-slate-900 dark:text-slate-300">Date</Label>
+                <Label
+                  htmlFor="date"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Date
+                </Label>
                 <Input
                   type="date"
                   id="date"
@@ -231,7 +258,12 @@ export default function EventModal() {
               </div>
 
               <div>
-                <Label htmlFor="start_time" className="text-slate-900 dark:text-slate-300">Start Time</Label>
+                <Label
+                  htmlFor="start_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  Start Time
+                </Label>
                 <Input
                   type="time"
                   id="start_time"
@@ -243,7 +275,12 @@ export default function EventModal() {
               </div>
 
               <div>
-                <Label htmlFor="end_time" className="text-slate-900 dark:text-slate-300">End Time</Label>
+                <Label
+                  htmlFor="end_time"
+                  className="text-slate-900 dark:text-slate-300"
+                >
+                  End Time
+                </Label>
                 <Input
                   type="time"
                   id="end_time"
@@ -278,7 +315,9 @@ export default function EventModal() {
         ) : (
           <div className="space-y-4">
             <div>
-              <Label className="text-slate-900 dark:text-slate-300">Description</Label>
+              <Label className="text-slate-900 dark:text-slate-300">
+                Description
+              </Label>
               <p className="text-sm text-slate-600 dark:text-slate-400">
                 {event.description || 'No description provided'}
               </p>

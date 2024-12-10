@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import UserAvatar from '@/public/images/user-avatar-32.png';
+import { getUserColor } from '@/lib/utils';
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -16,7 +16,7 @@ import {
 import { cn } from '@/lib/utils';
 
 export default function DropdownProfile({
-  align = 'end'
+  align = 'end',
 }: {
   align?: 'start' | 'end';
 }) {
@@ -24,23 +24,25 @@ export default function DropdownProfile({
   const supabase = createClientComponentClient();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     const getUser = async () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-      
+
       if (user?.email) {
         setUserEmail(user.email);
-        
+        setUserId(user.id);
+
         // Fetch the user's profile
         const { data: profile } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', user.id)
           .single();
-        
+
         setUserName(profile?.full_name || user.email.split('@')[0] || 'User');
       }
     };
@@ -65,13 +67,17 @@ export default function DropdownProfile({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className="inline-flex justify-center items-center group">
-        <Image
-          className="w-8 h-8 rounded-full"
-          src={UserAvatar}
-          width={32}
-          height={32}
-          alt="User"
-        />
+        <div className="flex-shrink-0">
+          <div
+            className={`w-8 h-8 rounded-full ${userId ? getUserColor(userId) : 'bg-gray-400'} flex items-center justify-center`}
+          >
+            <span className="text-sm font-medium text-white">
+              {userName?.charAt(0).toUpperCase() ||
+                userEmail?.charAt(0).toUpperCase() ||
+                '?'}
+            </span>
+          </div>
+        </div>
         <div className="flex items-center truncate">
           <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white transition-colors duration-150">
             {userName || 'Loading...'}
@@ -84,8 +90,8 @@ export default function DropdownProfile({
           </svg>
         </div>
       </DropdownMenuTrigger>
-      <DropdownMenuContent 
-        align={align} 
+      <DropdownMenuContent
+        align={align}
         sideOffset={4}
         className="w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 p-0.5 duration-200"
       >
@@ -98,14 +104,14 @@ export default function DropdownProfile({
           </div>
         </div>
         <DropdownMenuItem asChild>
-          <Link 
+          <Link
             href="/settings"
             className="font-medium text-sm flex items-center py-1.5 px-3 text-gray-600 dark:text-gray-400 hover:bg-coop-500 hover:text-white dark:hover:bg-coop-500 dark:hover:text-white transition-all duration-200"
           >
             Settings
           </Link>
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleSignOut}
           className="font-medium text-sm w-full flex items-center py-1.5 px-3 text-gray-600 dark:text-gray-400 hover:bg-coop-500 hover:text-white dark:hover:bg-coop-500 dark:hover:text-white transition-all duration-200"
         >

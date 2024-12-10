@@ -207,8 +207,8 @@ export const participationMapping: ParticipationMapper = {
 // Helper function to convert event type to calendar category
 export function eventTypeToCalendarCategory(eventType: DoodleEventType): string {
     const mapping: Record<DoodleEventType, string> = {
-        social_event: "Social Event",
-        development_event: "Development Event",
+        social_event: "Co-op Social",
+        development_event: "Development",
         "General Meeting": "General Meeting",
         "Sub Meeting": "Sub Meeting",
         "Allocations": "Allocations",

@@ -148,7 +148,6 @@ export default function ProjectActions({ initiative }: ProjectActionsProps) {
         size="sm"
         onClick={handleDelete}
         disabled={isDeleting}
-        className="hover:bg-red-50 dark:hover:bg-red-900/50"
       >
         <Trash2 className="h-4 w-4 mr-1" />
         Delete

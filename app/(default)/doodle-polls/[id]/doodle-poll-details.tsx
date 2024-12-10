@@ -10,6 +10,7 @@ import { CheckCircle2, CircleSlash, Minus } from 'lucide-react';
 import { cn, getUserColor } from '@/lib/utils';
 import { format } from 'date-fns';
 import type { DoodlePollResponse, DoodlePollWithDetails } from '@/types/doodle';
+import { eventTypeToCalendarCategory } from '@/types/doodle';
 import CreateEventButton from '../create-event-button';
 
 interface DoodlePollDetailsProps {
@@ -136,7 +137,8 @@ export default function DoodlePollDetails({
           </h2>
           <div className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
             <p>
-              <span className="font-medium">Type:</span> {poll.event_type}
+              <span className="font-medium">Type:</span>{' '}
+              {eventTypeToCalendarCategory(poll.event_type)}
             </p>
             <p>
               <span className="font-medium">Created by:</span>{' '}
@@ -154,6 +156,41 @@ export default function DoodlePollDetails({
                 {format(new Date(poll.response_deadline), 'PPP p')}
               </p>
             )}
+          </div>
+        </div>
+
+        {/* Response Legend */}
+        <div className="mb-6 flex items-center gap-6 text-sm">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600 dark:text-green-400" />
+            <span className="text-slate-600 dark:text-slate-400">Yes</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-yellow-600 dark:text-yellow-400"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="8" y1="12" x2="16" y2="12" />
+            </svg>
+            <span className="text-slate-600 dark:text-slate-400">
+              If need be
+            </span>
+          </div>
+          <div className="flex items-center gap-1">
+            <CircleSlash className="w-4 h-4 text-red-600 dark:text-red-400" />
+            <span className="text-slate-600 dark:text-slate-400">No</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <CircleSlash className="w-4 h-4 text-slate-300 dark:text-slate-600" />
+            <span className="text-slate-600 dark:text-slate-400">Pending</span>
           </div>
         </div>
 
@@ -227,7 +264,7 @@ export default function DoodlePollDetails({
                       key={slot.id}
                       variant="ghost"
                       className={cn(
-                        'h-full rounded-none border border-slate-200 dark:border-slate-600',
+                        'h-full rounded-none border border-slate-200 dark:border-slate-600'
                         // userResponses[slot.id] === 'yes' &&
                         //   'bg-green-200/70 dark:bg-green-600/30',
                         // userResponses[slot.id] === 'maybe' &&

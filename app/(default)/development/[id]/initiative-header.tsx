@@ -40,7 +40,7 @@ export default function InitiativeHeader({
 
       <div className="flex flex-wrap gap-4 sm:flex-nowrap sm:justify-between sm:items-center">
         {/* Left: Title */}
-        <div>
+        {/* <div>
           <h1 className="text-2xl md:text-3xl text-slate-800 dark:text-slate-100 font-bold mb-2">
             {initiative.title}
           </h1>
@@ -51,10 +51,11 @@ export default function InitiativeHeader({
                 initiative.category.slice(1).replace('_', ' ')}
             </span>
           </div>
-        </div>
+        </div> */}
+        <DevelopmentActions initiative={initiative} />
 
         {/* Right: Status and Actions */}
-        <div className="flex flex-col items-end gap-2">
+        {/* <div className="flex flex-col items-end gap-2">
           <div className="flex items-center gap-4">
             <div
               className={`inline-flex font-medium ${getStatusColor(
@@ -64,9 +65,8 @@ export default function InitiativeHeader({
               {initiative.status.charAt(0).toUpperCase() +
                 initiative.status.slice(1).replace('_', ' ')}
             </div>
-          </div>
-          <DevelopmentActions initiative={initiative} />
-        </div>
+          </div> */}
+        {/* </div> */}
       </div>
     </div>
   );

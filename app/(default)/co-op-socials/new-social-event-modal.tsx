@@ -141,7 +141,9 @@ export default function NewSocialEventModal() {
 
       <DialogContent className="w-full max-w-lg bg-white dark:bg-slate-800">
         <DialogHeader>
-          <DialogTitle className="text-slate-900 dark:text-slate-100">New Social Event</DialogTitle>
+          <DialogTitle className="text-slate-900 dark:text-slate-100">
+            New Social Event
+          </DialogTitle>
         </DialogHeader>
 
         {error && (
@@ -295,11 +297,7 @@ export default function NewSocialEventModal() {
             >
               Cancel
             </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting}
-              variant="default"
-            >
+            <Button type="submit" disabled={isSubmitting} variant="default">
               {isSubmitting ? 'Creating...' : 'Create Event'}
             </Button>
           </div>
